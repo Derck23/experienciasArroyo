@@ -37,3 +37,15 @@ export const saveAuthData = (token, user) => {
   localStorage.setItem('token', token);
   localStorage.setItem('user', JSON.stringify(user));
 };
+
+
+// Obtener el nivel del usuario (admin o user)
+export const getUserLevel = () => {
+  const user = getCurrentUser();
+  return user?.userLevel || 'user';
+};
+
+// Verificar si el usuario es admin
+export const isAdmin = () => {
+  return getUserLevel() === 'admin';
+};

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { isAdmin } from '../utils/auth';
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, requireAdmin = false }) {
   // Verificar si el usuario tiene token
   const token = localStorage.getItem('token');
   const user = localStorage.getItem('user');
@@ -35,6 +36,12 @@ function ProtectedRoute({ children }) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     return <Navigate to="/login" replace />;
+  }
+
+  // Verificar si se requiere admin
+  if (requireAdmin && !isAdmin()) {
+    // Si requiere admin pero el usuario no es admin, redirigir a /experiencia
+    return <Navigate to="/experiencia" replace />;
   }
 
   // Si todo está bien, renderizar el componente hijo

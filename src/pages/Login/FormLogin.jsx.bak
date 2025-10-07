@@ -20,22 +20,14 @@ function FormLogin() {
 
       // El backend devuelve los datos dentro de response.data
       if (response.data && response.data.token) {
-        const { token, user } = response.data;
-
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
 
         message.success('¡Inicio de sesión exitoso!');
 
-        // Redirigir según el nivel de usuario
-        const userLevel = user.userLevel || 'user';
-
+        // Pequeño delay para asegurar que localStorage se actualice
         setTimeout(() => {
-          if (userLevel === 'admin') {
-            navigate('/admin/dashboard', { replace: true });
-          } else {
-            navigate('/experiencia', { replace: true });
-          }
+          navigate('/experiencia', { replace: true });
         }, 100);
       } else {
         message.error('Error: No se recibió el token de autenticación');
