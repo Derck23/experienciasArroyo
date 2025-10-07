@@ -17,14 +17,21 @@ function FormLogin() {
       console.log('Enviando datos:', values);
       const response = await login(values);
       console.log('Login successful:', response);
-      message.success('¡Inicio de sesión exitoso!');
 
-      if (response.token) {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+      // El backend devuelve los datos dentro de response.data
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+
+        message.success('¡Inicio de sesión exitoso!');
+
+        // Pequeño delay para asegurar que localStorage se actualice
+        setTimeout(() => {
+          navigate('/experiencia', { replace: true });
+        }, 100);
+      } else {
+        message.error('Error: No se recibió el token de autenticación');
       }
-
-      navigate('/Experiencia');
 
     } catch (error) {
       console.error('Login failed:', error);
