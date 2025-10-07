@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { login } from '../../service/authService';
-import { useNavigate } from 'react-router-dom'; 
-import { Form, Input, Button, Card, Typography, message, Spin } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { Form, Input, Button, message, Spin } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import './FormLogin.css';
-
-const { Title } = Typography;
+import ModalRecuperarPassword from './ModalRecuperarPassword';
 
 function FormLogin() {
   const [loading, setLoading] = useState(false);
+  const [modalRecuperarVisible, setModalRecuperarVisible] = useState(false);
   const [form] = Form.useForm();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleSubmit = async (values) => {
     setLoading(true);
@@ -52,72 +51,132 @@ function FormLogin() {
   };
 
   return (
-    <div className="login-container">
-      <Card className="login-card" bordered={false}>
-        <Spin spinning={loading} tip="Iniciando sesión...">
-          <div className="login-header">
-            <Title level={2} className="login-title">
-              Iniciar Sesión
-            </Title>
+    <div>
+      <Spin spinning={loading} tip="Iniciando sesión...">
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '25px'
+        }}>
+          <h2 style={{
+            fontSize: 'clamp(20px, 3vw, 24px)',
+            fontWeight: '600',
+            color: '#2c3e50',
+            margin: '0'
+          }}>
+            Iniciar Sesión
+          </h2>
+        </div>
+
+        <Form
+          form={form}
+          name="login"
+          initialValues={{ remember: true }}
+          onFinish={handleSubmit}
+          onFinishFailed={onFinishFailed}
+          size="large"
+          layout="vertical"
+        >
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'Por favor ingresa tu correo!' },
+              { type: 'email', message: 'Por favor ingresa un correo válido!' }
+            ]}
+          >
+            <Input
+              prefix={<UserOutlined style={{ color: '#7f8c8d' }} />}
+              placeholder="Correo electrónico"
+              type="email"
+              style={{
+                borderRadius: '8px',
+                padding: '12px',
+                fontSize: '16px'
+              }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            rules={[
+              { required: true, message: 'Por favor ingresa tu contraseña!' },
+              { min: 6, message: 'La contraseña debe tener al menos 6 caracteres!' }
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined style={{ color: '#7f8c8d' }} />}
+              placeholder="Contraseña"
+              style={{
+                borderRadius: '8px',
+                padding: '12px',
+                fontSize: '16px'
+              }}
+            />
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: '10px' }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              loading={loading}
+              disabled={loading}
+              style={{
+                backgroundColor: '#16a085',
+                borderColor: '#16a085',
+                borderRadius: '8px',
+                height: '45px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 10px rgba(22, 160, 133, 0.3)',
+                cursor: 'pointer'
+              }}
+            >
+              {loading ? 'Iniciando sesión...' : 'Ingresar'}
+            </Button>
+          </Form.Item>
+
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '15px'
+          }}>
+            <Button
+              type="link"
+              onClick={() => setModalRecuperarVisible(true)}
+              style={{
+                color: '#16a085',
+                fontWeight: '600',
+                fontSize: '14px',
+                padding: '0',
+                height: 'auto'
+              }}
+            >
+              ¿Olvidaste tu contraseña?
+            </Button>
           </div>
 
-          <Form
-            form={form}
-            name="login"
-            className="login-form"
-            initialValues={{ remember: true }}
-            onFinish={handleSubmit}
-            onFinishFailed={onFinishFailed}
-            size="large"
-            layout="vertical"
-          >
-            <Form.Item
-              name="email"
-              rules={[
-                { required: true, message: 'Por favor ingresa tu correo!' },
-                { type: 'email', message: 'Por favor ingresa un correo válido!' }
-              ]}
-            >
-              <Input
-                prefix={<UserOutlined />}
-                placeholder="Correo electrónico"
-                className="login-input"
-                type="email"
-              />
-            </Form.Item>
+          <div style={{
+            textAlign: 'center',
+            borderTop: '1px solid #ecf0f1',
+            paddingTop: '15px'
+          }}>
+            <p style={{
+              fontSize: '14px',
+              color: '#7f8c8d'
+            }}>
+              ¿No tienes cuenta? <a href="/registro" style={{
+                color: '#16a085',
+                fontWeight: 'bold',
+                textDecoration: 'none'
+              }}>Regístrate aquí</a>
+            </p>
+          </div>
+        </Form>
+      </Spin>
 
-            <Form.Item
-              name="password"
-              rules={[
-                { required: true, message: 'Por favor ingresa tu contraseña!' },
-                { min: 6, message: 'La contraseña debe tener al menos 6 caracteres!' }
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Contraseña"
-                className="login-input"
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="login-button"
-                block
-                loading={loading}
-                disabled={loading}
-              >
-                {loading ? 'Iniciando sesión...' : 'Ingresar'}
-              </Button>
-            </Form.Item>
-            <div className="login-footer">
-              <p>¿No tienes cuenta? <a href="/registro">Regístrate aquí</a></p>
-            </div>
-          </Form>
-        </Spin>
-      </Card>
+      <ModalRecuperarPassword
+        visible={modalRecuperarVisible}
+        onClose={() => setModalRecuperarVisible(false)}
+      />
     </div>
   );
 }

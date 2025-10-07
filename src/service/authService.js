@@ -84,3 +84,45 @@ export const resendVerificationCode = async (email) => {
     throw error.response?.data || { message: error.message };
   }
 };
+
+// Función para solicitar recuperación de contraseña
+export const forgotPassword = async (email) => {
+  try {
+    const response = await api.post('/users/forgot-password', {
+      email
+    });
+    console.log('Forgot password response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error en forgot password:', error);
+    if (error.code === 'ERR_NETWORK') {
+      throw new Error('Error de conexión. Verifica tu internet.');
+    }
+    if (error.response?.status === 404) {
+      throw new Error('No existe una cuenta con ese correo.');
+    }
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// Función para resetear la contraseña con el código
+export const resetPassword = async (email, verificationCode, newPassword) => {
+  try {
+    const response = await api.post('/users/reset-password', {
+      email,
+      verificationCode,
+      newPassword
+    });
+    console.log('Reset password response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error en reset password:', error);
+    if (error.code === 'ERR_NETWORK') {
+      throw new Error('Error de conexión. Verifica tu internet.');
+    }
+    if (error.response?.status === 400) {
+      throw new Error('Código inválido o expirado.');
+    }
+    throw error.response?.data || { message: error.message };
+  }
+};

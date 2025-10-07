@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Input, Button, message, Typography } from 'antd';
-import { MailOutlined, SafetyOutlined, ExclamationCircleOutlined } from '@ant-design/icons'; // Importa un ícono de error
+import { Modal, Input, Button, message } from 'antd';
+import { MailOutlined, SafetyOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { verifyEmail, resendVerificationCode } from '../../service/authService';
-import './ModalCodigoRegistro.css';
-
-const { Title, Text } = Typography;
 
 function ModalCodigoRegistro({ visible, email, onClose, onSuccess }) {
   const [verificationCode, setVerificationCode] = useState('');
@@ -91,53 +88,116 @@ function ModalCodigoRegistro({ visible, email, onClose, onSuccess }) {
       onCancel={handleCancel}
       footer={null}
       centered
-      className="modal-codigo-registro"
       width={500}
       maskClosable={false}
+      styles={{
+        content: {
+          borderRadius: '15px',
+          padding: '0'
+        }
+      }}
     >
-      <div className="modal-codigo-content">
-        <div className="modal-codigo-icon">
+      <div style={{
+        padding: 'clamp(30px, 5vw, 40px)',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          fontSize: '60px',
+          color: '#16a085',
+          marginBottom: '20px'
+        }}>
           <SafetyOutlined />
         </div>
-        
-        <Title level={3} className="modal-codigo-title">
+
+        <h3 style={{
+          fontSize: 'clamp(22px, 3vw, 26px)',
+          fontWeight: '600',
+          color: '#2c3e50',
+          margin: '0 0 20px 0'
+        }}>
           Verifica tu Correo
-        </Title>
-        
-        <div className="modal-codigo-description">
-          <Text type="secondary">
+        </h3>
+
+        <div style={{
+          marginBottom: '30px'
+        }}>
+          <p style={{
+            fontSize: 'clamp(14px, 2vw, 16px)',
+            color: '#7f8c8d',
+            margin: '0 0 15px 0'
+          }}>
             Hemos enviado un código de verificación a:
-          </Text>
-          <div className="modal-codigo-email">
-            <MailOutlined />
-            <Text strong>{email}</Text>
+          </p>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            backgroundColor: '#f8f9fa',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            marginBottom: '15px'
+          }}>
+            <MailOutlined style={{ color: '#16a085', fontSize: '18px' }} />
+            <span style={{
+              fontSize: 'clamp(14px, 2vw, 16px)',
+              fontWeight: '600',
+              color: '#2c3e50'
+            }}>{email}</span>
           </div>
-          <Text type="secondary" className="modal-codigo-instruction">
+          <p style={{
+            fontSize: 'clamp(13px, 2vw, 15px)',
+            color: '#7f8c8d',
+            margin: '0'
+          }}>
             Ingresa el código de 6 caracteres para completar tu registro
-          </Text>
+          </p>
         </div>
 
-        <div className="modal-codigo-input-container">
+        <div style={{
+          marginBottom: '25px'
+        }}>
           <Input
             value={verificationCode}
             onChange={handleInputChange}
             placeholder="Ej: A1B2C3"
             maxLength={6}
-            className={`modal-codigo-input ${error ? 'input-error' : ''}`} // Clase condicional para el estilo de error
             size="large"
             autoFocus
             onPressEnter={handleVerify}
+            style={{
+              borderRadius: '8px',
+              padding: '12px',
+              fontSize: '18px',
+              textAlign: 'center',
+              letterSpacing: '4px',
+              fontWeight: 'bold',
+              borderColor: error ? '#ff4d4f' : '#d9d9d9',
+              borderWidth: '2px'
+            }}
           />
-          {/* <-- 4. Mostramos el mensaje de error aquí --> */}
           {error && (
-            <div className="modal-codigo-error-message">
-              <ExclamationCircleOutlined />
-              <Text type="danger">{error}</Text>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '10px',
+              padding: '10px',
+              backgroundColor: '#fff2f0',
+              borderRadius: '6px',
+              border: '1px solid #ffccc7'
+            }}>
+              <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
+              <span style={{
+                fontSize: '14px',
+                color: '#ff4d4f'
+              }}>{error}</span>
             </div>
           )}
         </div>
 
-        <div className="modal-codigo-actions">
+        <div>
           <Button
             type="primary"
             onClick={handleVerify}
@@ -145,19 +205,40 @@ function ModalCodigoRegistro({ visible, email, onClose, onSuccess }) {
             disabled={loading || verificationCode.length !== 6}
             block
             size="large"
-            className="modal-codigo-verify-btn"
+            style={{
+              backgroundColor: '#16a085',
+              borderColor: '#16a085',
+              borderRadius: '8px',
+              height: '45px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 10px rgba(22, 160, 133, 0.3)',
+              marginBottom: '20px'
+            }}
           >
             {loading ? 'Verificando...' : 'Verificar Código'}
           </Button>
 
-          <div className="modal-codigo-resend">
-            <Text type="secondary">¿No recibiste el código?</Text>
+          <div style={{
+            textAlign: 'center'
+          }}>
+            <p style={{
+              fontSize: '14px',
+              color: '#7f8c8d',
+              margin: '0 0 8px 0'
+            }}>¿No recibiste el código?</p>
             <Button
               type="link"
               onClick={handleResend}
               loading={resendLoading}
               disabled={resendLoading}
-              className="modal-codigo-resend-btn"
+              style={{
+                color: '#16a085',
+                fontWeight: '600',
+                fontSize: '15px',
+                padding: '0',
+                height: 'auto'
+              }}
             >
               Reenviar código
             </Button>

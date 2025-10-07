@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { register } from '../../service/authService';
-import { Form, Input, Button, Card, Typography, message, Spin } from 'antd';
+import { Form, Input, Button, message, Spin } from 'antd';
 import { UserOutlined, LockOutlined, PhoneOutlined, MailOutlined, CheckCircleOutlined} from '@ant-design/icons';
 import ModalCodigoRegistro from './ModalCodigoRegistro';
-import './FormRegistro.css';
-
-const { Title, Text } = Typography;
 
 function FormRegistro() {
   const [loading, setLoading] = useState(false);
@@ -63,142 +60,215 @@ function FormRegistro() {
 
   if (registrationComplete) {
     return (
-      <Card className="success-card" bordered={false}>
-        <div className="success-content">
-          <CheckCircleOutlined className="success-icon" />
-          <Title level={3} className="success-title">¡Registro Completado!</Title>
-          <Text className="success-text">
-            Bienvenido. Te has registrado correctamente.
-          </Text>
-          <Text className="success-text">
-            Ya puedes iniciar sesión.
-          </Text>
-          <div className="success-actions">
-            <Button
-              type="primary"
-              size="large"
-              href="/login" // Redirige al login
-              className="success-button"
-            >
-              Iniciar Sesión
-            </Button>
-          </div>
-        </div>
-      </Card>
+      <div style={{
+        textAlign: 'center',
+        padding: '40px 20px'
+      }}>
+        <CheckCircleOutlined style={{
+          fontSize: 'clamp(60px, 10vw, 80px)',
+          color: '#16a085',
+          marginBottom: '20px'
+        }} />
+        <h3 style={{
+          fontSize: 'clamp(22px, 3vw, 28px)',
+          fontWeight: '600',
+          color: '#2c3e50',
+          margin: '20px 0 15px 0'
+        }}>
+          ¡Registro Completado!
+        </h3>
+        <p style={{
+          fontSize: 'clamp(14px, 2vw, 16px)',
+          color: '#7f8c8d',
+          margin: '10px 0'
+        }}>
+          Bienvenido. Te has registrado correctamente.
+        </p>
+        <p style={{
+          fontSize: 'clamp(14px, 2vw, 16px)',
+          color: '#7f8c8d',
+          margin: '10px 0 30px 0'
+        }}>
+          Ya puedes iniciar sesión.
+        </p>
+        <Button
+          type="primary"
+          size="large"
+          href="/login"
+          style={{
+            backgroundColor: '#16a085',
+            borderColor: '#16a085',
+            borderRadius: '8px',
+            height: '45px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            padding: '0 40px',
+            boxShadow: '0 4px 10px rgba(22, 160, 133, 0.3)'
+          }}
+        >
+          Iniciar Sesión
+        </Button>
+      </div>
     );
   }
 
   return (
     <>
-      <div className="registro-container">
-        <Card className="registro-card" bordered={false}>
-          <Spin spinning={loading} tip="Procesando registro...">
-            <div className="registro-header">
-              <Title level={2} className="registro-title">
-                Crear Cuenta
-              </Title>
-            </div>
+      <div>
+        <Spin spinning={loading} tip="Procesando registro...">
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '25px'
+          }}>
+            <h2 style={{
+              fontSize: 'clamp(20px, 3vw, 24px)',
+              fontWeight: '600',
+              color: '#2c3e50',
+              margin: '0'
+            }}>
+              Crear Cuenta
+            </h2>
+          </div>
 
-            <Form
-              form={form}
-              name="registro"
-              className="registro-form"
-              onFinish={handleSubmit}
-              onFinishFailed={onFinishFailed}
-              size="large"
-              layout="vertical"
+          <Form
+            form={form}
+            name="registro"
+            onFinish={handleSubmit}
+            onFinishFailed={onFinishFailed}
+            size="large"
+            layout="vertical"
+          >
+            <Form.Item
+              name="email"
+              rules={[
+                { required: true, message: 'Por favor ingresa tu correo!' },
+                { type: 'email', message: 'Por favor ingresa un correo válido!' }
+              ]}
             >
-              <Form.Item
-                name="email"
-                rules={[
-                  { required: true, message: 'Por favor ingresa tu correo!' },
-                  { type: 'email', message: 'Por favor ingresa un correo válido!' }
-                ]}
+              <Input
+                prefix={<MailOutlined style={{ color: '#7f8c8d' }} />}
+                placeholder="Correo electrónico"
+                type="email"
+                style={{
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '16px'
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="firstName"
+              rules={[
+                { required: true, message: 'Por favor ingresa tu nombre!' },
+                { min: 2, message: 'El nombre debe tener al menos 2 caracteres!' }
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined style={{ color: '#7f8c8d' }} />}
+                placeholder="Nombre"
+                style={{
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '16px'
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="lastName"
+              rules={[
+                { required: true, message: 'Por favor ingresa tus apellidos!' },
+                { min: 2, message: 'Los apellidos deben tener al menos 2 caracteres!' }
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined style={{ color: '#7f8c8d' }} />}
+                placeholder="Apellido(s)"
+                style={{
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '16px'
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              rules={[
+                { required: true, message: 'Por favor ingresa tu contraseña!' },
+                { min: 6, message: 'La contraseña debe tener al menos 6 caracteres!' }
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined style={{ color: '#7f8c8d' }} />}
+                placeholder="Contraseña"
+                style={{
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '16px'
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="phone"
+              rules={[
+                { required: true, message: 'Por favor ingresa tu teléfono!' },
+                { pattern: /^[0-9]{10}$/, message: 'El teléfono debe tener 10 dígitos!' }
+              ]}
+            >
+              <Input
+                prefix={<PhoneOutlined style={{ color: '#7f8c8d' }} />}
+                placeholder="Teléfono (10 dígitos)"
+                maxLength={10}
+                style={{
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '16px'
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={loading}
+                disabled={loading}
+                style={{
+                  backgroundColor: '#16a085',
+                  borderColor: '#16a085',
+                  borderRadius: '8px',
+                  height: '45px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 10px rgba(22, 160, 133, 0.3)',
+                  cursor: 'pointer'
+                }}
               >
-                <Input
-                  prefix={<MailOutlined />}
-                  placeholder="Correo electrónico"
-                  className="registro-input"
-                  type="email"
-                />
-              </Form.Item>
+                {loading ? 'Registrando...' : 'Registrar'}
+              </Button>
+            </Form.Item>
 
-              <Form.Item
-                name="firstName"
-                rules={[
-                  { required: true, message: 'Por favor ingresa tu nombre!' },
-                  { min: 2, message: 'El nombre debe tener al menos 2 caracteres!' }
-                ]}
-              >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="Nombre"
-                  className="registro-input"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="lastName"
-                rules={[
-                  { required: true, message: 'Por favor ingresa tus apellidos!' },
-                  { min: 2, message: 'Los apellidos deben tener al menos 2 caracteres!' }
-                ]}
-              >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="Apellido(s)"
-                  className="registro-input"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="password"
-                rules={[
-                  { required: true, message: 'Por favor ingresa tu contraseña!' },
-                  { min: 6, message: 'La contraseña debe tener al menos 6 caracteres!' }
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="Contraseña"
-                  className="registro-input"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="phone"
-                rules={[
-                  { required: true, message: 'Por favor ingresa tu teléfono!' },
-                  { pattern: /^[0-9]{10}$/, message: 'El teléfono debe tener 10 dígitos!' }
-                ]}
-              >
-                <Input
-                  prefix={<PhoneOutlined />}
-                  placeholder="Teléfono (10 dígitos)"
-                  className="registro-input"
-                  maxLength={10}
-                />
-              </Form.Item>
-
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  className="registro-button"
-                  block
-                  loading={loading}
-                  disabled={loading}
-                >
-                  {loading ? 'Registrando...' : 'Registrar'}
-                </Button>
-              </Form.Item>
-
-              <div className="registro-footer">
-                <p>¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p>
-              </div>
-            </Form>
-          </Spin>
-        </Card>
+            <div style={{
+              textAlign: 'center',
+              marginTop: '15px'
+            }}>
+              <p style={{
+                fontSize: '14px',
+                color: '#7f8c8d'
+              }}>
+                ¿Ya tienes cuenta? <a href="/login" style={{
+                  color: '#16a085',
+                  fontWeight: 'bold',
+                  textDecoration: 'none'
+                }}>Inicia sesión aquí</a>
+              </p>
+            </div>
+          </Form>
+        </Spin>
       </div>
 
       <ModalCodigoRegistro
