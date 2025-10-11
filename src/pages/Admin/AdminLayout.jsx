@@ -16,7 +16,7 @@ function AdminLayout() {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <h2 style={{ margin: 0, color: '#16a085' }}>Admin</h2>
                     <Menu mode="horizontal" selectable={false} items={[
@@ -25,12 +25,14 @@ function AdminLayout() {
                     ]} />
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ textAlign: 'right', marginRight: 8 }}>
-                        <div style={{ fontWeight: '600' }}>{user?.firstName} {user?.lastName}</div>
-                        <div style={{ fontSize: 12, color: '#7f8c8d' }}>{user?.email}</div>
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.2 }}>
+                        <span style={{ fontWeight: 600 }}>{user?.firstName} {user?.lastName}</span>
+                        <span style={{ fontSize: 12, color: '#7f8c8d' }}>{user?.email}</span>
                     </div>
-                    <Button danger icon={<LogoutOutlined />} onClick={handleLogout}>Cerrar Sesión</Button>
+                    <Button danger icon={<LogoutOutlined />} onClick={handleLogout}>
+                        Cerrar Sesión
+                    </Button>
                 </div>
             </Header>
 

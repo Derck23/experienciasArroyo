@@ -1,16 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Card, Space } from 'antd';
-import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import { logout, getCurrentUser } from '../../utils/auth';
+import { Card, Space } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
+import { getCurrentUser } from '../../utils/auth';
 
 function AdminDashboard() {
-  const navigate = useNavigate();
   const user = getCurrentUser();
 
-  const handleLogout = () => {
-    logout();
-  };
 
   return (
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -23,13 +18,7 @@ function AdminDashboard() {
         <h1 style={{ margin: 0, color: '#16a085' }}>
           Panel de Administración
         </h1>
-        <Button 
-          icon={<LogoutOutlined />} 
-          onClick={handleLogout}
-          danger
-        >
-          Cerrar Sesión
-        </Button>
+        {/* Botón de cerrar sesión removido; ahora vive sólo en el AdminLayout */}
       </div>
 
       <Card style={{ marginBottom: '20px' }}>
