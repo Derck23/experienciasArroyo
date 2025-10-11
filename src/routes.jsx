@@ -5,6 +5,8 @@ import Experiencia from "./pages/Experiencia/Experiencia";
 import Login from "./pages/Login/Login";
 import Registro from "./pages/Registro/Registro";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import GestionDeUsuarios from "./pages/Admin/GestionDeUsuarios";
+import AdminLayout from "./pages/Admin/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function AppRoutes() {
@@ -26,18 +28,22 @@ function AppRoutes() {
           }
         />
 
-        {/* Rutas protegidas - Admin */}
+        {/* Rutas protegidas - Admin (layout con header/footer) */}
         <Route
-          path="/admin/dashboard"
+          path="/admin"
           element={
             <ProtectedRoute requireAdmin={true}>
-              <AdminDashboard />
+              <AdminLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<GestionDeUsuarios />} />
+        </Route>
       </Routes>
     </Router>
   );
 }
 
 export default AppRoutes;
+
