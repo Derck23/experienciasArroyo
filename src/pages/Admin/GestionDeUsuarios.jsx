@@ -70,13 +70,63 @@ function GestionDeUsuarios() {
 	];
 
 	return (
-		<div>
-			<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-				<h3>Gestión de Usuarios</h3>
-				<Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>Nuevo usuario</Button>
+		<div style={{
+			background: 'rgba(255,255,255,0.65)',
+			backdropFilter: 'blur(20px)',
+			borderRadius: '16px',
+			padding: '32px',
+			boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
+		}}>
+			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+				<div>
+					<h1 style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#2e7d32' }}>
+						Gestión de Usuarios
+					</h1>
+					<p style={{ margin: '8px 0 0', color: '#666', fontSize: '14px' }}>
+						Administra los usuarios del sistema
+					</p>
+				</div>
+				<Button
+					type="primary"
+					icon={<PlusOutlined />}
+					onClick={handleCreate}
+					size="large"
+					style={{
+						background: '#66bb6a',
+						borderColor: '#66bb6a',
+						borderRadius: '8px',
+						fontWeight: '500',
+					}}
+				>
+					Nuevo usuario
+				</Button>
 			</div>
 
-			<Table dataSource={users} columns={columns} rowKey="id" loading={loading} />
+			<Input
+				placeholder="Buscar usuarios por nombre, email o teléfono..."
+				prefix={<span style={{ color: '#43a047' }}>🔍</span>}
+				size="large"
+				style={{
+					borderRadius: '8px',
+					marginBottom: '24px',
+					border: '2px solid #e0e0e0',
+				}}
+				onChange={(e) => {
+					console.log(e.target.value);
+				}}
+			/>
+
+			<Table
+				dataSource={users}
+				columns={columns}
+				rowKey="id"
+				loading={loading}
+				pagination={{
+					pageSize: 10,
+					showSizeChanger: true,
+					showTotal: (total) => `Total ${total} usuarios`
+				}}
+			/>
 
 					<Modal visible={modalVisible} footer={null} onCancel={() => { setModalVisible(false); form.resetFields(); }} destroyOnClose>
 						<Form form={form} layout="vertical" onFinish={async (values) => {
