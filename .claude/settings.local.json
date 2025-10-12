@@ -4,7 +4,8 @@
       "Read(//d/Backend-proy-integradora/src/controllers/**)",
       "Read(//d/Backend-proy-integradora/src/routes/**)",
       "Read(//d/Backend-proy-integradora/src/services/**)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
