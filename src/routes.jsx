@@ -8,6 +8,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import GestionDeUsuarios from "./pages/Admin/GestionDeUsuarios";
 import GestionDeRestaurantes from "./pages/Admin/GestionDeRestaurantes";
 import GestionDePlatillos from "./pages/Admin/GestionDePlatillos";
+import GestionDeAtracciones from "./pages/Admin/GestionDeAtracciones";
 import AdminLayout from "./pages/Admin/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -43,6 +44,7 @@ function AppRoutes() {
           <Route path="users" element={<GestionDeUsuarios />} />
           <Route path="restaurants" element={<GestionDeRestaurantes />} />
           <Route path="dishes" element={<GestionDePlatillos />} />
+          <Route path="attractions" element={<GestionDeAtracciones />} />
         </Route>
       </Routes>
     </Router>

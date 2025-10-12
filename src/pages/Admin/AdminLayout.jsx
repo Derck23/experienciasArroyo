@@ -11,7 +11,8 @@ import {
     SearchOutlined,
     ThunderboltOutlined,
     ShopOutlined,
-    AppstoreOutlined
+    AppstoreOutlined,
+    EnvironmentOutlined
 } from '@ant-design/icons';
 import { logout, getCurrentUser } from '../../utils/auth';
 import imagenLogin from '../../assets/imagenLogin.jpg';
@@ -70,6 +71,12 @@ function AdminLayout() {
             icon: <AppstoreOutlined />,
             label: 'Platillos',
             onClick: () => navigate('/admin/dishes'),
+        },
+        {
+            key: '/admin/attractions',
+            icon: <EnvironmentOutlined />,
+            label: 'Atracciones',
+            onClick: () => navigate('/admin/attractions'),
         },
     ];
 
