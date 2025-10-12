@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Card, Input, Select, Button, Upload, message, Divider, Space, Typography, Row, Col } from 'antd';
+import { useState, useEffect } from 'react';
+import { Card, Input, Select, Button, Upload, message, Divider, Space, Typography, Row, Col, Table, Modal, Popconfirm, Tag, Spin } from 'antd';
 import {
     EnvironmentOutlined,
     PictureOutlined,
@@ -11,8 +11,13 @@ import {
     ThunderboltOutlined,
     CheckCircleOutlined,
     CloseCircleOutlined,
-    PlusOutlined
+    PlusOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    EyeOutlined,
+    ReloadOutlined
 } from '@ant-design/icons';
+import { crearAtraccion, obtenerAtracciones, actualizarAtraccion, eliminarAtraccion, cambiarEstadoAtraccion } from '../../service/atraccionService';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -36,6 +41,28 @@ const GestionDeAtracciones = () => {
     
     const [fileList, setFileList] = useState([]);
     const [audioFile, setAudioFile] = useState([]);
+    const [atracciones, setAtracciones] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modoEdicion, setModoEdicion] = useState(false);
+    const [atraccionEditando, setAtraccionEditando] = useState(null);
+
+    // Cargar atracciones al montar el componente
+    useEffect(() => {
+        cargarAtracciones();
+    }, []);
+
+    const cargarAtracciones = async () => {
+        setLoading(true);
+        try {
+            const response = await obtenerAtracciones();
+            setAtracciones(response.data || []);
+        } catch (error) {
+            message.error(error.message || 'Error al cargar las atracciones');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -45,16 +72,112 @@ const GestionDeAtracciones = () => {
         }));
     };
 
-    const handleSubmit = (estado) => {
-        const dataToSubmit = {
-            ...formData,
-            estado, // 'activa' o 'inactiva'
-            fotos: fileList,
-            audio: audioFile
-        };
-        console.log('Datos a enviar:', dataToSubmit);
-        message.success(`Atracción guardada como ${estado}!`);
-        // Aquí puedes agregar la lógica para enviar los datos al backend
+    const resetForm = () => {
+        setFormData({
+            nombre: '',
+            categoria: '',
+            descripcion: '',
+            latitud: '',
+            longitud: '',
+            videoUrl: '',
+            informacionCultural: '',
+            horarios: '',
+            costoEntrada: '',
+            restricciones: '',
+            nivelDificultad: '',
+            servicios: ''
+        });
+        setFileList([]);
+        setAudioFile([]);
+        setModoEdicion(false);
+        setAtraccionEditando(null);
+    };
+
+    const validarFormulario = () => {
+        const camposRequeridos = ['nombre', 'categoria', 'descripcion', 'latitud', 'longitud'];
+        const camposFaltantes = camposRequeridos.filter(campo => !formData[campo]);
+
+        if (camposFaltantes.length > 0) {
+            message.error(`Por favor completa los campos: ${camposFaltantes.join(', ')}`);
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async (estado) => {
+        if (!validarFormulario()) return;
+
+        setLoading(true);
+        try {
+            const dataToSubmit = {
+                ...formData,
+                estado,
+                fotos: fileList.map(f => f.thumbUrl || f.url || ''),
+                audioUrl: audioFile.length > 0 ? audioFile[0].thumbUrl || '' : ''
+            };
+
+            if (modoEdicion && atraccionEditando) {
+                await actualizarAtraccion(atraccionEditando, dataToSubmit);
+                message.success('Atracción actualizada exitosamente!');
+            } else {
+                await crearAtraccion(dataToSubmit);
+                message.success(`Atracción creada como ${estado}!`);
+            }
+
+            resetForm();
+            setModalVisible(false);
+            cargarAtracciones();
+        } catch (error) {
+            message.error(error.message || 'Error al guardar la atracción');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditar = (atraccion) => {
+        setFormData({
+            nombre: atraccion.nombre || '',
+            categoria: atraccion.categoria || '',
+            descripcion: atraccion.descripcion || '',
+            latitud: atraccion.latitud || '',
+            longitud: atraccion.longitud || '',
+            videoUrl: atraccion.videoUrl || '',
+            informacionCultural: atraccion.informacionCultural || '',
+            horarios: atraccion.horarios || '',
+            costoEntrada: atraccion.costoEntrada || '',
+            restricciones: atraccion.restricciones || '',
+            nivelDificultad: atraccion.nivelDificultad || '',
+            servicios: atraccion.servicios || ''
+        });
+        setModoEdicion(true);
+        setAtraccionEditando(atraccion.id);
+        setModalVisible(true);
+    };
+
+    const handleEliminar = async (id) => {
+        setLoading(true);
+        try {
+            await eliminarAtraccion(id);
+            message.success('Atracción eliminada exitosamente');
+            cargarAtracciones();
+        } catch (error) {
+            message.error(error.message || 'Error al eliminar la atracción');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCambiarEstado = async (id, nuevoEstado) => {
+        setLoading(true);
+        try {
+            await cambiarEstadoAtraccion(id, nuevoEstado);
+            message.success(`Atracción marcada como ${nuevoEstado}`);
+            cargarAtracciones();
+        } catch (error) {
+            message.error(error.message || 'Error al cambiar el estado');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const uploadProps = {
@@ -91,47 +214,186 @@ const GestionDeAtracciones = () => {
         maxCount: 1,
     };
 
+    // Columnas de la tabla
+    const columns = [
+        {
+            title: 'Nombre',
+            dataIndex: 'nombre',
+            key: 'nombre',
+            width: 200,
+            ellipsis: true,
+        },
+        {
+            title: 'Categoría',
+            dataIndex: 'categoria',
+            key: 'categoria',
+            width: 120,
+            render: (categoria) => {
+                const emoji = {
+                    'cascada': '🌊',
+                    'mirador': '🏔️',
+                    'cueva': '🕳️',
+                    'observatorio': '🔭',
+                    'sitio-historico': '🏛️'
+                };
+                return `${emoji[categoria] || ''} ${categoria}`;
+            }
+        },
+        {
+            title: 'Dificultad',
+            dataIndex: 'nivelDificultad',
+            key: 'nivelDificultad',
+            width: 120,
+            render: (nivel) => {
+                const config = {
+                    'facil': { color: 'green', text: 'Fácil' },
+                    'moderado': { color: 'orange', text: 'Moderado' },
+                    'dificil': { color: 'red', text: 'Difícil' }
+                };
+                return <Tag color={config[nivel]?.color}>{config[nivel]?.text || nivel}</Tag>;
+            }
+        },
+        {
+            title: 'Estado',
+            dataIndex: 'estado',
+            key: 'estado',
+            width: 100,
+            render: (estado, record) => (
+                <Tag 
+                    color={estado === 'activa' ? 'green' : 'default'}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => handleCambiarEstado(record.id, estado === 'activa' ? 'inactiva' : 'activa')}
+                >
+                    {estado === 'activa' ? 'Activa' : 'Inactiva'}
+                </Tag>
+            )
+        },
+        {
+            title: 'Acciones',
+            key: 'acciones',
+            width: 150,
+            render: (_, record) => (
+                <Space size="small">
+                    <Button
+                        type="primary"
+                        icon={<EditOutlined />}
+                        size="small"
+                        onClick={() => handleEditar(record)}
+                        style={{ background: '#66bb6a', borderColor: '#66bb6a' }}
+                    />
+                    <Popconfirm
+                        title="¿Estás seguro de eliminar esta atracción?"
+                        onConfirm={() => handleEliminar(record.id)}
+                        okText="Sí"
+                        cancelText="No"
+                        okButtonProps={{ danger: true }}
+                    >
+                        <Button
+                            danger
+                            icon={<DeleteOutlined />}
+                            size="small"
+                        />
+                    </Popconfirm>
+                </Space>
+            ),
+        },
+    ];
+
     return (
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-            <Card
-                style={{
-                    background: 'rgba(255, 255, 255, 0.98)',
-                    backdropFilter: 'blur(20px)',
-                    borderRadius: '16px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-                    border: '1px solid rgba(102, 187, 106, 0.2)',
-                    overflow: 'hidden'
-                }}
-                bodyStyle={{ padding: '32px' }}
-            >
-                {/* Header con gradiente */}
-                <div style={{
-                    background: 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)',
-                    margin: '-32px -32px 32px -32px',
-                    padding: '32px',
-                    borderRadius: '16px 16px 0 0'
-                }}>
-                    <Space direction="vertical" size={4}>
-                        <Title level={2} style={{ 
-                            color: 'white', 
-                            margin: 0,
-                            fontSize: '28px',
-                            fontWeight: '700',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            <Spin spinning={loading}>
+                {/* Card principal con lista de atracciones */}
+                <Card
+                    style={{
+                        background: 'rgba(255, 255, 255, 0.98)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '16px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                        border: '1px solid rgba(102, 187, 106, 0.2)',
+                        marginBottom: '24px'
+                    }}
+                    bodyStyle={{ padding: '24px' }}
+                >
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '24px',
+                        flexWrap: 'wrap',
+                        gap: '16px'
+                    }}>
+                        <div>
+                            <Title level={3} style={{ margin: 0, color: '#2e7d32' }}>
+                                <EnvironmentOutlined /> Gestión de Atracciones Turísticas
+                            </Title>
+                            <Text style={{ color: '#666' }}>
+                                Total: {atracciones.length} atracciones registradas
+                            </Text>
+                        </div>
+                        <Space>
+                            <Button
+                                icon={<ReloadOutlined />}
+                                onClick={cargarAtracciones}
+                            >
+                                Actualizar
+                            </Button>
+                            <Button
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={() => {
+                                    resetForm();
+                                    setModalVisible(true);
+                                }}
+                                style={{
+                                    background: 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)',
+                                    border: 'none',
+                                    height: '40px',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                Nueva Atracción
+                            </Button>
+                        </Space>
+                    </div>
+
+                    <Table
+                        columns={columns}
+                        dataSource={atracciones}
+                        rowKey="id"
+                        pagination={{
+                            pageSize: 10,
+                            showSizeChanger: true,
+                            showTotal: (total) => `Total ${total} atracciones`
+                        }}
+                        scroll={{ x: 800 }}
+                    />
+                </Card>
+
+                {/* Modal para crear/editar atracción */}
+                <Modal
+                    title={
+                        <div style={{
+                            background: 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)',
+                            margin: '-20px -24px 20px -24px',
+                            padding: '20px 24px',
+                            color: 'white'
                         }}>
-                            <EnvironmentOutlined style={{ marginRight: '12px' }} />
-                            Añadir Nueva Atracción
-                        </Title>
-                        <Text style={{ 
-                            color: 'rgba(255,255,255,0.95)', 
-                            fontSize: '15px',
-                            display: 'block',
-                            marginLeft: '44px'
-                        }}>
-                            Completa el formulario para registrar un nuevo lugar turístico
-                        </Text>
-                    </Space>
-                </div>
+                            <Title level={4} style={{ color: 'white', margin: 0 }}>
+                                <EnvironmentOutlined style={{ marginRight: '12px' }} />
+                                {modoEdicion ? 'Editar Atracción' : 'Nueva Atracción'}
+                            </Title>
+                        </div>
+                    }
+                    open={modalVisible}
+                    onCancel={() => {
+                        setModalVisible(false);
+                        resetForm();
+                    }}
+                    footer={null}
+                    width={900}
+                    style={{ top: 20 }}
+                    bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
+                >
 
                 {/* Información Básica */}
                 <div style={{ marginBottom: '32px' }}>
@@ -655,7 +917,7 @@ const GestionDeAtracciones = () => {
                     </div>
                 </div>
 
-                {/* Botones de acción */}
+                {/* Botones de acción del modal */}
                 <Divider style={{ margin: '32px 0', borderColor: '#e0e0e0' }} />
                 
                 <Row gutter={[16, 16]} justify="end">
@@ -665,6 +927,7 @@ const GestionDeAtracciones = () => {
                             size="large"
                             icon={<CloseCircleOutlined />}
                             onClick={() => handleSubmit('inactiva')}
+                            loading={loading}
                             block
                             style={{
                                 height: '48px',
@@ -696,6 +959,7 @@ const GestionDeAtracciones = () => {
                             size="large"
                             icon={<CheckCircleOutlined />}
                             onClick={() => handleSubmit('activa')}
+                            loading={loading}
                             block
                             style={{
                                 height: '48px',
@@ -716,11 +980,12 @@ const GestionDeAtracciones = () => {
                                 e.currentTarget.style.boxShadow = '0 4px 16px rgba(102, 187, 106, 0.4)';
                             }}
                         >
-                            Guardar como Activa
+                            {modoEdicion ? 'Actualizar' : 'Guardar como Activa'}
                         </Button>
                     </Col>
                 </Row>
-            </Card>
+                </Modal>
+            </Spin>
         </div>
     );
 };

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Routes, Route } from "react-router-dom";
 import imagenHome from '../../assets/imagenHome.jpg';
 import { logout, getCurrentUser } from '../../utils/auth';
+import ListaAtacciones from '../pages/AtraccionTuristicas/ListaAtacciones';
 
 function Experiencia() {
   const navigate = useNavigate();
@@ -346,7 +347,8 @@ function Experiencia() {
             }}
             >
               <div style={{ fontSize: 'clamp(35px, 5vw, 50px)', marginBottom: '10px', color: '#3498db' }}>🏄</div>
-              <div style={{ fontSize: 'clamp(13px, 2vw, 16px)', color: '#2c3e50', fontWeight: '600' }}>Actividades</div>
+              <div style={{ fontSize: 'clamp(13px, 2vw, 16px)',
+ color: '#2c3e50', fontWeight: '600' }}>Actividades</div>
             </div>
           </div>
 
@@ -402,5 +404,15 @@ function Experiencia() {
     </div>
   );
 }
+
+const AppRoutes = () => {
+  return (
+    <Routes>
+      {/* ...existing routes... */}
+      <Route path="/atracciones" element={<ListaAtacciones />} />
+      {/* ...existing routes... */}
+    </Routes>
+  );
+};
 
 export default Experiencia;
