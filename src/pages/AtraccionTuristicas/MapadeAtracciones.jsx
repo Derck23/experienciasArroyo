@@ -43,7 +43,14 @@ const MapadeAtracciones = () => {
                 setLoading(true);
                 const data = await obtenerAtracciones();
                 
-                const atraccionesActivas = data.filter(atraccion => atraccion.estado === 'activo');
+                console.log('Atracciones recibidas:', data); // Debug
+                
+                // Filtrar activas (acepta 'activo' o 'activa')
+                const atraccionesActivas = data.filter(atraccion => 
+                    atraccion.estado === 'activo' || atraccion.estado === 'activa'
+                );
+                
+                console.log('Atracciones activas:', atraccionesActivas); // Debug
                 
                 const mappedLocations = atraccionesActivas.map(atraccion => ({
                     id: atraccion.id,
@@ -57,9 +64,7 @@ const MapadeAtracciones = () => {
                     color: getColorByType(atraccion.categoria),
                     description: atraccion.descripcion || 'Sin descripción disponible',
                     horario: atraccion.horarios || "Consultar horario",
-                    // Las imágenes ya están en Base64
                     imagen: atraccion.fotos?.[0] || "https://via.placeholder.com/400",
-                    // El audio ya está en Base64
                     audioUrl: atraccion.audioUrl || null,
                     videoUrl: atraccion.videoUrl || null,
                     costo: atraccion.costoEntrada || 'Gratuito',
@@ -68,6 +73,7 @@ const MapadeAtracciones = () => {
                     informacionCultural: atraccion.informacionCultural || ''
                 }));
 
+                console.log('Locations mapeadas:', mappedLocations); // Debug
                 setLocations(mappedLocations);
             } catch (err) {
                 console.error('Error al cargar atracciones:', err);

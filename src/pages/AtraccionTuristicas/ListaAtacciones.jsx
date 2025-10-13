@@ -20,10 +20,15 @@ const ListaAtacciones = () => {
                 setLoading(true);
                 const data = await obtenerAtracciones();
                 
-                // Filtrar solo activas en el cliente
-                const atraccionesActivas = data.filter(a => a.estado === 'activo');
+                console.log('Atracciones recibidas en lista:', data); // Debug
                 
-                // Mapear datos de la API según los campos reales
+                // Filtrar activas (acepta 'activo' o 'activa')
+                const atraccionesActivas = data.filter(a => 
+                    a.estado === 'activo' || a.estado === 'activa'
+                );
+                
+                console.log('Atracciones activas en lista:', atraccionesActivas); // Debug
+                
                 const mappedAtracciones = atraccionesActivas.map(atraccion => ({
                     id: atraccion.id,
                     nombre: atraccion.nombre,
@@ -34,6 +39,7 @@ const ListaAtacciones = () => {
                     costo: atraccion.costoEntrada || 'Gratuito'
                 }));
 
+                console.log('Atracciones mapeadas:', mappedAtracciones); // Debug
                 setAtracciones(mappedAtracciones);
             } catch (err) {
                 console.error('Error al cargar atracciones:', err);
