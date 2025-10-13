@@ -21,11 +21,6 @@ export const convertirImagenABase64 = (file) => {
 
 /**
  * Redimensiona y comprime una imagen antes de convertirla a Base64
- * @param {File} file - Archivo de imagen
- * @param {number} maxWidth - Ancho máximo (default: 800px)
- * @param {number} maxHeight - Alto máximo (default: 600px)
- * @param {number} quality - Calidad de compresión (0-1, default: 0.8)
- * @returns {Promise<string>} - String Base64 de la imagen comprimida
  */
 export const comprimirYConvertirImagen = (file, maxWidth = 800, maxHeight = 600, quality = 0.8) => {
     return new Promise((resolve, reject) => {
@@ -60,44 +55,38 @@ export const comprimirYConvertirImagen = (file, maxWidth = 800, maxHeight = 600,
 
                 // Convertir a Base64 con compresión
                 const base64String = canvas.toDataURL('image/jpeg', quality);
+                console.log('Imagen convertida a Base64, tamaño:', base64String.length);
                 resolve(base64String);
             };
 
-            img.onerror = reject;
+            img.onerror = () => reject(new Error('Error al cargar la imagen'));
             img.src = event.target.result;
         };
 
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error('Error al leer el archivo'));
         reader.readAsDataURL(file);
     });
 };
 
 /**
  * Convierte un archivo de audio a Base64
- * @param {File} file - Archivo de audio
- * @returns {Promise<string>} - String Base64 del audio
  */
 export const convertirAudioABase64 = (file) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         
         reader.onload = () => {
+            console.log('Audio convertido a Base64, tamaño:', reader.result.length);
             resolve(reader.result);
         };
         
-        reader.onerror = (error) => {
-            reject(error);
-        };
-        
+        reader.onerror = () => reject(new Error('Error al leer el archivo de audio'));
         reader.readAsDataURL(file);
     });
 };
 
 /**
  * Valida el tamaño del archivo
- * @param {File} file - Archivo a validar
- * @param {number} maxSizeMB - Tamaño máximo en MB
- * @returns {boolean} - true si es válido
  */
 export const validarTamañoArchivo = (file, maxSizeMB = 5) => {
     const maxSizeBytes = maxSizeMB * 1024 * 1024;

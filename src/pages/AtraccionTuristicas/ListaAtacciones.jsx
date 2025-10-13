@@ -20,14 +20,13 @@ const ListaAtacciones = () => {
                 setLoading(true);
                 const data = await obtenerAtracciones();
                 
-                console.log('Atracciones recibidas en lista:', data); // Debug
+                console.log('Atracciones recibidas en lista:', data);
                 
-                // Filtrar activas (acepta 'activo' o 'activa')
                 const atraccionesActivas = data.filter(a => 
                     a.estado === 'activo' || a.estado === 'activa'
                 );
                 
-                console.log('Atracciones activas en lista:', atraccionesActivas); // Debug
+                console.log('Atracciones activas en lista:', atraccionesActivas);
                 
                 const mappedAtracciones = atraccionesActivas.map(atraccion => ({
                     id: atraccion.id,
@@ -35,11 +34,14 @@ const ListaAtacciones = () => {
                     categoria: atraccion.categoria || 'Sin categoría',
                     dificultad: atraccion.nivelDificultad || 'No especificada',
                     distancia: atraccion.distancia || 'N/A',
-                    imagen: atraccion.fotos?.[0] || 'https://via.placeholder.com/400',
+                    // Priorizar imagen Base64, luego imagen por defecto SVG
+                    imagen: (atraccion.fotos && atraccion.fotos.length > 0) 
+                        ? atraccion.fotos[0] 
+                        : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e0e0e0' width='400' height='300'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='20' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E%F0%9F%8F%9E%EF%B8%8F Sin imagen%3C/text%3E%3C/svg%3E",
                     costo: atraccion.costoEntrada || 'Gratuito'
                 }));
 
-                console.log('Atracciones mapeadas:', mappedAtracciones); // Debug
+                console.log('Atracciones mapeadas:', mappedAtracciones);
                 setAtracciones(mappedAtracciones);
             } catch (err) {
                 console.error('Error al cargar atracciones:', err);

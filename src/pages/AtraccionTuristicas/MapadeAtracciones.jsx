@@ -43,14 +43,13 @@ const MapadeAtracciones = () => {
                 setLoading(true);
                 const data = await obtenerAtracciones();
                 
-                console.log('Atracciones recibidas:', data); // Debug
+                console.log('Atracciones recibidas:', data);
                 
-                // Filtrar activas (acepta 'activo' o 'activa')
                 const atraccionesActivas = data.filter(atraccion => 
                     atraccion.estado === 'activo' || atraccion.estado === 'activa'
                 );
                 
-                console.log('Atracciones activas:', atraccionesActivas); // Debug
+                console.log('Atracciones activas:', atraccionesActivas);
                 
                 const mappedLocations = atraccionesActivas.map(atraccion => ({
                     id: atraccion.id,
@@ -64,7 +63,10 @@ const MapadeAtracciones = () => {
                     color: getColorByType(atraccion.categoria),
                     description: atraccion.descripcion || 'Sin descripción disponible',
                     horario: atraccion.horarios || "Consultar horario",
-                    imagen: atraccion.fotos?.[0] || "https://via.placeholder.com/400",
+                    // Priorizar imagen Base64, luego URL, finalmente imagen por defecto
+                    imagen: (atraccion.fotos && atraccion.fotos.length > 0) 
+                        ? atraccion.fotos[0] 
+                        : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23ddd' width='400' height='300'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3ESin imagen%3C/text%3E%3C/svg%3E",
                     audioUrl: atraccion.audioUrl || null,
                     videoUrl: atraccion.videoUrl || null,
                     costo: atraccion.costoEntrada || 'Gratuito',
@@ -73,7 +75,7 @@ const MapadeAtracciones = () => {
                     informacionCultural: atraccion.informacionCultural || ''
                 }));
 
-                console.log('Locations mapeadas:', mappedLocations); // Debug
+                console.log('Locations mapeadas:', mappedLocations);
                 setLocations(mappedLocations);
             } catch (err) {
                 console.error('Error al cargar atracciones:', err);

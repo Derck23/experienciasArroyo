@@ -111,27 +111,52 @@ const GestionDeAtracciones = () => {
 
         setLoading(true);
         try {
-            // Convertir imágenes a Base64
-            const fotosBase64 = await Promise.all(
-                fileList.map(async (file) => {
-                    if (file.originFileObj) {
-                        // Validar tamaño antes de convertir
-                        if (!validarTamañoArchivo(file.originFileObj, 5)) {
-                            throw new Error(`La imagen ${file.name} supera el tamaño máximo de 5MB`);
-                        }
-                        return await comprimirYConvertirImagen(file.originFileObj, 800, 600, 0.8);
-                    }
-                    return file.url || file.thumbUrl;
-                })
-            );
+            console.log('=== INICIO DE GUARDADO ===');
+            console.log('FileList actual:', fileList);
+            console.log('Cantidad de archivos:', fileList.length);
 
-            // Convertir audio a Base64
-            let audioBase64 = '';
-            if (audioFile.length > 0 && audioFile[0].originFileObj) {
-                if (!validarTamañoArchivo(audioFile[0].originFileObj, 10)) {
-                    throw new Error('El archivo de audio supera el tamaño máximo de 10MB');
+            // Convertir SOLO las nuevas imágenes a Base64
+            const fotosBase64 = [];
+            
+            for (const file of fileList) {
+                console.log('Procesando archivo:', file.name, 'UID:', file.uid);
+                
+                // Si ya tiene URL (es una imagen existente), mantenerla
+                if (file.url) {
+                    console.log('  -> Es imagen existente, manteniendo URL');
+                    fotosBase64.push(file.url);
                 }
-                audioBase64 = await convertirAudioABase64(audioFile[0].originFileObj);
+                // Si es un archivo nuevo, convertir a Base64
+                else if (file.originFileObj) {
+                    console.log('  -> Es archivo nuevo, convirtiendo...');
+                    
+                    if (!validarTamañoArchivo(file.originFileObj, 5)) {
+                        throw new Error(`La imagen ${file.name} supera el tamaño máximo de 5MB`);
+                    }
+                    
+                    const base64 = await comprimirYConvertirImagen(file.originFileObj, 800, 600, 0.8);
+                    console.log('  -> Convertido exitosamente, tamaño:', base64.length);
+                    fotosBase64.push(base64);
+                }
+            }
+
+            console.log('Total de fotos procesadas:', fotosBase64.length);
+
+            // Convertir audio solo si es nuevo
+            let audioBase64 = '';
+            if (audioFile.length > 0) {
+                console.log('Procesando audio...');
+                if (audioFile[0].url) {
+                    console.log('  -> Audio existente');
+                    audioBase64 = audioFile[0].url;
+                } else if (audioFile[0].originFileObj) {
+                    console.log('  -> Audio nuevo, convirtiendo...');
+                    if (!validarTamañoArchivo(audioFile[0].originFileObj, 10)) {
+                        throw new Error('El archivo de audio supera el tamaño máximo de 10MB');
+                    }
+                    audioBase64 = await convertirAudioABase64(audioFile[0].originFileObj);
+                    console.log('  -> Audio convertido, tamaño:', audioBase64.length);
+                }
             }
 
             const dataToSubmit = {
@@ -141,19 +166,30 @@ const GestionDeAtracciones = () => {
                 audioUrl: audioBase64
             };
 
+            console.log('Datos a enviar:', {
+                nombre: dataToSubmit.nombre,
+                estado: dataToSubmit.estado,
+                cantidadFotos: dataToSubmit.fotos.length,
+                tieneAudio: !!dataToSubmit.audioUrl,
+                primeraFotoTamaño: dataToSubmit.fotos[0]?.length || 0
+            });
+
             if (modoEdicion && atraccionEditando) {
+                console.log('Actualizando atracción ID:', atraccionEditando);
                 await actualizarAtraccion(atraccionEditando, dataToSubmit);
                 message.success('Atracción actualizada exitosamente!');
             } else {
+                console.log('Creando nueva atracción');
                 await crearAtraccion(dataToSubmit);
                 message.success(`Atracción creada como ${estado}!`);
             }
 
+            console.log('=== GUARDADO EXITOSO ===');
             resetForm();
             setModalVisible(false);
             cargarAtracciones();
         } catch (error) {
-            console.error('Error al guardar:', error);
+            console.error('=== ERROR EN GUARDADO ===', error);
             message.error(error.message || 'Error al guardar la atracción');
         } finally {
             setLoading(false);
@@ -161,6 +197,8 @@ const GestionDeAtracciones = () => {
     };
 
     const handleEditar = (atraccion) => {
+        console.log('Editando atracción:', atraccion);
+        
         setFormData({
             nombre: atraccion.nombre || '',
             categoria: atraccion.categoria || '',
@@ -176,26 +214,34 @@ const GestionDeAtracciones = () => {
             servicios: atraccion.servicios || ''
         });
         
-        // Cargar imágenes existentes
-        if (atraccion.fotos && Array.isArray(atraccion.fotos)) {
-            const existingFiles = atraccion.fotos.map((foto, index) => ({
-                uid: `existing-${index}`,
-                name: `imagen-${index}.jpg`,
-                status: 'done',
-                url: foto,
-                thumbUrl: foto
-            }));
+        // Cargar imágenes existentes (ya están en Base64)
+        if (atraccion.fotos && Array.isArray(atraccion.fotos) && atraccion.fotos.length > 0) {
+            const existingFiles = atraccion.fotos
+                .filter(foto => foto && foto !== '') // Filtrar fotos vacías o null
+                .map((foto, index) => ({
+                    uid: `existing-${index}-${Date.now()}`,
+                    name: `imagen-${index + 1}.jpg`,
+                    status: 'done',
+                    url: foto, // La foto ya está en Base64
+                    thumbUrl: foto // Usar la misma imagen Base64 para el thumbnail
+                }));
+            
+            console.log('Fotos cargadas:', existingFiles.length);
             setFileList(existingFiles);
+        } else {
+            setFileList([]);
         }
 
-        // Cargar audio existente
-        if (atraccion.audioUrl) {
+        // Cargar audio existente (ya está en Base64)
+        if (atraccion.audioUrl && atraccion.audioUrl !== '') {
             setAudioFile([{
-                uid: 'existing-audio',
+                uid: `existing-audio-${Date.now()}`,
                 name: 'audio.mp3',
                 status: 'done',
-                url: atraccion.audioUrl
+                url: atraccion.audioUrl // El audio ya está en Base64
             }]);
+        } else {
+            setAudioFile([]);
         }
 
         setModoEdicion(true);
@@ -231,12 +277,16 @@ const GestionDeAtracciones = () => {
 
     const uploadProps = {
         onRemove: (file) => {
+            console.log('Removiendo archivo:', file.name);
             const index = fileList.indexOf(file);
             const newFileList = fileList.slice();
             newFileList.splice(index, 1);
             setFileList(newFileList);
+            console.log('Archivos restantes:', newFileList.length);
         },
         beforeUpload: (file) => {
+            console.log('Agregando archivo:', file.name, 'Tamaño:', file.size);
+            
             // Validar tipo de archivo
             const isImage = file.type.startsWith('image/');
             if (!isImage) {
@@ -250,8 +300,20 @@ const GestionDeAtracciones = () => {
                 return false;
             }
 
-            setFileList([...fileList, file]);
-            return false;
+            const newFile = {
+                uid: `new-${Date.now()}-${Math.random()}`,
+                name: file.name,
+                status: 'done',
+                originFileObj: file
+            };
+
+            setFileList(prev => {
+                const updated = [...prev, newFile];
+                console.log('FileList actualizado, total:', updated.length);
+                return updated;
+            });
+            
+            return false; // Prevent auto upload
         },
         fileList,
         listType: "picture-card",
