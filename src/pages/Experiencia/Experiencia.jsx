@@ -38,100 +38,6 @@ function Experiencia() {
       backgroundRepeat: 'no-repeat',
       backgroundAttachment: 'fixed'
     }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '15px 5%',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <path d="M20 5L15 15L20 20L25 15L20 5Z" fill="#16a085"/>
-            <path d="M12 20L8 28L20 35L32 28L28 20L20 25L12 20Z" fill="#16a085"/>
-          </svg>
-          <div>
-            <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#2c3e50', lineHeight: '1.2' }}>
-              SIERRA
-            </div>
-            <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#2c3e50', lineHeight: '1.2' }}>
-              EXPLORA
-            </div>
-          </div>
-        </div>
-        <div style={{ position: 'relative' }} ref={menuRef}>
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '28px',
-              cursor: 'pointer',
-              padding: '5px'
-            }}
-          >
-            ☰
-          </button>
-
-          {/* Menú desplegable */}
-          {menuOpen && (
-            <div style={{
-              position: 'absolute',
-              top: '45px',
-              right: '0',
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              minWidth: '200px',
-              zIndex: 1000,
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                padding: '15px',
-                borderBottom: '1px solid #ecf0f1'
-              }}>
-                <div style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#2c3e50',
-                  marginBottom: '5px'
-                }}>
-                  {user?.firstName} {user?.lastName}
-                </div>
-                <div style={{
-                  fontSize: '12px',
-                  color: '#7f8c8d'
-                }}>
-                  {user?.email}
-                </div>
-              </div>
-
-              <button
-                onClick={logout}
-                style={{
-                  width: '100%',
-                  padding: '12px 15px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  color: '#e74c3c',
-                  fontWeight: '600',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#fff5f5'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-              >
-                Cerrar Sesión
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Hero Section */}
       <div style={{
         flex: 1,
@@ -140,7 +46,7 @@ function Experiencia() {
         justifyContent: 'center',
         alignItems: 'center',
         padding: '40px 20px',
-        minHeight: 'calc(100vh - 80px)',
+        minHeight: '100vh',
         overflow: 'auto'
       }}>
         <div style={{
@@ -232,7 +138,7 @@ function Experiencia() {
             minWidth: '200px',
             justifyContent: 'center'
           }}
-          onClick={() => navigate('/atracciones')}
+          onClick={() => navigate('/experiencia/mapa')}
           onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
           onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
           >

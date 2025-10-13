@@ -12,23 +12,33 @@ export const crearAtraccion = async (atraccionData) => {
     }
 };
 
-// Obtener todas las atracciones con filtros opcionales
-export const obtenerAtracciones = async (filtros = {}) => {
+// Obtener todas las atracciones SIN filtros en el servidor
+export const obtenerAtracciones = async () => {
     try {
-        const params = new URLSearchParams();
-        
-        if (filtros.estado) params.append('estado', filtros.estado);
-        if (filtros.categoria) params.append('categoria', filtros.categoria);
-        if (filtros.nivelDificultad) params.append('nivelDificultad', filtros.nivelDificultad);
-
-        const queryString = params.toString();
-        const url = queryString ? `/atracciones?${queryString}` : '/atracciones';
-        
-        const response = await api.get(url);
+        const response = await api.get('/atracciones');
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener las atracciones' };
     }
+};
+
+// Obtener atracciones con filtros aplicados en el CLIENTE
+export const obtenerAtraccionesFiltradas = (atracciones, filtros = {}) => {
+    let resultado = [...atracciones];
+    
+    if (filtros.estado) {
+        resultado = resultado.filter(a => a.estado === filtros.estado);
+    }
+    
+    if (filtros.categoria) {
+        resultado = resultado.filter(a => a.categoria === filtros.categoria);
+    }
+    
+    if (filtros.nivelDificultad) {
+        resultado = resultado.filter(a => a.nivelDificultad === filtros.nivelDificultad);
+    }
+    
+    return resultado;
 };
 
 // Obtener una atracción por ID
@@ -91,13 +101,12 @@ export const obtenerEstadisticas = async () => {
     }
 };
 
-// Subir imagen (función auxiliar para manejar la carga de imágenes)
+// Subir imagen
 export const subirImagen = async (file) => {
     try {
         const formData = new FormData();
         formData.append('imagen', file);
         
-        // Esta ruta debe configurarse en el backend si deseas manejar uploads
         const response = await api.post('/atracciones/upload-imagen', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -109,13 +118,12 @@ export const subirImagen = async (file) => {
     }
 };
 
-// Subir audio (función auxiliar para manejar la carga de audio)
+// Subir audio
 export const subirAudio = async (file) => {
     try {
         const formData = new FormData();
         formData.append('audio', file);
         
-        // Esta ruta debe configurarse en el backend si deseas manejar uploads
         const response = await api.post('/atracciones/upload-audio', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -130,6 +138,7 @@ export const subirAudio = async (file) => {
 export default {
     crearAtraccion,
     obtenerAtracciones,
+    obtenerAtraccionesFiltradas,
     obtenerAtraccionPorId,
     actualizarAtraccion,
     eliminarAtraccion,

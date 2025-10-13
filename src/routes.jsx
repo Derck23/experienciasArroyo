@@ -10,7 +10,10 @@ import GestionDeRestaurantes from "./pages/Admin/GestionDeRestaurantes";
 import GestionDePlatillos from "./pages/Admin/GestionDePlatillos";
 import GestionDeAtracciones from "./pages/Admin/GestionDeAtracciones";
 import AdminLayout from "./pages/Admin/AdminLayout";
+import MainLayout from "./components/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ListaAtacciones from "./pages/AtraccionTuristicas/ListaAtacciones";
+import MapadeAtracciones from "./pages/AtraccionTuristicas/MapadeAtracciones";
 
 function AppRoutes() {
   return (
@@ -21,12 +24,43 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
 
-        {/* Rutas protegidas - Usuario normal */}
+        {/* Rutas de usuario con MainLayout */}
         <Route
           path="/experiencia"
           element={
             <ProtectedRoute>
-              <Experiencia />
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Experiencia />} />
+          <Route path="mapa" element={<MapadeAtracciones />} />
+          <Route path="inicio" element={<Experiencia />} />
+          <Route path="atracciones" element={<ListaAtacciones />} />
+          <Route
+            path="eventos"
+            element={
+              <div className="coming-soon">
+                Eventos - Próximamente
+              </div>
+            }
+          />
+          <Route
+            path="servicios"
+            element={
+              <div className="coming-soon">
+                Servicios - Próximamente
+              </div>
+            }
+          />
+        </Route>
+
+        {/* Ruta de mapa standalone (si la necesitas sin layout) */}
+        <Route
+          path="/atracciones"
+          element={
+            <ProtectedRoute>
+              <MapadeAtracciones />
             </ProtectedRoute>
           }
         />

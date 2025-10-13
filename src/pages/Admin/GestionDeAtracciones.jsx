@@ -18,6 +18,7 @@ import {
     ReloadOutlined
 } from '@ant-design/icons';
 import { crearAtraccion, obtenerAtracciones, actualizarAtraccion, eliminarAtraccion, cambiarEstadoAtraccion } from '../../service/atraccionService';
+import { comprimirYConvertirImagen, convertirAudioABase64, validarTamañoArchivo } from '../../utils/imageUtils';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -56,7 +57,8 @@ const GestionDeAtracciones = () => {
         setLoading(true);
         try {
             const response = await obtenerAtracciones();
-            setAtracciones(response.data || []);
+            // Cambiado: response ya ES la data, no necesita .data
+            setAtracciones(response || []);
         } catch (error) {
             message.error(error.message || 'Error al cargar las atracciones');
         } finally {
@@ -109,11 +111,34 @@ const GestionDeAtracciones = () => {
 
         setLoading(true);
         try {
+            // Convertir imágenes a Base64
+            const fotosBase64 = await Promise.all(
+                fileList.map(async (file) => {
+                    if (file.originFileObj) {
+                        // Validar tamaño antes de convertir
+                        if (!validarTamañoArchivo(file.originFileObj, 5)) {
+                            throw new Error(`La imagen ${file.name} supera el tamaño máximo de 5MB`);
+                        }
+                        return await comprimirYConvertirImagen(file.originFileObj, 800, 600, 0.8);
+                    }
+                    return file.url || file.thumbUrl;
+                })
+            );
+
+            // Convertir audio a Base64
+            let audioBase64 = '';
+            if (audioFile.length > 0 && audioFile[0].originFileObj) {
+                if (!validarTamañoArchivo(audioFile[0].originFileObj, 10)) {
+                    throw new Error('El archivo de audio supera el tamaño máximo de 10MB');
+                }
+                audioBase64 = await convertirAudioABase64(audioFile[0].originFileObj);
+            }
+
             const dataToSubmit = {
                 ...formData,
                 estado,
-                fotos: fileList.map(f => f.thumbUrl || f.url || ''),
-                audioUrl: audioFile.length > 0 ? audioFile[0].thumbUrl || '' : ''
+                fotos: fotosBase64,
+                audioUrl: audioBase64
             };
 
             if (modoEdicion && atraccionEditando) {
@@ -128,6 +153,7 @@ const GestionDeAtracciones = () => {
             setModalVisible(false);
             cargarAtracciones();
         } catch (error) {
+            console.error('Error al guardar:', error);
             message.error(error.message || 'Error al guardar la atracción');
         } finally {
             setLoading(false);
@@ -149,6 +175,29 @@ const GestionDeAtracciones = () => {
             nivelDificultad: atraccion.nivelDificultad || '',
             servicios: atraccion.servicios || ''
         });
+        
+        // Cargar imágenes existentes
+        if (atraccion.fotos && Array.isArray(atraccion.fotos)) {
+            const existingFiles = atraccion.fotos.map((foto, index) => ({
+                uid: `existing-${index}`,
+                name: `imagen-${index}.jpg`,
+                status: 'done',
+                url: foto,
+                thumbUrl: foto
+            }));
+            setFileList(existingFiles);
+        }
+
+        // Cargar audio existente
+        if (atraccion.audioUrl) {
+            setAudioFile([{
+                uid: 'existing-audio',
+                name: 'audio.mp3',
+                status: 'done',
+                url: atraccion.audioUrl
+            }]);
+        }
+
         setModoEdicion(true);
         setAtraccionEditando(atraccion.id);
         setModalVisible(true);
@@ -188,6 +237,19 @@ const GestionDeAtracciones = () => {
             setFileList(newFileList);
         },
         beforeUpload: (file) => {
+            // Validar tipo de archivo
+            const isImage = file.type.startsWith('image/');
+            if (!isImage) {
+                message.error('Solo puedes subir archivos de imagen!');
+                return false;
+            }
+
+            // Validar tamaño
+            if (!validarTamañoArchivo(file, 5)) {
+                message.error('La imagen no debe superar los 5MB!');
+                return false;
+            }
+
             setFileList([...fileList, file]);
             return false;
         },
@@ -207,6 +269,13 @@ const GestionDeAtracciones = () => {
                 message.error('Solo puedes subir archivos de audio!');
                 return false;
             }
+
+            // Validar tamaño del audio
+            if (!validarTamañoArchivo(file, 10)) {
+                message.error('El audio no debe superar los 10MB!');
+                return false;
+            }
+
             setAudioFile([file]);
             return false;
         },
