@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import imagenHome from '../../assets/imagenHome.jpg';
 import { logout, getCurrentUser } from '../../utils/auth';
 
-function Experiencia() {
+function Restaurante() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const user = getCurrentUser();
@@ -162,99 +162,9 @@ function Experiencia() {
             marginBottom: '30px',
             fontWeight: '600'
           }}>
-            Explora por Categoría
+            Explora por Los diferentes restaurantes
           </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: '20px',
-            marginBottom: '30px'
-          }}>
-            <div style={{
-              backgroundColor: 'white',
-              padding: '25px 20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-            }}
-            >
-              <div style={{ fontSize: 'clamp(35px, 5vw, 50px)', marginBottom: '10px', color: '#16a085' }}>⛰️</div>
-              <div style={{ fontSize: 'clamp(13px, 2vw, 16px)', color: '#2c3e50', fontWeight: '600' }}>Tours</div>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              padding: '25px 20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-            }}
-            >
-              <div style={{ fontSize: 'clamp(35px, 5vw, 50px)', marginBottom: '10px', color: '#16a085' }}>🏠</div>
-              <div style={{ fontSize: 'clamp(13px, 2vw, 16px)', color: '#2c3e50', fontWeight: '600' }}>Alojamientos</div>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              padding: '25px 20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-            }}onClick={() => navigate('/experiencia/restaurante')}
-            >
-              <div style={{ fontSize: 'clamp(35px, 5vw, 50px)', marginBottom: '10px', color: '#e67e22' }}>🍴</div>{/* servicio de restaurantes*/}
-              <div style={{ fontSize: 'clamp(13px, 2vw, 16px)', color: '#2c3e50', fontWeight: '600' }} >Gastronomía</div>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              padding: '25px 20px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-            }}
-            >
-              <div style={{ fontSize: 'clamp(35px, 5vw, 50px)', marginBottom: '10px', color: '#3498db' }}>🏄</div>
-              <div style={{ fontSize: 'clamp(13px, 2vw, 16px)', color: '#2c3e50', fontWeight: '600' }}>Actividades</div>
-            </div>
-          </div>
+          
 
           {/* Social Icons */}
           <div style={{
@@ -309,4 +219,4 @@ function Experiencia() {
   );
 }
 
-export default Experiencia;
+export default Restaurante;

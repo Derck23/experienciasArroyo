@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { logout, getCurrentUser } from '../../utils/auth';
 import './Header.css';
+import { FaHouseUser } from "react-icons/fa";
 
 const Header = ({ searchTerm, onSearchChange }) => {
     const location = useLocation();
@@ -71,7 +72,7 @@ EXPLORA</h2>
                     <div 
                         className="avatar-header"
                         onClick={() => setMenuOpen(!menuOpen)}
-                    ></div>
+                    ><div style={{ fontSize: 'clamp(33px, 1vw, 30px)', alignItems: 'center', marginBottom: '10px', color: '#dfd9cfff' }}><FaHouseUser /></div>{/*<div style={{ fontSize: 'clamp(25px, 5vw, 20px)', marginBottom: '10px', color: '#16a085' }}>🏠</div>*/}</div>
 
                     {/* Menú desplegable */}
                     {menuOpen && (
@@ -90,7 +91,7 @@ EXPLORA</h2>
                             <button
                                 onClick={handleLogout}
                                 className="user-menu-logout"
-                            >
+                            >   
                                 <span className="logout-icon">🚪</span>
                                 <span>Cerrar Sesión</span>
                             </button>
