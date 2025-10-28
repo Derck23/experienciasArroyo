@@ -15,6 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ListaAtacciones from "./pages/AtraccionTuristicas/ListaAtacciones";
 import MapadeAtracciones from "./pages/AtraccionTuristicas/MapadeAtracciones";
 import Restaurante from "./pages/Restaurantes/Restaurante";
+import InfoRestaurante from "./pages/Restaurantes/InfoRestaurante";
 
 function AppRoutes() {
   return (
@@ -39,6 +40,7 @@ function AppRoutes() {
           <Route path="inicio" element={<Experiencia />} />
           <Route path="atracciones" element={<ListaAtacciones />} />
           <Route path="restaurante" element={<Restaurante />} />
+          <Route path="restaurante/:id" element={<InfoRestaurante />} />
           <Route
             path="eventos"
             element={

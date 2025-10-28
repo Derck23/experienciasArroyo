@@ -119,7 +119,7 @@ function Restaurante() {
         </div>
 
         {/* Action Buttons */}
-        <div style={{
+        {/*<div style={{
           display: 'flex',
           gap: '12px',
           flexWrap: 'wrap',
@@ -191,7 +191,7 @@ function Restaurante() {
           >
             📍 Mapa de Atracciones
           </button>
-        </div>
+        </div>*/}
 
         {/* Categories Section */}
         <div style={{
@@ -464,7 +464,27 @@ function Restaurante() {
                       � Ver en el mapa
                     </a>
                   )}
+                  <div style={{ fontSize: '14px', color: '#34495e', lineHeight: '1.6' }}>
+                    <a 
+                      href="#" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(`/experiencia/restaurante/${restaurant.id}`);
+                      }}
+                      style={{ 
+                        color: '#16a085', 
+                        textDecoration: 'none',
+                        fontWeight: '600',
+                        transition: 'color 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = '#138d75'}
+                      onMouseLeave={(e) => e.target.style.color = '#16a085'}
+                    >
+                      Ver más información →
+                    </a>
+                  </div>
                 </div>
+                
               ))}
             </div>
           )}
