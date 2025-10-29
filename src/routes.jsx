@@ -14,6 +14,7 @@ import MainLayout from "./components/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ListaAtacciones from "./pages/AtraccionTuristicas/ListaAtacciones";
 import MapadeAtracciones from "./pages/AtraccionTuristicas/MapadeAtracciones";
+import ListaEventos from "./pages/Eventos/ListaEventos";
 import Restaurante from "./pages/Restaurantes/Restaurante";
 import InfoRestaurante from "./pages/Restaurantes/InfoRestaurante";
 
@@ -44,9 +45,7 @@ function AppRoutes() {
           <Route
             path="eventos"
             element={
-              <div className="coming-soon">
-                Eventos - Próximamente
-              </div>
+                <ListaEventos />
             }
           />
           <Route
@@ -78,6 +77,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
+        {/* Rutas Lista de Eventos */}
+        <Route
+            path="eventos"
+            element={
+                <ListaEventos />
+            }
+        />
+
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<GestionDeUsuarios />} />
           <Route path="restaurants" element={<GestionDeRestaurantes />} />
