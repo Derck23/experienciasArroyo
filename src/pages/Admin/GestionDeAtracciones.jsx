@@ -580,11 +580,13 @@ const GestionDeAtracciones = () => {
                                     size="large"
                                     style={{ width: '100%' }}
                                 >
-                                    <Option value="cascada">🌊 Cascada</Option>
+                                    {/*<Option value="cascada">🌊 Cascada</Option>
                                     <Option value="mirador">🏔️ Mirador</Option>
                                     <Option value="cueva">🕳️ Cueva</Option>
                                     <Option value="observatorio">🔭 Observatorio</Option>
-                                    <Option value="sitio-historico">🏛️ Sitio Histórico</Option>
+                                    <Option value="sitio-historico">🏛️ Sitio Histórico</Option>*/}
+                                    <Option value="actividad">🏄 Actividad</Option>
+                                    <Option value="tour">🏔️ Tour</Option>
                                 </Select>
                             </Space>
                         </Col>
