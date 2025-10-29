@@ -365,7 +365,9 @@ const GestionDeAtracciones = () => {
                     'mirador': '🏔️',
                     'cueva': '🕳️',
                     'observatorio': '🔭',
-                    'sitio-historico': '🏛️'
+                    'sitio-historico': '🏛️',
+                    'actividad': '🏄',
+                    'tour': '🏔️'
                 };
                 return `${emoji[categoria] || ''} ${categoria}`;
             }
