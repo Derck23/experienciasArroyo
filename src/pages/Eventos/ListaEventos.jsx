@@ -10,153 +10,10 @@ import {
     UnorderedListOutlined,
     EnvironmentFilled
 } from '@ant-design/icons';
+import { obtenerEventos } from '../../service/eventoService';
 import './ListaEventos.css';
 
 const { Option } = Select;
-
-// 🎭 DATOS MOCK - Simulación de eventos
-const EVENTOS_MOCK = [
-    {
-        id: 1,
-        nombre: "Festival de Música Electrónica",
-        descripcion: "Los mejores DJs nacionales e internacionales en un evento inolvidable",
-        categoria: "conciertos",
-        fecha: "2025-11-25",
-        hora: "20:00",
-        ubicacion: "Foro Sol, Ciudad de México",
-        precio: 1200,
-        imagen: "https://lh3.googleusercontent.com/aida-public/AB6AXuC4KFINh0OvSFNYk-PrGSbjWEt9QO0P3LWdxWMyU6g8N8Snw1oLUg0xGeiTMLo3IcRM0r0SERmat3kaCvimEgFcxoYrhdm3Nw-cpTfb6LQDEabe8FH4JhorweqxPm7GU8-DPN1BWznCN_cpbVkfti9Du_5eWqiFuJamtGlsqBME7icuAGXoXsU4OhQYRwLQ6d5uYnVCCOyyabc1ocm-NQWwQGw8nYE5SNwnVz9P_lt2iCSJ-XWE6qBwBb-8iAFAeGqCaf7NSkNTE4wi",
-        estado: "activo",
-        asistentes: 450,
-        destacado: false
-    },
-    {
-        id: 2,
-        nombre: "Exposición de Arte Moderno",
-        descripcion: "Descubre las obras más innovadoras del arte contemporáneo",
-        categoria: "cultural",
-        fecha: "2025-11-26",
-        hora: "11:00",
-        ubicacion: "Museo de Arte Contemporáneo",
-        precio: 0,
-        imagen: "https://lh3.googleusercontent.com/aida-public/AB6AXuAPVsBqJZC14IQU-AiwsD94Lu2Wg4kvWYb3LkmY44I9KnUNFzLpbw4thfO4y_O1_NMhjZ1gKroX9WW6CtAnsM1XlFa3S9c8srpkrS6_6UZrejN3Wu8vXOq8kaVU7AglkfDeXoZ2645nax7grfyH9PL6T_zrolybmx8GIwvSoLbAXOMF2IMV89CX8-91dUKFVASDRI4PIWwlBJet031pSz-zhyaEgEwghBdMiRuZE9XN5ShkjPrww1MtoD6m6XCzqeATpNUPrJQTfyzE",
-        estado: "activo",
-        asistentes: 320,
-        destacado: true
-    },
-    {
-        id: 3,
-        nombre: "Festival Gastronómico 'Sabores del Mundo'",
-        descripcion: "Una experiencia culinaria única con chefs reconocidos internacionalmente",
-        categoria: "gastronomia",
-        fecha: "2025-12-01",
-        hora: "14:00",
-        ubicacion: "Parque Bicentenario",
-        precio: 500,
-        imagen: "https://lh3.googleusercontent.com/aida-public/AB6AXuB5Am3QBRzQ6RtH4DJLcI3sCICCE3Yj9Vz1Ki6o_pzub-d93G-tS4EdgySfAZ6xCnkj9XPYxRBmAjRJfnUvHPNShDEnl1bodeh8lnPqnIsRF9JD3mh2M_f5NkWlXM-UuCahVlfiFgBDLwTVEC2hoshe5dRUKQ9GFw3DpDyKHvVFI4iMtPMnkzSrEHq49E2N8aA0gN_00BkQ6EZ36Hz4YgZzX-U4k_XPX-TJHdSOorbacp9AZ8ftbaVw3yxPSqS8UNlWEHiQKP0RSyxQ",
-        estado: "activo",
-        asistentes: 280,
-        destacado: false
-    },
-    {
-        id: 4,
-        nombre: "Maratón de la Sierra Gorda",
-        descripcion: "Corre por los paisajes más hermosos de la región",
-        categoria: "deportivo",
-        fecha: "2025-12-05",
-        hora: "07:00",
-        ubicacion: "Arroyo Seco, Querétaro",
-        precio: 350,
-        imagen: "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800",
-        estado: "activo",
-        asistentes: 520,
-        destacado: false
-    },
-    {
-        id: 5,
-        nombre: "Concierto de Rock en Vivo",
-        descripcion: "Las mejores bandas de rock nacional en un solo escenario",
-        categoria: "conciertos",
-        fecha: "2025-12-10",
-        hora: "19:00",
-        ubicacion: "Plaza de la Constitución",
-        precio: 0,
-        imagen: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800",
-        estado: "activo",
-        asistentes: 890,
-        destacado: true
-    },
-    {
-        id: 6,
-        nombre: "Taller de Cocina Tradicional",
-        descripcion: "Aprende los secretos de la cocina queretana con chefs locales",
-        categoria: "gastronomia",
-        fecha: "2025-12-15",
-        hora: "10:00",
-        ubicacion: "Casa de la Cultura",
-        precio: 250,
-        imagen: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800",
-        estado: "activo",
-        asistentes: 45,
-        destacado: false
-    },
-    {
-        id: 7,
-        nombre: "Festival de Danza Folklórica",
-        descripcion: "Celebra la riqueza cultural con danzas tradicionales",
-        categoria: "cultural",
-        fecha: "2025-12-18",
-        hora: "17:00",
-        ubicacion: "Teatro Municipal",
-        precio: 150,
-        imagen: "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?w=800",
-        estado: "activo",
-        asistentes: 210,
-        destacado: false
-    },
-    {
-        id: 8,
-        nombre: "Torneo de Fútbol Rápido",
-        descripcion: "Competencia deportiva para todas las edades",
-        categoria: "deportivo",
-        fecha: "2025-12-20",
-        hora: "09:00",
-        ubicacion: "Unidad Deportiva Municipal",
-        precio: 0,
-        imagen: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800",
-        estado: "activo",
-        asistentes: 160,
-        destacado: false
-    },
-    {
-        id: 9,
-        nombre: "Noche de Jazz bajo las Estrellas",
-        descripcion: "Una velada mágica con los mejores exponentes del jazz",
-        categoria: "conciertos",
-        fecha: "2025-12-22",
-        hora: "20:30",
-        ubicacion: "Jardín Zenea",
-        precio: 400,
-        imagen: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=800",
-        estado: "activo",
-        asistentes: 180,
-        destacado: true
-    },
-    {
-        id: 10,
-        nombre: "Feria de Artesanías",
-        descripcion: "Conoce el trabajo de artesanos locales y lleva un recuerdo único",
-        categoria: "cultural",
-        fecha: "2025-12-28",
-        hora: "12:00",
-        ubicacion: "Plaza Principal",
-        precio: 0,
-        imagen: "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=800",
-        estado: "activo",
-        asistentes: 650,
-        destacado: false
-    }
-];
 
 const ListaEventos = () => {
     // Estados
@@ -180,7 +37,7 @@ const ListaEventos = () => {
     const [vistaActual, setVistaActual] = useState('lista');
     const [favoritos, setFavoritos] = useState([]);
 
-    // 🎭 Simulación de carga de datos
+    // Cargar eventos al montar
     useEffect(() => {
         cargarEventos();
     }, []);
@@ -193,12 +50,10 @@ const ListaEventos = () => {
     const cargarEventos = async () => {
         try {
             setLoading(true);
+            const data = await obtenerEventos();
 
-            // Simulamos un delay de red para que se vea más realista
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            // Usamos los datos mock
-            const eventosActivos = EVENTOS_MOCK.filter(evento =>
+            // Filtrar solo eventos activos
+            const eventosActivos = data.filter(evento =>
                 evento.estado === 'activo' || evento.estado === 'activa'
             );
 
@@ -534,7 +389,11 @@ const ListaEventos = () => {
                                         <div className="evento-image-container">
                                             <img
                                                 alt={evento.nombre}
-                                                src={evento.imagen}
+                                                src={
+                                                    evento.imagen ||
+                                                    evento.fotos?.[0] ||
+                                                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e0e0e0' width='400' height='300'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='20' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E🎉 Evento%3C/text%3E%3C/svg%3E"
+                                                }
                                                 className="evento-image"
                                             />
                                             <Button
@@ -559,12 +418,12 @@ const ListaEventos = () => {
 
                                     <div className="evento-info">
                                         <CalendarOutlined />
-                                        <span>{formatearFecha(evento.fecha)} - {evento.hora}h</span>
+                                        <span>{formatearFecha(evento.fecha)} - {evento.hora || '00:00'}h</span>
                                     </div>
 
                                     <div className="evento-info">
                                         <EnvironmentOutlined />
-                                        <span>{evento.ubicacion}</span>
+                                        <span>{evento.ubicacion || 'Ubicación por confirmar'}</span>
                                     </div>
 
                                     <div className="evento-footer">
