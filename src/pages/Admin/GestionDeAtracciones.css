@@ -1,0 +1,331 @@
+:root{
+  --green-600: #43a047;
+  --green-400: #66bb6a;
+  --title-color: #2e7d32;
+  --muted: #666666;
+  --card-radius: 16px;
+  --card-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  --accent-gradient: linear-gradient(135deg, var(--green-400) 0%, var(--green-600) 100%);
+  --panel-border: rgba(102, 187, 106, 0.2);
+}
+
+/* Container and Card */
+.gestion-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.gestion-card {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--panel-border);
+}
+
+.gestion-card .ant-card-body {
+  padding: 24px;
+}
+
+/* Header inside card */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.card-title .title-main {
+  margin: 0;
+  color: var(--title-color) !important;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.card-title .subtitle {
+  display: block;
+  color: var(--muted);
+}
+
+/* Actions */
+.card-actions .btn-primary {
+  background: var(--accent-gradient);
+  border: none;
+  height: 40px;
+  font-weight: 600;
+}
+
+.card-actions .ant-btn {
+  min-width: 110px;
+}
+
+/* Table */
+.gestion-table .ant-table {
+  background: transparent;
+}
+.gestion-table .ant-table-container {
+  box-shadow: none;
+}
+.gestion-table .ant-table-thead > tr > th {
+  background: transparent;
+}
+
+.actions-col .btn-edit {
+  background: var(--green-400);
+  border-color: var(--green-400);
+}
+
+/* Clickable tag */
+.clickable-tag {
+  cursor: pointer;
+}
+
+/* Modal */
+.gestion-modal .ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gestion-modal .ant-modal {
+  max-width: 95%;
+}
+
+.modal-title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: white;
+  background: var(--accent-gradient);
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Form sections */
+.form-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  margin: 0 0 12px 0 !important;
+  color: var(--title-color) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title .accent {
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--green-400), var(--green-600));
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* Labels and inputs */
+.field-label, .small-label {
+  color: #424242;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.small-label {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ant-input, .ant-select-selector, .ant-input-affix-wrapper, .ant-select {
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.ant-input:focus, .ant-select-focused .ant-select-selector, .ant-input-affix-wrapper-focused {
+  border-color: var(--green-400) !important;
+  box-shadow: 0 4px 12px rgba(102,187,106,0.12);
+}
+
+/* Map preview */
+.map-preview {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border: 3px solid #e8f5e9;
+}
+
+.map-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: transform .3s ease;
+}
+.map-image:hover { transform: scale(1.03); }
+
+.map-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255,255,255,0.95);
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* Upload panels */
+.upload-panel {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px dashed var(--green-400);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.upload-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--accent-gradient);
+  color: #fff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 12px rgba(102,187,106,0.25);
+}
+
+.upload-title {
+  font-size: 16px;
+  color: var(--title-color);
+  display: block;
+}
+.upload-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Upload button (gallery) */
+.upload-gallery .upload-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  height: 120px;
+  width: 120px;
+  border: 2px dashed var(--green-400);
+  background: white;
+  color: var(--green-600);
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.upload-gallery .upload-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(102,187,106,0.18);
+}
+
+/* Audio upload button */
+.upload-audio-btn {
+  border-radius: 8px;
+  border: 2px solid var(--green-400);
+  background: white;
+  color: var(--green-600);
+  font-weight: 600;
+}
+
+/* Modal actions buttons */
+.modal-actions .btn-outline {
+  height: 48px;
+  border-radius: 10px;
+  border: 2px solid var(--green-400);
+  color: var(--green-600);
+  font-weight: 600;
+  background: white;
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+.modal-actions .btn-outline:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(102,187,106,0.18);
+}
+.modal-actions .btn-save {
+  height: 48px;
+  border-radius: 10px;
+  background: var(--accent-gradient);
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(102,187,106,0.24);
+}
+.modal-actions .ant-btn:focus {
+  outline: none;
+}
+
+/* Spacing helpers */
+.mt-16 { margin-top: 16px; }
+
+/* Responsive rules */
+@media (max-width: 1024px) {
+  .map-preview { height: 260px; }
+  .gestion-card .ant-card-body { padding: 18px; }
+  .card-actions .ant-btn { min-width: 100px; }
+}
+
+@media (max-width: 768px) {
+  .card-header { flex-direction: column; align-items: flex-start; }
+  .map-preview { height: 220px; }
+  .upload-panel { padding: 12px; gap: 12px; }
+  .upload-gallery .upload-btn { height: 100px; width: 100px; }
+  .modal-actions { gap: 8px; }
+  .modal-actions .ant-col { width: 100%; }
+  .upload-header { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .map-preview { height: 180px; }
+  .section-title { font-size: 15px !important; }
+  .upload-icon { width: 44px; height: 44px; font-size: 20px; }
+  .upload-title { font-size: 15px; }
+  .upload-sub { font-size: 12px; }
+  .upload-gallery .upload-btn { height: 88px; width: 88px; }
+  .card-title .title-main { font-size: 18px !important; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .map-image:hover { transform: none; }
+}
+
+/* Ant Upload picture card adjustments for better mobile previews */
+.ant-upload-list-picture-card .ant-upload-list-item {
+  border-radius: 8px;
+  overflow: hidden;
+}

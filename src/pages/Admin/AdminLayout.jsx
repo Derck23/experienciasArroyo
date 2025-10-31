@@ -1,253 +1,147 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Badge } from 'antd';
+import { Layout, Menu, Avatar, Dropdown } from 'antd';
 import {
-    DashboardOutlined,
-    UserOutlined,
-    LogoutOutlined,
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-    BellOutlined,
-    SearchOutlined,
-    ThunderboltOutlined,
-    ShopOutlined,
-    AppstoreOutlined,
-    EnvironmentOutlined
+  DashboardOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  BellOutlined,
+  ShopOutlined,
+  AppstoreOutlined,
+  EnvironmentOutlined
 } from '@ant-design/icons';
 import { logout, getCurrentUser } from '../../utils/auth';
 import imagenLogin from '../../assets/imagenLogin.jpg';
+import './AdminLayout.css';
 
 const { Header, Sider, Content } = Layout;
 
 function AdminLayout() {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const user = getCurrentUser();
-    const [collapsed, setCollapsed] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const user = getCurrentUser();
+  const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileSiderVisible, setMobileSiderVisible] = useState(false); // NUEVO
 
-    const handleLogout = () => {
-        logout();
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 600;
+      setIsMobile(mobile);
+      setCollapsed(window.innerWidth < 900);
+      if (!mobile) setMobileSiderVisible(false); // Cierra el menu si sales de mobile
     };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    const userMenuItems = [
-        {
-            key: 'profile',
-            icon: <UserOutlined />,
-            label: 'Mi Perfil',
-        },
-        {
-            type: 'divider',
-        },
-        {
-            key: 'logout',
-            icon: <LogoutOutlined />,
-            label: 'Cerrar Sesión',
-            onClick: handleLogout,
-            danger: true,
-        },
-    ];
+  const handleLogout = () => {
+    logout();
+  };
 
-    const menuItems = [
-        {
-            key: '/admin/dashboard',
-            icon: <DashboardOutlined />,
-            label: 'Dashboard',
-            onClick: () => navigate('/admin/dashboard'),
-        },
-        {
-            key: '/admin/users',
-            icon: <UserOutlined />,
-            label: 'Usuarios',
-            onClick: () => navigate('/admin/users'),
-        },
-        {
-            key: '/admin/restaurants',
-            icon: <ShopOutlined />,
-            label: 'Restaurantes',
-            onClick: () => navigate('/admin/restaurants'),
-        },
-        {
-            key: '/admin/dishes',
-            icon: <AppstoreOutlined />,
-            label: 'Platillos',
-            onClick: () => navigate('/admin/dishes'),
-        },
-        {
-            key: '/admin/attractions',
-            icon: <EnvironmentOutlined />,
-            label: 'Atracciones',
-            onClick: () => navigate('/admin/attractions'),
-        },
-    ];
+  const userMenuItems = [
+    { key: 'profile', icon: <UserOutlined />, label: 'Mi Perfil' },
+    { type: 'divider' },
+    { key: 'logout', icon: <LogoutOutlined />, label: 'Cerrar Sesión', onClick: handleLogout, danger: true },
+  ];
 
-    return (
-        <Layout style={{ minHeight: '100vh' }}>
-            <Sider
-                trigger={null}
-                collapsible
-                collapsed={collapsed}
-                width={240}
-                collapsedWidth={80}
-                style={{
-                    background: 'linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%)',
-                    boxShadow: '2px 0 8px rgba(0,0,0,0.08)',
-                }}
+  const menuItems = [
+    { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Dashboard', onClick: () => navigate('/admin/dashboard') },
+    { key: '/admin/users', icon: <UserOutlined />, label: 'Usuarios', onClick: () => navigate('/admin/users') },
+    { key: '/admin/restaurants', icon: <ShopOutlined />, label: 'Restaurantes', onClick: () => navigate('/admin/restaurants') },
+    { key: '/admin/dishes', icon: <AppstoreOutlined />, label: 'Platillos', onClick: () => navigate('/admin/dishes') },
+    { key: '/admin/attractions', icon: <EnvironmentOutlined />, label: 'Atracciones', onClick: () => navigate('/admin/attractions') },
+  ];
+
+  // NUEVO: Función para abrir/cerrar el menú en móvil
+  const handleMobileMenuToggle = () => {
+    setMobileSiderVisible(!mobileSiderVisible);
+  };
+
+  return (
+    <Layout className="admin-layout">
+      {/* Sider como overlay solo en móviles */}
+      <Sider
+        className={`admin-sider${isMobile ? ' admin-sider--mobile' : ''}${mobileSiderVisible ? ' admin-sider--visible' : ''}`}
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        breakpoint="md"
+        onBreakpoint={(broken) => setCollapsed(broken)}
+        width={240}
+        collapsedWidth={80}
+        style={isMobile ? { position: 'fixed', left: 0, top: 0, height: '100vh', zIndex: 1200, boxShadow: mobileSiderVisible ? '2px 0 8px rgba(0,0,0,0.18)' : 'none', display: mobileSiderVisible ? 'block' : 'none' } : {}}
+      >
+        <div className={`brand ${collapsed ? 'brand--collapsed' : ''}`}>
+          <div className="brand__logo">
+            <DashboardOutlined />
+          </div>
+          <span className="brand__title">Arroyo Seco</span>
+        </div>
+
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          className="sidebar-menu"
+        />
+      </Sider>
+
+      {/* Overlay para cerrar el Sider tocando fuera */}
+      {isMobile && mobileSiderVisible && (
+        <div
+          className="admin-sider-overlay"
+          onClick={() => setMobileSiderVisible(false)}
+          tabIndex={-1}
+        />
+      )}
+
+      <Layout className="admin-main">
+        <Header className="admin-header" role="banner">
+          <div className="admin-header__left">
+            {/* Botón SIEMPRE visible en mobile para mostrar/ocultar el menú */}
+            <button
+              aria-label={mobileSiderVisible ? 'Cerrar menú lateral' : 'Abrir menú lateral'}
+              aria-disabled={false}
+              title={mobileSiderVisible ? 'Cerrar menú lateral' : 'Abrir menú lateral'}
+              className="toggle-button"
+              onClick={isMobile ? handleMobileMenuToggle : () => setCollapsed(!collapsed)}
+              type="button"
             >
-                <div
-                    style={{
-                        height: '64px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '16px',
-                        borderBottom: '1px solid rgba(76, 175, 80, 0.2)',
-                    }}
-                >
-                    {!collapsed ? (
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                        }}>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '8px',
-                                background: '#66bb6a',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                boxShadow: '0 2px 8px rgba(76, 175, 80, 0.3)',
-                            }}>
-                                <DashboardOutlined style={{ fontSize: '20px', color: '#fff' }} />
-                            </div>
-                            <span style={{ color: '#2e7d32', fontSize: '16px', fontWeight: '700' }}>
-                                Arroyo Seco
-                            </span>
-                        </div>
-                    ) : (
-                        <div style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '8px',
-                            background: '#66bb6a',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 2px 8px rgba(76, 175, 80, 0.3)',
-                        }}>
-                            <DashboardOutlined style={{ fontSize: '20px', color: '#fff' }} />
-                        </div>
-                    )}
+              {mobileSiderVisible || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </button>
+          </div>
+
+          <div className="admin-header__right">
+            <button className="icon-button" aria-label="Notificaciones">
+              <BellOutlined />
+            </button>
+
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
+              <div className="user-dropdown" role="button" tabIndex={0}>
+                <Avatar size={40} className="user-avatar" icon={<UserOutlined />} />
+                <div className="user-meta">
+                  <span className="user-name">{user?.firstName} {user?.lastName}</span>
+                  <span className="user-role">{user?.role === 'admin' ? 'Admin' : 'Usuario'}</span>
                 </div>
+              </div>
+            </Dropdown>
+          </div>
+        </Header>
 
-                <Menu
-                    mode="inline"
-                    selectedKeys={[location.pathname]}
-                    items={menuItems}
-                    style={{
-                        background: 'transparent',
-                        border: 'none',
-                        marginTop: '16px',
-                    }}
-                    className="sidebar-menu"
-                />
-            </Sider>
-
-            <Layout>
-                <Header
-                    style={{
-                        padding: '0 24px',
-                        background: 'transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        boxShadow: 'none',
-                        height: '64px',
-                        borderBottom: '1px solid rgba(0,0,0,0.06)',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
-                            style: { fontSize: '20px', cursor: 'pointer', color: '#43a047' },
-                            onClick: () => setCollapsed(!collapsed),
-                        })}
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                        <BellOutlined style={{ fontSize: '20px', cursor: 'pointer', color: '#666' }} />
-
-                        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                                cursor: 'pointer',
-                                padding: '8px',
-                                borderRadius: '8px',
-                                transition: 'background 0.3s',
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                            >
-                                <Avatar
-                                    size={40}
-                                    style={{
-                                        backgroundColor: '#66bb6a',
-                                    }}
-                                    icon={<UserOutlined />}
-                                />
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span style={{ fontWeight: '600', fontSize: '14px', color: '#333', lineHeight: '1.2' }}>
-                                        {user?.firstName} {user?.lastName}
-                                    </span>
-                                    <span style={{ fontSize: '12px', color: '#999', lineHeight: '1.2' }}>
-                                        {user?.role === 'admin' ? 'Admin' : 'Usuario'}
-                                    </span>
-                                </div>
-                            </div>
-                        </Dropdown>
-                    </div>
-                </Header>
-
-                <Content
-                    style={{
-                        padding: '32px',
-                        minHeight: 280,
-                        backgroundImage: `linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url(${imagenLogin})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundAttachment: 'fixed',
-                    }}
-                >
-                    <Outlet />
-                </Content>
-            </Layout>
-
-            <style>{`
-                .sidebar-menu .ant-menu-item {
-                    margin: 4px 8px;
-                    border-radius: 8px;
-                    color: #2e7d32;
-                    font-weight: 500;
-                }
-                .sidebar-menu .ant-menu-item-selected {
-                    background-color: #66bb6a !important;
-                    color: #fff !important;
-                }
-                .sidebar-menu .ant-menu-item-selected .ant-menu-item-icon {
-                    color: #fff !important;
-                }
-                .sidebar-menu .ant-menu-item:hover {
-                    background-color: rgba(102, 187, 106, 0.2);
-                    color: #2e7d32;
-                }
-                .sidebar-menu .ant-menu-item .ant-menu-item-icon {
-                    color: #43a047;
-                }
-            `}</style>
-        </Layout>
-    );
+        <Content
+          className="admin-content"
+          aria-live="polite"
+          style={{ ['--bg-image']: `url(${imagenLogin})` }}
+        >
+          <Outlet />
+        </Content>
+      </Layout>
+    </Layout>
+  );
 }
 
 export default AdminLayout;
