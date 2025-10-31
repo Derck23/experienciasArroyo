@@ -1,0 +1,438 @@
+/* ========================================
+   LAYOUT PRINCIPAL
+   ======================================== */
+.restaurant-service-layout {
+  min-height: 100vh;
+  height: 100vh;
+ background: linear-gradient(
+    to bottom, 
+    rgba(240, 245, 241, 0.8) 0%,  /* #f0f5f1 es rgb(240, 245, 241) */
+    rgba(255, 255, 255, 0.8) 100% /* #ffffff es rgb(255, 255, 255) */
+  );
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.restaurant-service-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px 80px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: calc(100vh + 1px);
+}
+
+/* ========================================
+   HEADER - Título y Subtítulo
+   ======================================== */
+.restaurant-service-header {
+  text-align: left;
+  margin-bottom: 30px;
+  padding: 0 10px;
+}
+
+.restaurant-service-main-title {
+  font-size: clamp(32px, 5vw, 48px) !important;
+  font-weight: 700 !important;
+  color: #1a1a1a !important;
+  margin-bottom: 10px !important;
+  line-height: 1.2 !important;
+}
+
+.restaurant-service-subtitle {
+  font-size: clamp(14px, 2.5vw, 18px);
+  color: #666;
+  display: block;
+  margin-top: 8px;
+}
+
+/* ========================================
+   FILTROS - Botones de Categorías
+   ======================================== */
+.restaurant-service-filter-section {
+  margin-bottom: 40px;
+  padding: 0 10px;
+}
+
+.restaurant-service-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.restaurant-service-filter-btn {
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 20px !important;
+  font-size: 15px;
+  font-weight: 500;
+  border: 2px solid #e0e0e0 !important;
+  background-color: white !important;
+  color: #666 !important;
+  transition: all 0.3s ease;
+}
+
+.restaurant-service-filter-btn:hover {
+  border-color: #16a085 !important;
+  color: #16a085 !important;
+  transform: translateY(-2px);
+}
+
+.restaurant-service-filter-btn.active,
+.restaurant-service-filter-btn.ant-btn-primary {
+  background-color: #16a085 !important;
+  border-color: #16a085 !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(22, 160, 133, 0.3);
+}
+
+/* ========================================
+   GRID DE TARJETAS - Sin restricción de altura
+   ======================================== */
+.restaurant-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 0 10px;
+  margin-bottom: 50px;
+  /* NO hay height fija ni overflow - se expande naturalmente */
+}
+
+/* ========================================
+   TARJETA INDIVIDUAL
+   ======================================== */
+.restaurant-service-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.restaurant-service-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Imagen y Overlay */
+.restaurant-service-card-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.restaurant-service-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.restaurant-service-card:hover .restaurant-service-card-image {
+  transform: scale(1.1);
+}
+
+.restaurant-service-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, 
+    rgba(0, 0, 0, 0) 0%, 
+    rgba(0, 0, 0, 0.3) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.restaurant-service-card:hover .restaurant-service-card-overlay {
+  opacity: 1;
+}
+
+.restaurant-service-card-arrow {
+  background-color: #16a085 !important;
+  border-color: #16a085 !important;
+  width: 50px !important;
+  height: 50px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.restaurant-service-card-arrow:hover {
+  background-color: #138d75 !important;
+  border-color: #138d75 !important;
+}
+
+/* Contenido de la Tarjeta */
+.restaurant-service-card-content {
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.restaurant-service-card-title {
+  font-size: clamp(18px, 2.5vw, 22px) !important;
+  font-weight: 600 !important;
+  color: #1a1a1a !important;
+  margin-bottom: 16px !important;
+  line-height: 1.3 !important;
+  min-height: 2.6em;
+}
+
+.restaurant-service-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.restaurant-service-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.restaurant-service-detail-item.clickable {
+  cursor: pointer;
+}
+
+.restaurant-service-detail-item.clickable:hover {
+  transform: translateX(5px);
+}
+
+.restaurant-service-icon {
+  font-size: 16px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.restaurant-service-icon.location {
+  color: #16a085;
+}
+
+.restaurant-service-icon.price {
+  color: #f39c12;
+}
+
+.restaurant-service-detail-text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.restaurant-service-detail-text.location {
+  color: #16a085;
+  font-weight: 500;
+}
+
+.restaurant-service-detail-text.location:hover {
+  text-decoration: underline;
+}
+
+.restaurant-service-detail-text.price {
+  color: #f39c12;
+  font-weight: 600;
+}
+
+/* ========================================
+   ESTADOS - Loading, Error, Empty
+   ======================================== */
+.restaurant-service-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 40px 20px;
+}
+
+/* ========================================
+   FOOTER - Redes Sociales
+   ======================================== */
+.restaurant-service-footer {
+  text-align: center;
+  padding: 40px 20px;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 40px;
+}
+
+.restaurant-service-social-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.restaurant-social-link {
+  font-size: 36px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.restaurant-social-link:hover {
+  transform: scale(1.2) translateY(-5px);
+}
+
+.restaurant-social-link.instagram {
+  color: #e4405f;
+}
+
+.restaurant-social-link.facebook {
+  color: #3b5998;
+}
+
+.restaurant-social-link.twitter {
+  color: #1da1f2;
+}
+
+.restaurant-service-footer-text {
+  display: block;
+  font-size: 15px;
+  color: #999;
+  font-weight: 500;
+  margin-top: 15px;
+}
+
+/* ========================================
+   OVERRIDES DE ANT DESIGN
+   ======================================== */
+.ant-btn-primary {
+  background-color: #16a085 !important;
+  border-color: #16a085 !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: #138d75 !important;
+  border-color: #138d75 !important;
+}
+
+.ant-spin-text {
+  color: #16a085 !important;
+}
+
+.ant-spin-dot-item {
+  background-color: #16a085 !important;
+}
+
+/* ========================================
+   RESPONSIVE - Mobile First
+   ======================================== */
+
+/* Tablets pequeñas */
+@media (max-width: 768px) {
+  .restaurant-service-layout {
+    height: auto; /* En tablets permitir altura automática */
+    min-height: 100vh;
+  }
+
+  .restaurant-service-content {
+    padding: 30px 15px 60px 15px;
+    min-height: auto; /* Sin forzar altura mínima */
+  }
+
+  .restaurant-service-header {
+    text-align: center;
+    margin-bottom: 25px;
+  }
+
+  .restaurant-service-filter-section {
+    margin-bottom: 30px;
+  }
+
+  .restaurant-service-filter-buttons {
+    justify-content: center;
+  }
+
+  .restaurant-service-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .restaurant-service-card-image-wrapper {
+    height: 200px;
+  }
+
+  .restaurant-social-link {
+    font-size: 32px;
+  }
+}
+
+/* Móviles */
+@media (max-width: 480px) {
+  .restaurant-service-layout {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .restaurant-service-content {
+    padding: 20px 10px 50px 10px;
+    min-height: auto;
+  }
+
+  .restaurant-service-header {
+    margin-bottom: 20px;
+  }
+
+  .restaurant-service-filter-btn {
+    height: 36px;
+    padding: 0 18px;
+    font-size: 14px;
+  }
+
+  .restaurant-service-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .restaurant-service-card-content {
+    padding: 20px;
+  }
+
+  .restaurant-service-card-image-wrapper {
+    height: 180px;
+  }
+
+  .restaurant-social-link {
+    font-size: 28px;
+  }
+}
+
+/* Desktop grande - IMPORTANTE para el scroll */
+@media (min-width: 1024px) {
+  .restaurant-service-layout {
+    height: 100vh; /* Altura fija del viewport */
+    overflow-y: scroll; /* Forzar scroll */
+  }
+
+  .restaurant-service-content {
+    min-height: auto; /* Dejar que el contenido defina la altura */
+    padding-bottom: 100px; /* Más espacio al final */
+  }
+
+  .restaurant-service-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 35px;
+  }
+}
+
+/* Desktop extra grande */
+@media (min-width: 1400px) {
+  .restaurant-service-grid {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 35px;
+  }
+}
