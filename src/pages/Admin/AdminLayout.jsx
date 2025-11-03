@@ -12,7 +12,8 @@ import {
     ThunderboltOutlined,
     ShopOutlined,
     AppstoreOutlined,
-    EnvironmentOutlined
+    EnvironmentOutlined,
+    CalendarOutlined
 } from '@ant-design/icons';
 import { logout, getCurrentUser } from '../../utils/auth';
 import imagenLogin from '../../assets/imagenLogin.jpg';
@@ -77,6 +78,12 @@ function AdminLayout() {
             icon: <EnvironmentOutlined />,
             label: 'Atracciones',
             onClick: () => navigate('/admin/attractions'),
+        },
+        {
+            key: '/admin/eventos',
+            icon: <CalendarOutlined />,
+            label: 'Eventos',
+            onClick: () => navigate('/admin/eventos'),
         },
     ];
 
