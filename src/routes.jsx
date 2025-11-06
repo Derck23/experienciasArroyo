@@ -18,6 +18,8 @@ import ListaEventos from "./pages/Eventos/ListaEventos";
 import Restaurante from "./pages/Restaurantes/Restaurante";
 import InfoRestaurante from "./pages/Restaurantes/InfoRestaurante";
 import Servicios from "./pages/Servicios/Servicios";
+import AvisoPrivacidad from "./pages/Legal/AvisoPrivacidad";
+import TerminosCondiciones from "./pages/Legal/TerminosCondiciones";
 
 function AppRoutes() {
   return (
@@ -27,6 +29,8 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
+        <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
 
         {/* Rutas de usuario con MainLayout */}
         <Route

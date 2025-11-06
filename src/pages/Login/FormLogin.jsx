@@ -184,6 +184,21 @@ function FormLogin() {
                 textDecoration: 'none'
               }}>Regístrate aquí</a>
             </p>
+            <p style={{
+              fontSize: '12px',
+              color: '#95a5a6',
+              marginTop: '10px'
+            }}>
+              <a href="/terminos-condiciones" style={{
+                color: '#16a085',
+                textDecoration: 'none'
+              }}>Términos y Condiciones</a>{' '}
+              |{' '}
+              <a href="/aviso-privacidad" style={{
+                color: '#16a085',
+                textDecoration: 'none'
+              }}>Aviso de Privacidad</a>
+            </p>
           </div>
         </Form>
       </Spin>
