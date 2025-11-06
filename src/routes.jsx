@@ -17,6 +17,7 @@ import MapadeAtracciones from "./pages/AtraccionTuristicas/MapadeAtracciones";
 import ListaEventos from "./pages/Eventos/ListaEventos";
 import Restaurante from "./pages/Restaurantes/Restaurante";
 import InfoRestaurante from "./pages/Restaurantes/InfoRestaurante";
+import Servicios from "./pages/Servicios/Servicios";
 
 function AppRoutes() {
   return (
@@ -51,9 +52,7 @@ function AppRoutes() {
           <Route
             path="servicios"
             element={
-              <div className="coming-soon">
-                Servicios - Próximamente
-              </div>
+              <Servicios />
             }
           />
         </Route>
