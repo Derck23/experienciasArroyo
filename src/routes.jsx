@@ -14,7 +14,12 @@ import MainLayout from "./components/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ListaAtacciones from "./pages/AtraccionTuristicas/ListaAtacciones";
 import MapadeAtracciones from "./pages/AtraccionTuristicas/MapadeAtracciones";
+import ListaEventos from "./pages/Eventos/ListaEventos";
 import Restaurante from "./pages/Restaurantes/Restaurante";
+import InfoRestaurante from "./pages/Restaurantes/InfoRestaurante";
+import Servicios from "./pages/Servicios/Servicios";
+import AvisoPrivacidad from "./pages/Legal/AvisoPrivacidad";
+import TerminosCondiciones from "./pages/Legal/TerminosCondiciones";
 
 function AppRoutes() {
   return (
@@ -24,6 +29,8 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
+        <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
 
         {/* Rutas de usuario con MainLayout */}
         <Route
@@ -39,20 +46,17 @@ function AppRoutes() {
           <Route path="inicio" element={<Experiencia />} />
           <Route path="atracciones" element={<ListaAtacciones />} />
           <Route path="restaurante" element={<Restaurante />} />
+          <Route path="restaurante/:id" element={<InfoRestaurante />} />
           <Route
             path="eventos"
             element={
-              <div className="coming-soon">
-                Eventos - Próximamente
-              </div>
+                <ListaEventos />
             }
           />
           <Route
             path="servicios"
             element={
-              <div className="coming-soon">
-                Servicios - Próximamente
-              </div>
+              <Servicios />
             }
           />
         </Route>
@@ -76,6 +80,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
+        {/* Rutas Lista de Eventos */}
+        <Route
+            path="eventos"
+            element={
+                <ListaEventos />
+            }
+        />
+
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<GestionDeUsuarios />} />
           <Route path="restaurants" element={<GestionDeRestaurantes />} />

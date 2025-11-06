@@ -1,0 +1,281 @@
+:root{
+  --sider-width: 240px;
+  --sider-collapsed-width: 80px;
+  --green-600: #43a047;
+  --green-400: #66bb6a;
+  --title-color: #2e7d32;
+  --text-muted: #666666;
+  --card-shadow: 2px 0 8px rgba(0,0,0,0.08);
+  --header-border: rgba(0,0,0,0.06);
+}
+
+/* Layout base */
+.admin-layout {
+  min-height: 100vh;
+  background: #f6f8f6;
+}
+
+/* Sider */
+.admin-sider {
+  background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+  box-shadow: var(--card-shadow);
+  transition: all 200ms ease;
+}
+
+/* Branding area */
+.brand{
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(76, 175, 80, 0.12);
+  box-sizing: border-box;
+  color: var(--title-color);
+  font-weight: 700;
+  font-size: 16px;
+}
+.brand__logo{
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--green-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(76,175,80,0.25);
+  color: #fff;
+  font-size: 20px;
+}
+.brand__title{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* When collapsed remove title space */
+.brand--collapsed .brand__title{
+  display: none;
+}
+
+/* Sidebar Menu styling (Antd hooks) */
+.sidebar-menu {
+  background: transparent !important;
+  border: none !important;
+  margin-top: 16px;
+  box-sizing: border-box;
+}
+
+/* Antd Menu item adjustments */
+.sidebar-menu .ant-menu-item {
+  margin: 6px 10px;
+  border-radius: 8px;
+  color: var(--title-color);
+  font-weight: 500;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.sidebar-menu .ant-menu-item:hover {
+  background-color: rgba(102,187,106,0.12);
+  color: var(--title-color);
+}
+.sidebar-menu .ant-menu-item .ant-menu-item-icon {
+  color: var(--green-600);
+}
+.sidebar-menu .ant-menu-item-selected {
+  background-color: var(--green-400) !important;
+  color: #fff !important;
+}
+.sidebar-menu .ant-menu-item-selected .ant-menu-item-icon {
+  color: #fff !important;
+}
+
+/* Main area */
+.admin-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+.admin-header {
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  background: transparent;
+  border-bottom: 1px solid var(--header-border);
+  box-sizing: border-box;
+}
+
+/* Header left/right */
+.admin-header__left,
+.admin-header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Toggle button */
+.toggle-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--green-600);
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 160ms;
+}
+.toggle-button:hover {
+  background: rgba(67,160,71,0.06);
+}
+
+/* Disabled state for toggle button (mobile) */
+.toggle-button--disabled,
+.toggle-button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  color: rgba(67,160,71,0.5);
+  background: transparent;
+  /* pointer-events none is optional because disabled prevents clicks, but helps in some browsers */
+  pointer-events: none;
+}
+
+/* Notification icon button */
+.icon-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: #666;
+  padding: 8px;
+  border-radius: 8px;
+}
+.icon-button:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+/* User dropdown */
+.user-dropdown{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 200ms;
+}
+.user-dropdown:hover{
+  background: #f5f5f5;
+}
+.user-avatar{
+  background-color: var(--green-400) !important;
+}
+.user-meta{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+.user-name{
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+.user-role{
+  font-size: 12px;
+  color: #999;
+}
+
+/* Content area - uses CSS variable --bg-image set inline from react so CSS file can use it */
+.admin-content{
+  padding: clamp(16px, 3.5vw, 32px);
+  min-height: 280px;
+  box-sizing: border-box;
+  background-image: linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transition: background 200ms ease;
+}
+
+/* On mobile avoid fixed background for performance */
+@media (max-width: 600px) {
+  .admin-content {
+    background-attachment: scroll;
+    padding: 14px;
+  }
+}
+
+/* Responsive typography adjustments */
+@media (max-width: 900px) {
+  .brand{
+    padding: 12px;
+  }
+  .sidebar-menu .ant-menu-item {
+    margin: 6px 6px;
+    font-size: 14px;
+  }
+  .user-name { font-size: 13px; }
+  .user-role { font-size: 11px; }
+}
+
+/* Very small screens: hide brand title, adjust header spacing */
+@media (max-width: 480px) {
+  .brand__title { display: none; }
+  .admin-header { padding: 0 12px; }
+  .admin-content { padding: 10px; }
+  .sidebar-menu .ant-menu-item { margin: 4px 6px; }
+}
+
+/* Large screens: slightly more breathing room */
+@media (min-width: 1200px) {
+  .admin-content { padding: clamp(24px, 2.5vw, 48px); }
+  .brand { font-size: 18px; }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* Sider overlay para móviles */
+@media (max-width: 600px) {
+  .admin-sider {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    height: 100vh !important;
+    z-index: 1200;
+    background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+    width: var(--sider-width) !important;
+    transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    /* Por defecto oculto */
+    display: none !important;
+  }
+  .admin-sider.admin-sider--visible {
+    display: block !important;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.18);
+    /* Puedes agregar animación si lo deseas */
+  }
+  /* Overlay oscuro detrás del menú (tipo drawer) */
+  .admin-sider-overlay {
+    position: fixed;
+    z-index: 1199;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.24);
+    transition: background 0.2s;
+    /* para evitar scroll en fondo al abrir menú */
+    touch-action: none;
+  }
+  /* Cuando el menú está oculto, el contenido ocupa 100% */
+  .admin-main {
+    margin-left: 0 !important;
+  }
+}

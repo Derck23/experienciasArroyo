@@ -361,6 +361,35 @@ function Home() {
         backgroundColor: '#2c3e50',
         textAlign: 'center'
       }}>
+        <div style={{
+          marginBottom: '15px'
+        }}>
+          <a href="/terminos-condiciones" style={{
+            color: '#95a5a6',
+            textDecoration: 'none',
+            fontSize: 'clamp(12px, 1.8vw, 14px)',
+            margin: '0 15px',
+            transition: 'color 0.3s'
+          }}
+          onMouseEnter={(e) => e.target.style.color = '#16a085'}
+          onMouseLeave={(e) => e.target.style.color = '#95a5a6'}
+          >
+            Términos y Condiciones
+          </a>
+          <span style={{ color: '#95a5a6' }}>|</span>
+          <a href="/aviso-privacidad" style={{
+            color: '#95a5a6',
+            textDecoration: 'none',
+            fontSize: 'clamp(12px, 1.8vw, 14px)',
+            margin: '0 15px',
+            transition: 'color 0.3s'
+          }}
+          onMouseEnter={(e) => e.target.style.color = '#16a085'}
+          onMouseLeave={(e) => e.target.style.color = '#95a5a6'}
+          >
+            Aviso de Privacidad
+          </a>
+        </div>
         <p style={{
           fontSize: 'clamp(14px, 2vw, 16px)',
           color: '#95a5a6',

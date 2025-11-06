@@ -1,0 +1,53 @@
+.servicios-page {
+    width: 100%;
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 24px;
+}
+
+.servicios-titulo {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.servicios-subtitulo {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 24px;
+}
+
+.servicios-filtros {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.filtro-btn {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filtro-btn:hover {
+    background-color: #f4f4f4;
+    border-color: #ccc;
+}
+
+.filtro-btn.activo {
+    background-color: #00735C; /* Un color verde bonito */
+    color: #fff;
+    border-color: #00735C;
+}
+
+.servicios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}

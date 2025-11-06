@@ -1,0 +1,100 @@
+:root{
+  --card-bg: rgba(255,255,255,0.85);
+  --title-color: #2e7d32;
+  --accent-color: #43a047;
+  --text-color: #666666;
+  --card-radius: 20px;
+  --card-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+/* Container: centra el contenido y deja espacio vertical */
+.admin-dashboard{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: clamp(12px, 4vw, 48px); /* asegura espacio en móviles y pantallas grandes */
+  box-sizing: border-box;
+  background: transparent; /* si necesitas un fondo, cámbialo aquí */
+}
+
+/* Card: ancho flexible y estilos visuales */
+.admin-dashboard__card{
+  width: min(720px, 96%); /* nunca más ancho que 720px, y siempre con margen en pantallas pequeñas */
+  padding: clamp(18px, 4vw, 48px); /* padding responsivo */
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  text-align: center;
+  box-sizing: border-box;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  will-change: transform;
+}
+
+/* Accesibilidad: foco visible */
+.admin-dashboard__card:focus{
+  outline: 3px solid rgba(67,160,71,0.16);
+  outline-offset: 4px;
+}
+
+/* Tipografía responsiva */
+.admin-dashboard__title{
+  font-size: clamp(28px, 5vw, 48px); /* crece con el viewport hasta un máximo */
+  font-weight: 700;
+  color: var(--title-color);
+  margin: 0 0 12px 0;
+  line-height: 1.05;
+}
+
+.admin-dashboard__subtitle{
+  font-size: clamp(14px, 2.2vw, 20px); /* legible en móviles y cómodo en escritorio */
+  color: var(--text-color);
+  margin: 0;
+}
+
+/* Resaltar nombre de usuario */
+.admin-dashboard__user{
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* Ajustes finos por breakpoints */
+
+/* Móviles muy pequeños */
+@media (max-width: 360px){
+  .admin-dashboard__card{
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .admin-dashboard__title{
+    font-size: 26px;
+  }
+  .admin-dashboard__subtitle{
+    font-size: 14px;
+  }
+}
+
+/* Tablets / pantallas medianas */
+@media (min-width: 768px) and (max-width: 1023px){
+  .admin-dashboard__card{
+    padding: clamp(20px, 3.5vw, 40px);
+    width: min(720px, 90%);
+  }
+}
+
+/* Desktop grande: un poco más espacio */
+@media (min-width: 1200px){
+  .admin-dashboard__card{
+    padding: clamp(28px, 3vw, 56px);
+    border-radius: 22px;
+  }
+}
+
+/* Preferencias de reducción de movimiento */
+@media (prefers-reduced-motion: reduce){
+  .admin-dashboard__card{
+    transition: none;
+  }
+}
