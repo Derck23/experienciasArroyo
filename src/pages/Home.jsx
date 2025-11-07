@@ -368,7 +368,7 @@ function Home() {
             color: '#95a5a6',
             textDecoration: 'none',
             fontSize: 'clamp(12px, 1.8vw, 14px)',
-            margin: '0 15px',
+            margin: '0 10px',
             transition: 'color 0.3s'
           }}
           onMouseEnter={(e) => e.target.style.color = '#16a085'}
@@ -381,13 +381,26 @@ function Home() {
             color: '#95a5a6',
             textDecoration: 'none',
             fontSize: 'clamp(12px, 1.8vw, 14px)',
-            margin: '0 15px',
+            margin: '0 10px',
             transition: 'color 0.3s'
           }}
           onMouseEnter={(e) => e.target.style.color = '#16a085'}
           onMouseLeave={(e) => e.target.style.color = '#95a5a6'}
           >
             Aviso de Privacidad
+          </a>
+          <span style={{ color: '#95a5a6' }}>|</span>
+          <a href="/eliminacion-cuenta" style={{
+            color: '#95a5a6',
+            textDecoration: 'none',
+            fontSize: 'clamp(12px, 1.8vw, 14px)',
+            margin: '0 10px',
+            transition: 'color 0.3s'
+          }}
+          onMouseEnter={(e) => e.target.style.color = '#e74c3c'}
+          onMouseLeave={(e) => e.target.style.color = '#95a5a6'}
+          >
+            Eliminar Cuenta
           </a>
         </div>
         <p style={{

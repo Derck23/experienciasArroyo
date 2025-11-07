@@ -199,6 +199,18 @@ const TerminosCondiciones = () => {
             de los medios disponibles en la aplicación.
           </p>
         </section>
+
+        <section className="legal-section">
+          <h2>17. Eliminación de Cuenta</h2>
+          <p>
+            Respetamos su derecho a eliminar su cuenta en cualquier momento. Para solicitar la 
+            eliminación de su cuenta y todos los datos asociados, visite nuestra página de{' '}
+            <a href="/eliminacion-cuenta" style={{ color: '#e74c3c', fontWeight: 'bold' }}>
+              Eliminación de Cuenta
+            </a>
+            , donde encontrará información detallada sobre el proceso y los datos que serán eliminados.
+          </p>
+        </section>
       </div>
     </div>
   );
