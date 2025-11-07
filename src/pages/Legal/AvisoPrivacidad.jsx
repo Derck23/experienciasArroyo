@@ -112,6 +112,19 @@ const AvisoPrivacidad = () => {
             sus datos personales, puede contactarnos a través de los medios disponibles en la aplicación.
           </p>
         </section>
+
+        <section className="legal-section">
+          <h2>11. Eliminación de Cuenta</h2>
+          <p>
+            Si desea eliminar su cuenta y todos los datos asociados, puede hacerlo a través de 
+            nuestra página de{' '}
+            <a href="/eliminacion-cuenta" style={{ color: '#e74c3c', fontWeight: 'bold' }}>
+              Eliminación de Cuenta
+            </a>
+            . Este proceso es permanente y cumple con su derecho al olvido según la legislación 
+            de protección de datos.
+          </p>
+        </section>
       </div>
     </div>
   );
