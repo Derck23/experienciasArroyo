@@ -10,7 +10,8 @@ import {
   BellOutlined,
   ShopOutlined,
   AppstoreOutlined,
-  EnvironmentOutlined
+  EnvironmentOutlined,
+  CalendarOutlined
 } from '@ant-design/icons';
 import { logout, getCurrentUser } from '../../utils/auth';
 import imagenLogin from '../../assets/imagenLogin.jpg';
@@ -49,11 +50,42 @@ function AdminLayout() {
   ];
 
   const menuItems = [
-    { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Dashboard', onClick: () => navigate('/admin/dashboard') },
-    { key: '/admin/users', icon: <UserOutlined />, label: 'Usuarios', onClick: () => navigate('/admin/users') },
-    { key: '/admin/restaurants', icon: <ShopOutlined />, label: 'Restaurantes', onClick: () => navigate('/admin/restaurants') },
-    { key: '/admin/dishes', icon: <AppstoreOutlined />, label: 'Platillos', onClick: () => navigate('/admin/dishes') },
-    { key: '/admin/attractions', icon: <EnvironmentOutlined />, label: 'Atracciones', onClick: () => navigate('/admin/attractions') },
+    {
+      key: '/admin/dashboard',
+      icon: <DashboardOutlined />,
+      label: 'Dashboard',
+      onClick: () => navigate('/admin/dashboard'),
+    },
+    {
+      key: '/admin/users',
+      icon: <UserOutlined />,
+      label: 'Usuarios',
+      onClick: () => navigate('/admin/users'),
+    },
+    {
+      key: '/admin/restaurants',
+      icon: <ShopOutlined />,
+      label: 'Restaurantes',
+      onClick: () => navigate('/admin/restaurants'),
+    },
+    {
+      key: '/admin/dishes',
+      icon: <AppstoreOutlined />,
+      label: 'Platillos',
+      onClick: () => navigate('/admin/dishes'),
+    },
+    {
+      key: '/admin/attractions',
+      icon: <EnvironmentOutlined />,
+      label: 'Atracciones',
+      onClick: () => navigate('/admin/attractions')
+    },
+    {
+      key: '/admin/eventos',
+      icon: <CalendarOutlined />,
+      label: 'Eventos',
+      onClick: () => navigate('/admin/eventos'),
+    },
   ];
 
   // NUEVO: Función para abrir/cerrar el menú en móvil

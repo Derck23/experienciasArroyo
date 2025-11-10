@@ -266,6 +266,22 @@ function FormRegistro() {
                   textDecoration: 'none'
                 }}>Inicia sesión aquí</a>
               </p>
+              <p style={{
+                fontSize: '12px',
+                color: '#95a5a6',
+                marginTop: '10px'
+              }}>
+                Al registrarte, aceptas nuestros{' '}
+                <a href="/terminos-condiciones" style={{
+                  color: '#16a085',
+                  textDecoration: 'none'
+                }}>Términos y Condiciones</a>{' '}
+                y{' '}
+                <a href="/aviso-privacidad" style={{
+                  color: '#16a085',
+                  textDecoration: 'none'
+                }}>Aviso de Privacidad</a>
+              </p>
             </div>
           </Form>
         </Spin>

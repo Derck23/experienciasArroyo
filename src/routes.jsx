@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./pages/home";
+import Home from "./pages/Home";
 import Experiencia from "./pages/Experiencia/Experiencia";
 import Login from "./pages/Login/Login";
 import Registro from "./pages/Registro/Registro";
@@ -17,6 +17,11 @@ import MapadeAtracciones from "./pages/AtraccionTuristicas/MapadeAtracciones";
 import ListaEventos from "./pages/Eventos/ListaEventos";
 import Restaurante from "./pages/Restaurantes/Restaurante";
 import InfoRestaurante from "./pages/Restaurantes/InfoRestaurante";
+import GestionEventos from "./pages/Admin/GestionEventos";
+import Servicios from "./pages/Servicios/Servicios";
+import AvisoPrivacidad from "./pages/Legal/AvisoPrivacidad";
+import TerminosCondiciones from "./pages/Legal/TerminosCondiciones";
+import EliminacionCuenta from "./pages/Legal/EliminacionCuenta";
 
 function AppRoutes() {
   return (
@@ -26,6 +31,9 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
+        <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
+        <Route path="/eliminacion-cuenta" element={<EliminacionCuenta />} />
 
         {/* Rutas de usuario con MainLayout */}
         <Route
@@ -51,9 +59,7 @@ function AppRoutes() {
           <Route
             path="servicios"
             element={
-              <div className="coming-soon">
-                Servicios - Próximamente
-              </div>
+              <Servicios />
             }
           />
         </Route>
@@ -77,19 +83,15 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-        {/* Rutas Lista de Eventos */}
-        <Route
-            path="eventos"
-            element={
-                <ListaEventos />
-            }
-        />
-
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<GestionDeUsuarios />} />
           <Route path="restaurants" element={<GestionDeRestaurantes />} />
           <Route path="dishes" element={<GestionDePlatillos />} />
           <Route path="attractions" element={<GestionDeAtracciones />} />
+          <Route
+            path="eventos"
+            element={<GestionEventos />}
+          />
         </Route>
       </Routes>
     </Router>
