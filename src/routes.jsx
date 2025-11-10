@@ -17,6 +17,7 @@ import MapadeAtracciones from "./pages/AtraccionTuristicas/MapadeAtracciones";
 import ListaEventos from "./pages/Eventos/ListaEventos";
 import Restaurante from "./pages/Restaurantes/Restaurante";
 import InfoRestaurante from "./pages/Restaurantes/InfoRestaurante";
+import GestionEventos from "./pages/Admin/GestionEventos";
 import Servicios from "./pages/Servicios/Servicios";
 import AvisoPrivacidad from "./pages/Legal/AvisoPrivacidad";
 import TerminosCondiciones from "./pages/Legal/TerminosCondiciones";
@@ -82,19 +83,15 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-        {/* Rutas Lista de Eventos */}
-        <Route
-            path="eventos"
-            element={
-                <ListaEventos />
-            }
-        />
-
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<GestionDeUsuarios />} />
           <Route path="restaurants" element={<GestionDeRestaurantes />} />
           <Route path="dishes" element={<GestionDePlatillos />} />
           <Route path="attractions" element={<GestionDeAtracciones />} />
+          <Route
+            path="eventos"
+            element={<GestionEventos />}
+          />
         </Route>
       </Routes>
     </Router>
