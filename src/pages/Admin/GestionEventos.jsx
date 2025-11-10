@@ -194,7 +194,7 @@ const GestionEventos = () => {
           border: '1px solid rgba(102, 187, 106, 0.2)',
           marginBottom: '24px'
         }}
-        bodyStyle={{ padding: 24 }}
+        styles={{ body: { padding: 24 } }}
       >
         <div style={{
           display: 'flex',
@@ -322,10 +322,10 @@ const GestionEventos = () => {
         onOk={onSubmit}
         okText={editando ? 'Actualizar' : 'Crear'}
         confirmLoading={submitLoading}
-        destroyOnClose
+        destroyOnHidden
         width={800}
         style={{ top: 20 }}
-        bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
+        styles={{ body: { maxHeight: '70vh', overflowY: 'auto' } }}
       >
         <Form form={form} layout="vertical" initialValues={{ estado: 'activo', destacado: false, precio: 0 }}>
           <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'El nombre es obligatorio' }]}>

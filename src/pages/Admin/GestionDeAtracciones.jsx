@@ -445,7 +445,7 @@ const GestionDeAtracciones = () => {
                         border: '1px solid rgba(102, 187, 106, 0.2)',
                         marginBottom: '24px'
                     }}
-                    bodyStyle={{ padding: '24px' }}
+                    styles={{ body: { padding: 24 } }}
                 >
                     <div style={{
                         display: 'flex',
@@ -525,7 +525,7 @@ const GestionDeAtracciones = () => {
                     footer={null}
                     width={900}
                     style={{ top: 20 }}
-                    bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
+                    styles={{ body: { maxHeight: '70vh', overflowY: 'auto' } }}
                 >
 
                 {/* Información Básica */}
