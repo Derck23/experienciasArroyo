@@ -324,7 +324,7 @@ const GestionDeAtracciones = () => {
           width={900}
           className="gestion-modal"
           style={{ top: 20 }}
-          bodyStyle={{ padding: 24, maxHeight: '70vh', overflowY: 'auto' }}
+          styles={{ padding: 24, body: { maxHeight: '70vh', overflowY: 'auto' } }}
         >
           {/* Información Básica */}
           <section className="form-section">
