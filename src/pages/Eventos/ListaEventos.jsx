@@ -8,7 +8,8 @@ import {
     HeartFilled,
     AppstoreOutlined,
     UnorderedListOutlined,
-    EnvironmentFilled
+    EnvironmentFilled,
+    FilterOutlined
 } from '@ant-design/icons';
 import { obtenerEventos } from '../../service/eventoService';
 import './ListaEventos.css';
@@ -36,6 +37,7 @@ const ListaEventos = () => {
     const [ordenamiento, setOrdenamiento] = useState('fecha');
     const [vistaActual, setVistaActual] = useState('lista');
     const [favoritos, setFavoritos] = useState([]);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Cargar eventos al montar
     useEffect(() => {
@@ -204,8 +206,15 @@ const ListaEventos = () => {
 
     return (
         <div className="eventos-container">
+            {/* Overlay para cerrar filtros en móvil */}
+            <div 
+                className={`filtros-overlay ${sidebarOpen ? 'show' : ''}`}
+                onClick={() => setSidebarOpen(false)}
+            />
+
             {/* Sidebar de Filtros */}
-            <aside className="eventos-sidebar">
+            <aside className={`eventos-sidebar ${sidebarOpen ? 'open' : ''}`}>
+                <div className="sidebar-handle" />
                 <div className="sidebar-header">
                     <CalendarOutlined className="sidebar-icon" />
                     <h1 className="sidebar-title">Eventia</h1>
@@ -215,14 +224,17 @@ const ListaEventos = () => {
                     {/* Búsqueda */}
                     <div className="filtro-section">
                         <h2 className="filtro-label">Buscar por nombre</h2>
-                        <Input
-                            size="large"
-                            placeholder="Buscar por palabra clave..."
-                            prefix={<SearchOutlined />}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
-                        />
+                        <div className="search-input-wrapper">
+                            <Input
+                                size="large"
+                                placeholder="Buscar eventos..."
+                                prefix={<SearchOutlined />}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="search-input"
+                                allowClear
+                            />
+                        </div>
                     </div>
 
                     {/* Fechas */}
@@ -299,14 +311,20 @@ const ListaEventos = () => {
                             type="primary"
                             block
                             size="large"
-                            onClick={aplicarFiltros}
+                            onClick={() => {
+                                aplicarFiltros();
+                                setSidebarOpen(false);
+                            }}
                         >
                             Aplicar Filtros
                         </Button>
                         <Button
                             block
                             size="large"
-                            onClick={limpiarFiltros}
+                            onClick={() => {
+                                limpiarFiltros();
+                                setSidebarOpen(false);
+                            }}
                         >
                             Limpiar
                         </Button>
@@ -440,6 +458,15 @@ const ListaEventos = () => {
                     )}
                 </div>
             </main>
+
+            {/* Botón flotante para abrir filtros en móvil */}
+            <button 
+                className="filtros-fab"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Abrir filtros"
+            >
+                <FilterOutlined />
+            </button>
         </div>
     );
 };
