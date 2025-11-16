@@ -21,9 +21,10 @@
   flex-direction: column;
   min-height: 100%;
   width: 100%;
-  background: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
+  background: #f8f9fa;
   padding: 0;
   margin: 0;
+  margin-top: -1px;
 }
 
 /* Header Styles */
@@ -105,23 +106,43 @@
 /* Main Content */
 .main-content {
   flex: 1;
-  padding: 2rem 1rem;
+  padding: 0;
+  padding-bottom: 90px;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 0;
 }
 
 /* Search */
 .search-container {
-  margin-bottom: 24px;
+  padding: 12px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  margin: 0;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .search-container {
+    width: 100%;
+    margin-left: 0;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    position: static;
+  }
 }
 
 .search-input {
-  border-radius: 9999px !important;
-  padding: 12px 16px 12px 40px !important;
+  border-radius: 20px !important;
+  padding: 8px 16px 8px 40px !important;
 }
 
 /* Filters */
@@ -130,13 +151,33 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-bottom: 24px;
+  padding: 10px 12px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  margin: 0;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  position: sticky;
+  top: 60px;
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .filters-container {
+    width: 100%;
+    margin-left: 0;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    position: static;
+    top: auto;
+  }
 }
 
 .filter-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--slate-600);
+  color: #666;
 }
 
 .filter-button {
@@ -144,47 +185,74 @@
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border: 1px solid var(--slate-300);
-  border-radius: 9999px;
-  background-color: var(--background-light);
-  color: var(--slate-700);
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  background-color: white;
+  color: #333;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s;
+  height: 32px;
 }
 
 .filter-button:hover {
-  background-color: rgba(23, 207, 23, 0.1);
+  background-color: #fafafa;
+  border-color: #2D5016;
 }
 
 /* Cards Grid */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 10px;
+}
+
+@media (min-width: 640px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 24px;
+  }
 }
 
 .attraction-card {
   overflow: hidden;
   border-radius: 12px;
-  border: 1px solid var(--slate-200);
-  background-color: var(--background-light);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e8e8e8;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.attraction-card:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  transform: translateY(-4px);
+@media (min-width: 768px) {
+  .attraction-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+  }
 }
 
 .card-image {
   position: relative;
-  height: 192px;
+  height: 160px;
   width: 100%;
   background-size: cover;
   background-position: center;
+}
+
+@media (min-width: 768px) {
+  .card-image {
+    height: 192px;
+  }
 }
 
 .card-overlay {
@@ -194,20 +262,38 @@
 }
 
 .card-content {
-  padding: 16px;
+  padding: 12px;
+}
+
+@media (min-width: 768px) {
+  .card-content {
+    padding: 16px;
+  }
 }
 
 .card-title {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--slate-900);
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
   margin: 0 0 4px 0;
 }
 
+@media (min-width: 768px) {
+  .card-title {
+    font-size: 18px;
+  }
+}
+
 .card-category {
-  font-size: 14px;
-  color: var(--slate-500);
+  font-size: 13px;
+  color: #666;
   margin: 0 0 8px 0;
+}
+
+@media (min-width: 768px) {
+  .card-category {
+    font-size: 14px;
+  }
 }
 
 .card-info {

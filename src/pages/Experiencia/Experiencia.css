@@ -1,270 +1,690 @@
-/* Experiencia.css */
+/* Experiencia.css - Diseño moderno tipo app móvil */
 
-.experiencia-bg {
+.experiencia-container {
+  background: #f8f9fa;
   min-height: 100vh;
+  padding: 16px;
+  padding-bottom: 90px;
+}
+
+/* Saludo compacto */
+.experiencia-greeting-compact {
+  margin-bottom: 16px;
+}
+
+.greeting-compact-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.greeting-compact-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Carrusel de imágenes */
+.experiencia-carousel-container {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.carousel-loading {
   width: 100%;
+  height: 240px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  border-radius: 16px;
+}
+
+.carousel-skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.carousel-slide {
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  overflow: auto;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
-.experiencia-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 40px 10px;
-  min-height: 100vh;
-  width: 100%;
-  box-sizing: border-box;
-  overflow-y: auto;
+.carousel-image:hover {
+  transform: scale(1.02);
 }
 
-.experiencia-hero {
-  background: rgba(0, 0, 0, 0.45);
-  padding: 28px 20px;
-  border-radius: 15px;
-  text-align: center;
-  margin-bottom: 30px;
-  width: 100%;
-  max-width: 900px;
+.carousel-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 20px;
 }
 
-.experiencia-title {
-  color: #fff;
-  font-size: clamp(22px, 4vw, 36px);
-  font-style: italic;
-  margin: 0;
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
-  font-weight: 600;
-}
-
-.experiencia-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 40px;
-  width: 100%;
-  max-width: 900px;
-  padding: 0 5px;
-}
-
-.experiencia-btn {
+.carousel-content {
   color: white;
-  padding: 14px 26px;
-  border: none;
-  border-radius: 8px;
-  font-size: clamp(14px, 2vw, 16px);
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  transition: all 0.25s cubic-bezier(.4,0,.2,1);
-  flex: 1 1 0px;
-  min-width: 140px;
-  max-width: 300px;
-  margin: 0;
-  width: auto;
-  /* For button equal sizing on desktop */
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.btn-tours {
-  background: #16a085;
-}
-.btn-alojamiento {
-  background: #e67e22;
-}
-.btn-mapa {
-  background: #95a5a6;
-  min-width: 180px;
-  gap: 8px;
-}
-
-.btn-hover, .experiencia-btn:hover, .experiencia-btn:focus {
-  transform: translateY(-2px) scale(1.03);
-  filter: brightness(1.1);
-  outline: none;
-}
-
-/* Sección de categorías */
-.experiencia-categorias {
-  background: rgba(255,255,255,0.97);
-  padding: clamp(18px, 4vw, 36px);
-  border-radius: 15px;
-  width: 100%;
-  max-width: 900px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  margin-bottom: 30px;
-}
-
-.categorias-title {
-  text-align: center;
-  font-size: clamp(18px, 3vw, 24px);
-  color: #2c3e50;
-  margin-bottom: 25px;
-  font-weight: 600;
-}
-
-.categorias-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 18px;
-  margin-bottom: 24px;
-  width: 100%;
-}
-
-.categoria-card {
-  background: #fff;
-  padding: 22px 10px;
+.carousel-badge {
+  display: inline-block;
+  background: rgba(45, 80, 22, 0.9);
+  padding: 4px 12px;
   border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  cursor: pointer;
-  transition: transform 0.23s, box-shadow 0.23s;
-  outline: none;
-}
-.categoria-card:focus,
-.categoria-card:hover {
-  transform: translateY(-5px) scale(1.03);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.17);
-}
-
-.categoria-icon {
-  font-size: clamp(34px, 5vw, 46px);
+  font-size: 12px;
+  font-weight: 600;
   margin-bottom: 8px;
 }
-.categoria-tour { color: #16a085;}
-.categoria-alojamiento { color: #16a085;}
-.categoria-gastro { color: #e67e22;}
-.categoria-actividades { color: #3498db;}
 
-.categoria-label {
-  font-size: clamp(13px, 2vw, 16px);
-  color: #2c3e50;
-  font-weight: 600;
+.carousel-badge-category {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.95);
+  color: #2D5016;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
-/* Redes sociales */
-.experiencia-social {
+.carousel-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Estilo de dots del carrusel */
+.experiencia-carousel-container :global(.ant-carousel .slick-dots) {
+  bottom: 12px;
+}
+
+.experiencia-carousel-container :global(.ant-carousel .slick-dots li button) {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+}
+
+.experiencia-carousel-container :global(.ant-carousel .slick-dots li.slick-active button) {
+  background: #2D5016;
+}
+
+/* Secciones */
+.experiencia-section {
+  margin-bottom: 32px;
+}
+
+.section-header {
   display: flex;
-  justify-content: center;
-  gap: 23px;
-  margin-top: 25px;
-  margin-bottom: 2px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 4px;
 }
 
-.social-icon {
-  font-size: clamp(26px, 4vw, 33px);
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.ver-todos-btn {
+  background: transparent;
+  border: none;
+  color: #2D5016;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.24s;
-  outline: none;
+  padding: 4px 8px;
+  transition: all 0.3s ease;
 }
 
-.social-icon:focus,
-.social-icon:hover {
-  transform: scale(1.17);
+.ver-todos-btn:hover {
+  color: #1f3910;
+  text-decoration: underline;
 }
 
-.icon-instagram { color: #e4405f;}
-.icon-facebook { color: #3b5998;}
-.icon-twitter { color: #1da1f2;}
+/* Grid de servicios */
+.servicios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
 
-/* Contacto */
-.experiencia-contacto {
-  text-align: center;
-  margin-top: 15px;
-  color: #7f8c8d;
-  font-size: clamp(13px, 2vw, 15px);
+.servicio-card-home {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.servicio-card-home:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.servicio-card-imagen {
+  width: 100%;
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.servicio-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.servicio-card-info {
+  padding: 16px;
+}
+
+.servicio-nombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.servicio-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.servicio-tipo {
+  font-size: 13px;
+  color: #6b7280;
   font-weight: 500;
 }
 
-/* Scroll y adaptabilidad */
-@media (max-width: 950px) {
-  .experiencia-content {
-    padding: 30px 3vw;
-  }
-  .experiencia-hero,
-  .experiencia-categorias {
-    max-width: 100%;
-  }
+.servicio-precio {
+  font-size: 14px;
+  color: #2D5016;
+  font-weight: 600;
 }
 
-@media (max-width: 650px) {
-  .experiencia-content {
-    padding: 20px 0.5vw;
-  }
-  .experiencia-hero,
-  .experiencia-categorias {
-    border-radius: 10px;
-    padding: 17px 5px;
-  }
-  .experiencia-title {
-    font-size: 22px;
-  }
-  .experiencia-actions {
-    flex-direction: column;
-    gap: 10px;
-    padding: 0;
-    align-items: center;
-  }
-  .experiencia-btn {
-    width: 80vw;
-    max-width: 320px;
-    min-width: 130px;
-    font-size: 15px;
-    padding: 14px 0;
-    margin: 0 auto;
-    /* Igual tamaño visual a desktop pero adaptado al ancho de móvil */
-  }
-  .btn-mapa {
-    min-width: 160px;
-  }
-  .categorias-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 13px;
-  }
-  .experiencia-social {
-    gap: 14px;
-  }
+/* Tarjetas de recomendación */
+.recommendation-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-@media (max-width: 400px) {
-  .experiencia-hero, .experiencia-categorias {
-    padding: 10px 2px;
-  }
-  .categorias-grid {
-    grid-template-columns: 1fr;
-  }
-  .experiencia-btn {
-    width: 90vw;
-    max-width: 98vw;
-    min-width: 90px;
-    font-size: 14px;
-    padding: 12px 0;
-  }
+.recommendation-card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-/* Mejoras para tablets */
-@media (min-width: 651px) and (max-width: 900px) {
-  .categorias-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+.recommendation-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-html, body, #root, .experiencia-bg {
+.recommendation-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.recommendation-info {
+  flex: 1;
+}
+
+.recommendation-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.recommendation-meta {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.recommendation-btn {
+  background: #2D5016;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.recommendation-btn:hover {
+  background: #1f3910;
+  transform: scale(1.05);
+}
+
+/* Categorías */
+.categories-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.categories-container::-webkit-scrollbar {
+  display: none;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.category-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-item:hover .category-icon-circle {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.category-emoji {
+  font-size: 32px;
+}
+
+.category-icon-circle.tours {
+  background: linear-gradient(135deg, #2D5016, #3d6b1f);
+}
+
+.category-icon-circle.alojamientos {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+.category-icon-circle.gastronomia {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+}
+
+.category-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+  text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.9),
+               0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+/* Banner con imagen de fondo */
+.experiencia-banner {
+  margin-top: 0;
+  margin-bottom: 28px;
+  margin-left: -20px;
+  margin-right: -20px;
+  padding: 0 20px;
+  background: transparent;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.banner-overlay {
+  background: transparent;
+  width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
 }
 
-.experiencia-bg {
-  min-height: 100vh;
-  overflow-y: auto;
+.banner-title {
+  font-size: clamp(28px, 6vw, 48px);
+  font-weight: 700;
+  color: #2D5016;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+  text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.95),
+               0 0 20px rgba(255, 255, 255, 0.8),
+               -1px -1px 4px rgba(255, 255, 255, 0.9);
+}
+
+.banner-subtitle {
+  font-size: clamp(16px, 3vw, 20px);
+  color: #1a1a1a;
+  margin: 0 0 28px 0;
+  font-weight: 500;
+  text-shadow: 1px 1px 6px rgba(255, 255, 255, 0.95),
+               0 0 15px rgba(255, 255, 255, 0.7),
+               -1px -1px 3px rgba(255, 255, 255, 0.8);
+}
+
+.banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.banner-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.banner-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.banner-btn:active {
+  transform: translateY(0);
+}
+
+.btn-tours {
+  background: #2D5016;
+  color: white;
+}
+
+.btn-tours:hover {
+  background: #1f3910;
+}
+
+.btn-alojamientos {
+  background: #e67e22;
+  color: white;
+}
+
+.btn-alojamientos:hover {
+  background: #d35400;
+}
+
+.btn-mapa {
+  background: white;
+  color: #2D5016;
+  border: 2px solid #2D5016;
+}
+
+.btn-mapa:hover {
+  background: #f8faf7;
+}
+
+/* Tarjetas horizontales de servicios */
+.servicios-horizontal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.servicio-card-horizontal {
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.servicio-card-horizontal:active {
+  transform: scale(0.98);
+}
+
+.servicio-card-imagen-horizontal {
+  width: 100px;
+  min-width: 100px;
+  height: 100px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  margin: 8px;
+}
+
+.servicio-card-info-horizontal {
+  flex: 1;
+  padding: 12px 12px 12px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.servicio-nombre-horizontal {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+}
+
+.servicio-meta-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.servicio-distancia {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.servicio-precio-horizontal {
+  color: #2D5016;
+  font-weight: 600;
+}
+
+/* Categorías compactas */
+.categories-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.category-btn-compact {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-btn-compact:active {
+  transform: scale(0.95);
+  background: #f9fafb;
+}
+
+.category-icon-compact {
+  font-size: 32px;
+}
+
+.category-label-compact {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .experiencia-container {
+    margin: 0;
+    width: 100%;
+    padding: 32px 0;
+  }
+
+  .experiencia-container > * {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 24px;
+  }
+
+  .carousel-slide {
+    height: 400px;
+  }
+
+  .greeting-text {
+    font-size: 36px;
+  }
+
+  .greeting-subtitle {
+    font-size: 18px;
+  }
+
+  .experiencia-banner {
+    min-height: 480px;
+  }
+
+  .banner-actions {
+    flex-wrap: nowrap;
+  }
+
+  .recommendation-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .categories-container {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .servicios-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .carousel-slide {
+    height: 480px;
+  }
+
+  .recommendation-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .servicios-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .carousel-slide {
+    height: 500px;
+  }
+
+  .servicios-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.experiencia-greeting,
+.experiencia-carousel-container,
+.experiencia-section,
+.quick-actions {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.experiencia-carousel-container {
+  animation-delay: 0.1s;
+}
+
+.experiencia-section:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.experiencia-section:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.quick-actions {
+  animation-delay: 0.4s;
 }

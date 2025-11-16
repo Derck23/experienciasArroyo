@@ -9,6 +9,7 @@ import GestionDeUsuarios from "./pages/Admin/GestionDeUsuarios";
 import GestionDeRestaurantes from "./pages/Admin/GestionDeRestaurantes";
 import GestionDePlatillos from "./pages/Admin/GestionDePlatillos";
 import GestionDeAtracciones from "./pages/Admin/GestionDeAtracciones";
+import GestionDeServicios from "./pages/Admin/GestionDeServicios";
 import AdminLayout from "./pages/Admin/AdminLayout";
 import MainLayout from "./components/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -50,18 +51,8 @@ function AppRoutes() {
           <Route path="atracciones" element={<ListaAtacciones />} />
           <Route path="restaurante" element={<Restaurante />} />
           <Route path="restaurante/:id" element={<InfoRestaurante />} />
-          <Route
-            path="eventos"
-            element={
-                <ListaEventos />
-            }
-          />
-          <Route
-            path="servicios"
-            element={
-              <Servicios />
-            }
-          />
+          <Route path="eventos" element={<ListaEventos />} />
+          <Route path="servicios" element={<Servicios />} />
         </Route>
 
         {/* Ruta de mapa standalone (si la necesitas sin layout) */}
@@ -85,13 +76,11 @@ function AppRoutes() {
         >
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<GestionDeUsuarios />} />
+          <Route path="servicios" element={<GestionDeServicios />} />
           <Route path="restaurants" element={<GestionDeRestaurantes />} />
           <Route path="dishes" element={<GestionDePlatillos />} />
           <Route path="attractions" element={<GestionDeAtracciones />} />
-          <Route
-            path="eventos"
-            element={<GestionEventos />}
-          />
+          <Route path="eventos" element={<GestionEventos />} />
         </Route>
       </Routes>
     </Router>
