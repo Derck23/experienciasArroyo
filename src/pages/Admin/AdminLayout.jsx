@@ -11,7 +11,8 @@ import {
   ShopOutlined,
   AppstoreOutlined,
   EnvironmentOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  CustomerServiceOutlined
 } from '@ant-design/icons';
 import { logout, getCurrentUser } from '../../utils/auth';
 import imagenLogin from '../../assets/imagenLogin.jpg';
@@ -63,16 +64,10 @@ function AdminLayout() {
       onClick: () => navigate('/admin/users'),
     },
     {
-      key: '/admin/restaurants',
-      icon: <ShopOutlined />,
-      label: 'Restaurantes',
-      onClick: () => navigate('/admin/restaurants'),
-    },
-    {
-      key: '/admin/dishes',
-      icon: <AppstoreOutlined />,
-      label: 'Platillos',
-      onClick: () => navigate('/admin/dishes'),
+      key: '/admin/servicios',
+      icon: <CustomerServiceOutlined />,
+      label: 'Servicios',
+      onClick: () => navigate('/admin/servicios'),
     },
     {
       key: '/admin/attractions',

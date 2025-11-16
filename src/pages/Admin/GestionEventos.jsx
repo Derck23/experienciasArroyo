@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Button, Card, DatePicker, Empty, Form, Grid, Input, InputNumber,
-  Modal, Popconfirm, Select, Space, Switch, Table, Tag, TimePicker, message
+  Modal, Popconfirm, Select, Space, Switch, Table, Tag, TimePicker, Upload, message
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined,
   CheckCircleTwoTone, CloseCircleTwoTone, SearchOutlined,
-  CalendarOutlined, EnvironmentOutlined
+  CalendarOutlined, EnvironmentOutlined, CameraOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
   crearEvento, obtenerEventos, actualizarEvento, eliminarEvento, cambiarEstadoEvento
 } from '../../service/eventoService';
 import { Typography } from 'antd';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 const { Title, Text } = Typography;
 
 const { useBreakpoint } = Grid;
@@ -25,6 +26,15 @@ const categoriasOpts = [
   { label: 'Cultural', value: 'cultural' },
   { label: 'Deportivo', value: 'deportivo' },
 ];
+
+const GOOGLE_MAPS_KEY = 'AIzaSyD6vEAeGtBjMT1zQUlFnuvJV9YORgXSFGk';
+const DEFAULT_CENTER = { lat: 21.1619, lng: -99.3728 }; // Arroyo Seco
+
+const mapContainerStyle = {
+  width: '100%',
+  height: '400px',
+  borderRadius: '12px',
+};
 
 const formatearPrecio = (precio) => (!precio || precio === 0 || precio === '0'
   ? 'Gratis'
@@ -41,6 +51,9 @@ const GestionEventos = () => {
   const [busqueda, setBusqueda] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [imagenesEvento, setImagenesEvento] = useState([]);
+  const [posicionMapa, setPosicionMapa] = useState(null);
+  const [centerMapa, setCenterMapa] = useState(DEFAULT_CENTER);
 
   const cargar = async () => {
     try {
@@ -71,20 +84,48 @@ const GestionEventos = () => {
   const abrirNuevo = () => {
     setEditando(null);
     form.resetFields();
+    setImagenesEvento([]);
+    setPosicionMapa(null);
+    setCenterMapa(DEFAULT_CENTER);
     setModalOpen(true);
   };
 
   const abrirEditar = (ev) => {
     setEditando(ev);
+
+    // Cargar imágenes existentes
+    const imgs = ev.fotos || (ev.imagen ? [ev.imagen] : []);
+    setImagenesEvento(imgs.map((url, idx) => ({
+      uid: `-${idx}`,
+      name: `imagen-${idx}.jpg`,
+      status: 'done',
+      url: url
+    })));
+
+    // Cargar posición del mapa si existe (ubicacion puede ser JSON)
+    try {
+      const ubicacionParsed = JSON.parse(ev.ubicacion || '{}');
+      if (ubicacionParsed.lat && ubicacionParsed.lng) {
+        const pos = { lat: parseFloat(ubicacionParsed.lat), lng: parseFloat(ubicacionParsed.lng) };
+        setPosicionMapa(pos);
+        setCenterMapa(pos);
+      } else {
+        setPosicionMapa(null);
+        setCenterMapa(DEFAULT_CENTER);
+      }
+    } catch {
+      // Si no es JSON, es texto plano
+      setPosicionMapa(null);
+      setCenterMapa(DEFAULT_CENTER);
+    }
+
     form.setFieldsValue({
       nombre: ev.nombre,
       descripcion: ev.descripcion,
       fecha: ev.fecha ? dayjs(ev.fecha) : null,
       hora: ev.hora ? dayjs(ev.hora, 'HH:mm') : null,
-      ubicacion: ev.ubicacion,
       categoria: ev.categoria,
       precio: typeof ev.precio === 'string' ? Number(ev.precio) : ev.precio,
-      imagen: ev.imagen,
       destacado: !!ev.destacado,
       estado: ev.estado || 'activo',
     });
@@ -95,20 +136,41 @@ const GestionEventos = () => {
     setModalOpen(false);
     setEditando(null);
     form.resetFields();
+    setImagenesEvento([]);
+    setPosicionMapa(null);
+    setCenterMapa(DEFAULT_CENTER);
   };
 
-  const normalizar = (vals) => ({
-    nombre: vals.nombre?.trim(),
-    descripcion: vals.descripcion?.trim() || '',
-    fecha: vals.fecha ? dayjs(vals.fecha).format('YYYY-MM-DD') : '',
-    hora: vals.hora ? dayjs(vals.hora).format('HH:mm') : '',
-    ubicacion: vals.ubicacion?.trim() || '',
-    categoria: vals.categoria || '',
-    precio: typeof vals.precio === 'number' ? vals.precio : Number(vals.precio || 0),
-    imagen: vals.imagen?.trim() || '',
-    destacado: !!vals.destacado,
-    estado: vals.estado || 'activo',
-  });
+  const normalizar = (vals) => {
+    const fotos = imagenesEvento
+      .filter(img => img.status === 'done')
+      .map(img => img.url || img.response?.url)
+      .filter(Boolean);
+
+    // Guardar coordenadas en el campo ubicacion como JSON
+    let ubicacionFinal = '';
+    if (posicionMapa) {
+      ubicacionFinal = JSON.stringify({
+        nombre: '',
+        lat: posicionMapa.lat,
+        lng: posicionMapa.lng
+      });
+    }
+
+    return {
+      nombre: vals.nombre?.trim(),
+      descripcion: vals.descripcion?.trim() || '',
+      fecha: vals.fecha ? dayjs(vals.fecha).format('YYYY-MM-DD') : '',
+      hora: vals.hora ? dayjs(vals.hora).format('HH:mm') : '',
+      ubicacion: ubicacionFinal,
+      categoria: vals.categoria || '',
+      precio: typeof vals.precio === 'number' ? vals.precio : Number(vals.precio || 0),
+      fotos: fotos,
+      imagen: fotos[0] || '',
+      destacado: !!vals.destacado,
+      estado: vals.estado || 'activo',
+    };
+  };
 
   const onSubmit = async () => {
     try {
@@ -153,6 +215,40 @@ const GestionEventos = () => {
   };
 
   const columnas = [
+    {
+      title: 'Imagen',
+      dataIndex: 'imagen',
+      key: 'imagen',
+      width: 80,
+      render: (_, record) => {
+        const img = record.imagen || record.fotos?.[0];
+        return img ? (
+          <img
+            src={img}
+            alt={record.nombre}
+            style={{
+              width: 60,
+              height: 60,
+              objectFit: 'cover',
+              borderRadius: 8
+            }}
+          />
+        ) : (
+          <div style={{
+            width: 60,
+            height: 60,
+            background: '#f0f0f0',
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 24
+          }}>
+            🎉
+          </div>
+        );
+      }
+    },
     { title: 'Nombre', dataIndex: 'nombre', key: 'nombre', ellipsis: true },
     {
       title: 'Fecha', dataIndex: 'fecha', key: 'fecha', render: (v, r) => (
@@ -343,7 +439,46 @@ const GestionEventos = () => {
             </Form.Item>
           </Space>
 
-          <Form.Item name="ubicacion" label="Ubicación"><Input placeholder="Lugar del evento" /></Form.Item>
+          <Form.Item label={
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <EnvironmentOutlined style={{ color: '#2D5016' }} />
+              Ubicación en el Mapa
+            </span>
+          }>
+            <div style={{ marginBottom: 12, fontSize: 13, color: '#666' }}>
+              Haz clic en el mapa para seleccionar la ubicación del evento
+            </div>
+            {posicionMapa && (
+              <div style={{
+                padding: 12,
+                background: '#f0f9f0',
+                borderRadius: 8,
+                marginBottom: 12,
+                border: '1px solid #c8e6c9'
+              }}>
+                <strong style={{ color: '#2D5016', display: 'block', marginBottom: 6 }}>
+                  📍 Ubicación seleccionada
+                </strong>
+                <div style={{ fontSize: 13, color: '#666' }}>
+                  Latitud: {posicionMapa.lat.toFixed(6)} | Longitud: {posicionMapa.lng.toFixed(6)}
+                </div>
+              </div>
+            )}
+            <LoadScript googleMapsApiKey={GOOGLE_MAPS_KEY}>
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
+                center={centerMapa}
+                zoom={14}
+                onClick={(e) => {
+                  const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+                  setPosicionMapa(pos);
+                  message.success('Ubicación seleccionada');
+                }}
+              >
+                {posicionMapa && <Marker position={posicionMapa} />}
+              </GoogleMap>
+            </LoadScript>
+          </Form.Item>
 
           <Space style={{ width: '100%' }} direction={isMobile ? 'vertical' : 'horizontal'} size="middle">
             <Form.Item name="categoria" label="Categoría" style={{ flex: 1, minWidth: 200 }}>
@@ -356,7 +491,54 @@ const GestionEventos = () => {
             </Form.Item>
           </Space>
 
-          <Form.Item name="imagen" label="Imagen (URL)"><Input placeholder="https://..." /></Form.Item>
+          <Form.Item label={
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CameraOutlined style={{ color: '#2D5016' }} />
+              Imágenes del Evento
+            </span>
+          }>
+            <Upload
+              listType="picture-card"
+              fileList={imagenesEvento}
+              beforeUpload={(file) => {
+                const isImage = file.type.startsWith('image/');
+                if (!isImage) {
+                  message.error('Solo se permiten imágenes');
+                  return Upload.LIST_IGNORE;
+                }
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (!isLt5M) {
+                  message.error('La imagen debe ser menor a 5MB');
+                  return Upload.LIST_IGNORE;
+                }
+
+                // Convertir a base64
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  const newFile = {
+                    uid: file.uid,
+                    name: file.name,
+                    status: 'done',
+                    url: e.target.result
+                  };
+                  setImagenesEvento(prev => [...prev, newFile]);
+                };
+                reader.readAsDataURL(file);
+                return false;
+              }}
+              onRemove={(file) => {
+                setImagenesEvento(prev => prev.filter(f => f.uid !== file.uid));
+              }}
+              maxCount={5}
+            >
+              {imagenesEvento.length >= 5 ? null : (
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Subir</div>
+                </div>
+              )}
+            </Upload>
+          </Form.Item>
 
           <Space size="large" wrap>
             <Form.Item name="destacado" label="Destacado" valuePropName="checked"><Switch /></Form.Item>

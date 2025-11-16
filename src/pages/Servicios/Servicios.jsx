@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { obtenerServicios } from '../../service/servicioService'; // ¡El que creamos!
 import ServicioCard from '../../components/ServicioCard/ServicioCard'; // ¡El que creamos!
 import './Servicios.css'; // Crearemos este archivo ahora
 
 const Servicios = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [todosLosServicios, setTodosLosServicios] = useState([]);
     const [serviciosFiltrados, setServiciosFiltrados] = useState([]);
     const [filtroCategoria, setFiltroCategoria] = useState('todos'); // 'todos', 'alojamiento', 'gastronomia', 'tour'
@@ -16,12 +18,15 @@ const Servicios = () => {
             try {
                 setLoading(true);
                 const data = await obtenerServicios();
-                // Si tu API devuelve { data: [...] }, usa data.data
-                // Si devuelve [...], usa data
-                // Basado en el backend, debe ser 'data'
                 setTodosLosServicios(data || []);
-                setServiciosFiltrados(data || []); 
+                setServiciosFiltrados(data || []);
                 setError(null);
+
+                // Aplicar filtro de la URL si existe
+                const categoriaUrl = searchParams.get('categoria');
+                if (categoriaUrl && ['tour', 'alojamiento', 'gastronomia'].includes(categoriaUrl)) {
+                    setFiltroCategoria(categoriaUrl);
+                }
             } catch (err) {
                 setError('No se pudieron cargar los servicios. Intenta más tarde.');
                 console.error(err);
@@ -30,7 +35,7 @@ const Servicios = () => {
             }
         };
         cargarServicios();
-    }, []);
+    }, [searchParams]);
 
     // 2. Aplicar filtros cuando cambie la categoría seleccionada
     useEffect(() => {

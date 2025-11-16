@@ -18,22 +18,40 @@ const ServicioCard = ({ servicio }) => {
     // Tomamos la primera foto como portada, o usamos un placeholder
     const fotoPortada = servicio.fotos?.[0] || 'https://via.placeholder.com/400x300?text=Sin+Imagen';
 
+    const getCategoriaTexto = (categoria) => {
+        const textos = {
+            alojamiento: 'Alojamiento',
+            gastronomia: 'Gastronomía',
+            tour: 'Tour'
+        };
+        return textos[categoria] || categoria;
+    };
+
     return (
         <div className="servicio-card">
             <div className="servicio-card-imagen">
                 <img src={fotoPortada} alt={servicio.nombre} />
+                {servicio.latitud && servicio.longitud && (
+                    <a
+                        href={`https://www.google.com/maps?q=${servicio.latitud},${servicio.longitud}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="servicio-map-btn"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        📍
+                    </a>
+                )}
             </div>
             <div className="servicio-card-contenido">
                 <h3>{servicio.nombre}</h3>
                 <div className="servicio-card-info">
                     <span>
                         <CategoriaIcon categoria={servicio.categoria} />
-                        {/* Capitalizamos la primera letra de la categoría */}
-                        {servicio.categoria.charAt(0).toUpperCase() + servicio.categoria.slice(1)}
+                        {getCategoriaTexto(servicio.categoria)}
                     </span>
                     <span>
-                        <PrecioIcon />
-                        {servicio.rangoPrecios}
+                        {servicio.rangoPrecios || '$$'}
                     </span>
                 </div>
             </div>
