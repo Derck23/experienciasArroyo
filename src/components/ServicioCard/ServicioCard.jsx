@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button, Card, Tag } from 'antd';
+import { EnvironmentOutlined, HeartOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
-import './ServicioCard.css'; // Crearemos este archivo ahora
+import './ServicioCard.css';
 
 // Iconos placeholder (¡puedes cambiarlos por los que uses!)
 const CategoriaIcon = ({ categoria }) => {
@@ -15,6 +18,7 @@ const CategoriaIcon = ({ categoria }) => {
 const PrecioIcon = () => <span style={{ marginRight: '8px' }}>💰</span>;
 
 const ServicioCard = ({ servicio }) => {
+    const navigate = useNavigate();
     // Tomamos la primera foto como portada, o usamos un placeholder
     const fotoPortada = servicio.fotos?.[0] || 'https://via.placeholder.com/400x300?text=Sin+Imagen';
 
@@ -28,40 +32,55 @@ const ServicioCard = ({ servicio }) => {
     };
 
     return (
-        <div className="servicio-card">
-            <div className="servicio-card-imagen">
-                <img src={fotoPortada} alt={servicio.nombre} />
-                {servicio.latitud && servicio.longitud && (
-                    <a
-                        href={`https://www.google.com/maps?q=${servicio.latitud},${servicio.longitud}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="servicio-map-btn"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        📍
-                    </a>
-                )}
-            </div>
-            <div className="servicio-card-contenido">
-                <h3>{servicio.nombre}</h3>
-                <div className="servicio-card-info">
-                    <span>
-                        <CategoriaIcon categoria={servicio.categoria} />
-                        {getCategoriaTexto(servicio.categoria)}
-                    </span>
-                    <span>
-                        {servicio.rangoPrecios || '$$'}
-                    </span>
+        <Card
+            hoverable
+            className="servicio-card"
+            cover={
+                <div className="servicio-image-container">
+                    <img
+                        alt={servicio.nombre}
+                        src={fotoPortada}
+                        className="servicio-image"
+                    />
+                    <Button
+                        type="text"
+                        icon={<HeartOutlined />}
+                        className="favorito-btn"
+                    />
                 </div>
+            }
+        >
+            <h3 className="servicio-nombre">{servicio.nombre}</h3>
+            
+            <Tag color="green" style={{ marginBottom: '8px' }}>
+                <CategoriaIcon categoria={servicio.categoria} />
+                {getCategoriaTexto(servicio.categoria)}
+            </Tag>
+
+            <div className="servicio-info">
+                <EnvironmentOutlined />
+                <span>{servicio.ubicacion || 'Arroyo Seco, Querétaro'}</span>
             </div>
-        </div>
+
+            <div className="servicio-footer">
+                <span className="servicio-precio">
+                    {servicio.rangoPrecios || '$$'}
+                </span>
+                <Button 
+                    type="primary" 
+                    ghost
+                    onClick={() => navigate(`/experiencia/servicios/${servicio.id}`)}
+                >
+                    Ver Detalles
+                </Button>
+            </div>
+        </Card>
     );
 };
 
 ServicioCard.propTypes = {
     servicio: PropTypes.shape({
-        id: PropTypes.string.isRequired,
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
         nombre: PropTypes.string.isRequired,
         categoria: PropTypes.string.isRequired,
         rangoPrecios: PropTypes.string,

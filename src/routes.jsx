@@ -15,11 +15,14 @@ import MainLayout from "./components/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ListaAtacciones from "./pages/AtraccionTuristicas/ListaAtacciones";
 import MapadeAtracciones from "./pages/AtraccionTuristicas/MapadeAtracciones";
+import DetalleAtraccion from "./pages/AtraccionTuristicas/DetalleAtraccion";
 import ListaEventos from "./pages/Eventos/ListaEventos";
+import DetalleEvento from "./pages/Eventos/DetalleEvento";
 import Restaurante from "./pages/Restaurantes/Restaurante";
 import InfoRestaurante from "./pages/Restaurantes/InfoRestaurante";
 import GestionEventos from "./pages/Admin/GestionEventos";
 import Servicios from "./pages/Servicios/Servicios";
+import DetalleServicio from "./pages/Servicios/DetalleServicio";
 import AvisoPrivacidad from "./pages/Legal/AvisoPrivacidad";
 import TerminosCondiciones from "./pages/Legal/TerminosCondiciones";
 import EliminacionCuenta from "./pages/Legal/EliminacionCuenta";
@@ -49,10 +52,13 @@ function AppRoutes() {
           <Route path="mapa" element={<MapadeAtracciones />} />
           <Route path="inicio" element={<Experiencia />} />
           <Route path="atracciones" element={<ListaAtacciones />} />
+          <Route path="atracciones/:id" element={<DetalleAtraccion />} />
           <Route path="restaurante" element={<Restaurante />} />
           <Route path="restaurante/:id" element={<InfoRestaurante />} />
           <Route path="eventos" element={<ListaEventos />} />
+          <Route path="eventos/:id" element={<DetalleEvento />} />
           <Route path="servicios" element={<Servicios />} />
+          <Route path="servicios/:id" element={<DetalleServicio />} />
         </Route>
 
         {/* Ruta de mapa standalone (si la necesitas sin layout) */}

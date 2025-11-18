@@ -910,7 +910,11 @@ const ListaEventos = () => {
                                         <span className={`evento-precio ${!evento.precio || evento.precio === 0 ? 'gratis' : ''}`}>
                                             {formatearPrecio(evento.precio)}
                                         </span>
-                                        <Button type="primary" ghost>
+                                        <Button 
+                                            type="primary" 
+                                            ghost
+                                            onClick={() => navigate(`/experiencia/eventos/${evento.id}`)}
+                                        >
                                             Ver Detalles
                                         </Button>
                                     </div>
