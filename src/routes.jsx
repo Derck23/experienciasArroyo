@@ -26,6 +26,7 @@ import DetalleServicio from "./pages/Servicios/DetalleServicio";
 import AvisoPrivacidad from "./pages/Legal/AvisoPrivacidad";
 import TerminosCondiciones from "./pages/Legal/TerminosCondiciones";
 import EliminacionCuenta from "./pages/Legal/EliminacionCuenta";
+import Favoritos from "./pages/Experiencia/Favoritos";
 
 function AppRoutes() {
   return (
@@ -59,6 +60,7 @@ function AppRoutes() {
           <Route path="eventos/:id" element={<DetalleEvento />} />
           <Route path="servicios" element={<Servicios />} />
           <Route path="servicios/:id" element={<DetalleServicio />} />
+          <Route path="favoritos" element={<Favoritos />} />
         </Route>
 
         {/* Ruta de mapa standalone (si la necesitas sin layout) */}

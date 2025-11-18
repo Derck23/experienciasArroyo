@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Tag } from 'antd';
-import { EnvironmentOutlined, HeartOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, HeartOutlined, HeartFilled } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import './ServicioCard.css';
 
@@ -17,7 +17,7 @@ const CategoriaIcon = ({ categoria }) => {
 
 const PrecioIcon = () => <span style={{ marginRight: '8px' }}>💰</span>;
 
-const ServicioCard = ({ servicio }) => {
+const ServicioCard = ({ servicio, esFavorito, onToggleFavorito }) => {
     const navigate = useNavigate();
     // Tomamos la primera foto como portada, o usamos un placeholder
     const fotoPortada = servicio.fotos?.[0] || 'https://via.placeholder.com/400x300?text=Sin+Imagen';
@@ -44,8 +44,16 @@ const ServicioCard = ({ servicio }) => {
                     />
                     <Button
                         type="text"
-                        icon={<HeartOutlined />}
+                        icon={
+                            esFavorito
+                                ? <HeartFilled style={{ color: '#ff4d4f' }} />
+                                : <HeartOutlined />
+                        }
                         className="favorito-btn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleFavorito(servicio.id);
+                        }}
                     />
                 </div>
             }
@@ -86,6 +94,8 @@ ServicioCard.propTypes = {
         rangoPrecios: PropTypes.string,
         fotos: PropTypes.arrayOf(PropTypes.string),
     }).isRequired,
+    esFavorito: PropTypes.bool,
+    onToggleFavorito: PropTypes.func,
 };
 
 export default ServicioCard;

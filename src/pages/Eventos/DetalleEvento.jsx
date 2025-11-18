@@ -12,6 +12,7 @@ import {
     ShareAltOutlined
 } from '@ant-design/icons';
 import { obtenerEventos } from '../../service/eventoService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import './DetalleEvento.css';
 
 const DetalleEvento = () => {
@@ -24,7 +25,18 @@ const DetalleEvento = () => {
 
     useEffect(() => {
         cargarEvento();
+        verificarFavorito();
     }, [id]);
+
+    const verificarFavorito = async () => {
+        try {
+            const favs = await obtenerFavoritos();
+            const isFav = favs.some(f => f.tipo === 'evento' && f.itemId === Number.parseInt(id, 10));
+            setEsFavorito(isFav);
+        } catch (error) {
+            console.log('No se pudo verificar favorito:', error);
+        }
+    };
 
     const cargarEvento = async () => {
         try {
@@ -69,8 +81,22 @@ const DetalleEvento = () => {
         return `$${parseFloat(precio).toLocaleString('es-MX')} MXN`;
     };
 
-    const toggleFavorito = () => {
-        setEsFavorito(!esFavorito);
+    const toggleFavorito = async () => {
+        try {
+            if (esFavorito) {
+                const favs = await obtenerFavoritos();
+                const fav = favs.find(f => f.tipo === 'evento' && f.itemId === Number.parseInt(id, 10));
+                if (fav) {
+                    await eliminarFavorito(fav.id);
+                    setEsFavorito(false);
+                }
+            } else {
+                await agregarFavorito('evento', Number.parseInt(id, 10));
+                setEsFavorito(true);
+            }
+        } catch (error) {
+            console.error('Error al manejar favorito:', error);
+        }
     };
 
     const compartir = () => {

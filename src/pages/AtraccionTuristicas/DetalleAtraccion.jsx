@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Tag, Spin, Carousel } from 'antd';
+import { Button, Tag, Spin, Carousel, message } from 'antd';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import {
     ArrowLeftOutlined,
     EnvironmentOutlined,
@@ -24,7 +25,18 @@ const DetalleAtraccion = () => {
 
     useEffect(() => {
         cargarAtraccion();
+        verificarFavorito();
     }, [id]);
+
+    const verificarFavorito = async () => {
+        try {
+            const favs = await obtenerFavoritos();
+            const isFav = favs.some(f => f.tipo === 'atraccion' && f.itemId === Number.parseInt(id, 10));
+            setEsFavorito(isFav);
+        } catch (error) {
+            console.log('No se pudo verificar favorito:', error);
+        }
+    };
 
     const cargarAtraccion = async () => {
         try {
@@ -50,8 +62,25 @@ const DetalleAtraccion = () => {
         }
     };
 
-    const toggleFavorito = () => {
-        setEsFavorito(!esFavorito);
+    const toggleFavorito = async () => {
+        try {
+            if (esFavorito) {
+                const favs = await obtenerFavoritos();
+                const fav = favs.find(f => f.tipo === 'atraccion' && f.itemId === Number.parseInt(id, 10));
+                if (fav) {
+                    await eliminarFavorito(fav.id);
+                    setEsFavorito(false);
+                    message.success('Eliminado de favoritos');
+                }
+            } else {
+                await agregarFavorito('atraccion', Number.parseInt(id, 10));
+                setEsFavorito(true);
+                message.success('Agregado a favoritos');
+            }
+        } catch (error) {
+            console.error('Error al manejar favorito:', error);
+            message.error('No se pudo actualizar favoritos');
+        }
     };
 
     const compartir = () => {
@@ -59,7 +88,7 @@ const DetalleAtraccion = () => {
             navigator.share({
                 title: atraccion.nombre,
                 text: atraccion.descripcion,
-                url: window.location.href
+                url: globalThis.location.href
             });
         }
     };
@@ -147,9 +176,9 @@ const DetalleAtraccion = () => {
             {/* Carrusel de imágenes */}
             <div className="detalle-carousel">
                 <Carousel autoplay>
-                    {imagenes.map((img, index) => (
-                        <div key={index} className="carousel-item">
-                            <img src={img} alt={`${atraccion.nombre} - ${index + 1}`} />
+                    {imagenes.map((img) => (
+                        <div key={img} className="carousel-item">
+                            <img src={img} alt={atraccion.nombre} />
                         </div>
                     ))}
                 </Carousel>

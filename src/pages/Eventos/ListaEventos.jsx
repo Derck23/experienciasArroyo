@@ -12,6 +12,7 @@ import {
     FilterOutlined
 } from '@ant-design/icons';
 import { obtenerEventos } from '../../service/eventoService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import { useNavigate } from 'react-router-dom';
 import './ListaEventos.css';
 
@@ -190,6 +191,15 @@ const ListaEventos = () => {
 
             setEventos(eventosActivos);
             setEventosFiltrados(eventosActivos);
+            
+            // Cargar favoritos
+            try {
+                const favs = await obtenerFavoritos();
+                const favEventos = favs.filter(f => f.tipo === 'evento').map(f => f.itemId);
+                setFavoritos(favEventos);
+            } catch (favErr) {
+                console.log('No se pudieron cargar favoritos:', favErr);
+            }
         } catch (err) {
             console.error('Error al cargar eventos:', err);
             setError('No se pudieron cargar los eventos');
@@ -281,14 +291,24 @@ const ListaEventos = () => {
         setFiltroPrecio('todos');
     };
 
-    const toggleFavorito = (eventoId) => {
-        setFavoritos(prev => {
-            if (prev.includes(eventoId)) {
-                return prev.filter(id => id !== eventoId);
+    const toggleFavorito = async (eventoId, e) => {
+        if (e) e.stopPropagation();
+        
+        try {
+            if (favoritos.includes(eventoId)) {
+                const allFavs = await obtenerFavoritos();
+                const fav = allFavs.find(f => f.tipo === 'evento' && f.itemId === eventoId);
+                if (fav) {
+                    await eliminarFavorito(fav.id);
+                    setFavoritos(prev => prev.filter(id => id !== eventoId));
+                }
             } else {
-                return [...prev, eventoId];
+                await agregarFavorito('evento', eventoId);
+                setFavoritos(prev => [...prev, eventoId]);
             }
-        });
+        } catch (error) {
+            console.error('Error al manejar favorito:', error);
+        }
     };
 
     const formatearFecha = (fecha) => {
@@ -874,7 +894,7 @@ const ListaEventos = () => {
                                                         : <HeartOutlined />
                                                 }
                                                 className="favorito-btn"
-                                                onClick={() => toggleFavorito(evento.id)}
+                                                onClick={(e) => toggleFavorito(evento.id, e)}
                                             />
                                             {evento.destacado && (
                                                 <Tag color="red" className="destacado-tag">

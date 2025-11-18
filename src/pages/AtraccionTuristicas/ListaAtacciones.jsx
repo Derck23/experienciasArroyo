@@ -10,6 +10,7 @@ import {
     AppstoreOutlined
 } from '@ant-design/icons';
 import { obtenerAtracciones } from '../../service/atraccionService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import './ListaAtacciones.css';
 
 const { Option } = Select;
@@ -56,6 +57,15 @@ const ListaAtacciones = () => {
 
                 console.log('Atracciones mapeadas:', mappedAtracciones);
                 setAtracciones(mappedAtracciones);
+                
+                // Cargar favoritos
+                try {
+                    const favs = await obtenerFavoritos();
+                    const favAtracciones = favs.filter(f => f.tipo === 'atraccion').map(f => f.itemId);
+                    setFavoritos(favAtracciones);
+                } catch (favErr) {
+                    console.log('No se pudieron cargar favoritos:', favErr);
+                }
             } catch (err) {
                 console.error('Error al cargar atracciones:', err);
                 setError('No se pudieron cargar las atracciones');
@@ -71,14 +81,22 @@ const ListaAtacciones = () => {
     const categorias = ['Todas', ...new Set(atracciones.map(a => a.categoria).filter(Boolean))];
     const dificultades = ['Todas', ...new Set(atracciones.map(a => a.dificultad).filter(Boolean))];
 
-    const toggleFavorito = (atraccionId) => {
-        setFavoritos(prev => {
-            if (prev.includes(atraccionId)) {
-                return prev.filter(id => id !== atraccionId);
+    const toggleFavorito = async (atraccionId) => {
+        try {
+            if (favoritos.includes(atraccionId)) {
+                const favs = await obtenerFavoritos();
+                const fav = favs.find(f => f.tipo === 'atraccion' && f.itemId === atraccionId);
+                if (fav) {
+                    await eliminarFavorito(fav.id);
+                    setFavoritos(prev => prev.filter(id => id !== atraccionId));
+                }
             } else {
-                return [...prev, atraccionId];
+                await agregarFavorito('atraccion', atraccionId);
+                setFavoritos(prev => [...prev, atraccionId]);
             }
-        });
+        } catch (error) {
+            console.error('Error al manejar favorito:', error);
+        }
     };
 
     const limpiarFiltros = () => {

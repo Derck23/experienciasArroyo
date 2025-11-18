@@ -9,6 +9,7 @@ import {
     AppstoreOutlined
 } from '@ant-design/icons';
 import { obtenerServicios } from '../../service/servicioService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import ServicioCard from '../../components/ServicioCard/ServicioCard';
 import './Servicios.css';
 
@@ -24,6 +25,7 @@ const Servicios = () => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [ordenamiento, setOrdenamiento] = useState('nombre');
+    const [favoritos, setFavoritos] = useState([]);
 
     // 1. Cargar todos los servicios desde la API al montar
     useEffect(() => {
@@ -39,6 +41,15 @@ const Servicios = () => {
                 const categoriaUrl = searchParams.get('categoria');
                 if (categoriaUrl && ['tour', 'alojamiento', 'gastronomia'].includes(categoriaUrl)) {
                     setFiltroCategoria(categoriaUrl);
+                }
+                
+                // Cargar favoritos
+                try {
+                    const favs = await obtenerFavoritos();
+                    const favServicios = favs.filter(f => f.tipo === 'servicio').map(f => f.itemId);
+                    setFavoritos(favServicios);
+                } catch (favErr) {
+                    console.log('No se pudieron cargar favoritos:', favErr);
                 }
             } catch (err) {
                 setError('No se pudieron cargar los servicios. Intenta más tarde.');
@@ -92,6 +103,24 @@ const Servicios = () => {
         if (searchText) count++;
         if (filtroCategoria !== 'todos') count++;
         return count;
+    };
+
+    const toggleFavorito = async (servicioId) => {
+        try {
+            if (favoritos.includes(servicioId)) {
+                const allFavs = await obtenerFavoritos();
+                const fav = allFavs.find(f => f.tipo === 'servicio' && f.itemId === servicioId);
+                if (fav) {
+                    await eliminarFavorito(fav.id);
+                    setFavoritos(prev => prev.filter(id => id !== servicioId));
+                }
+            } else {
+                await agregarFavorito('servicio', servicioId);
+                setFavoritos(prev => [...prev, servicioId]);
+            }
+        } catch (error) {
+            console.error('Error al manejar favorito:', error);
+        }
     };
 
     if (loading) {
@@ -296,7 +325,12 @@ const Servicios = () => {
                     ) : (
                         <div className="servicios-grid">
                             {serviciosFiltrados.map((servicio) => (
-                                <ServicioCard key={servicio.id} servicio={servicio} />
+                                <ServicioCard 
+                                    key={servicio.id} 
+                                    servicio={servicio}
+                                    esFavorito={favoritos.includes(servicio.id)}
+                                    onToggleFavorito={toggleFavorito}
+                                />
                             ))}
                         </div>
                     )}

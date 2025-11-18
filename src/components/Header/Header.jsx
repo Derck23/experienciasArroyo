@@ -57,9 +57,9 @@ const Header = ({ searchTerm, onSearchChange }) => {
                 <Link to="/experiencia/mapa" className="btn-icon-header" aria-label="Mapa">
                     🗺️
                 </Link>
-                <button className="btn-icon-header btn-favoritos" aria-label="Favoritos">
+                <Link to="/experiencia/favoritos" className="btn-icon-header btn-favoritos" aria-label="Favoritos">
                     <img src={FavoritosIcon} alt="Favoritos" className="icon-img" />
-                </button>
+                </Link>
 
                 {/* Avatar con menú desplegable */}
                 <div className="avatar-container" ref={menuRef}>

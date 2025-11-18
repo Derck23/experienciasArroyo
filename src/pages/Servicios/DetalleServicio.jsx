@@ -14,6 +14,7 @@ import {
     MailOutlined
 } from '@ant-design/icons';
 import { obtenerServicios } from '../../service/servicioService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import './DetalleServicio.css';
 
 const DetalleServicio = () => {
@@ -26,7 +27,18 @@ const DetalleServicio = () => {
 
     useEffect(() => {
         cargarServicio();
+        verificarFavorito();
     }, [id]);
+
+    const verificarFavorito = async () => {
+        try {
+            const favs = await obtenerFavoritos();
+            const isFav = favs.some(f => f.tipo === 'servicio' && f.itemId === Number.parseInt(id, 10));
+            setEsFavorito(isFav);
+        } catch (error) {
+            console.log('No se pudo verificar favorito:', error);
+        }
+    };
 
     const cargarServicio = async () => {
         try {
@@ -52,8 +64,22 @@ const DetalleServicio = () => {
         }
     };
 
-    const toggleFavorito = () => {
-        setEsFavorito(!esFavorito);
+    const toggleFavorito = async () => {
+        try {
+            if (esFavorito) {
+                const favs = await obtenerFavoritos();
+                const fav = favs.find(f => f.tipo === 'servicio' && f.itemId === Number.parseInt(id, 10));
+                if (fav) {
+                    await eliminarFavorito(fav.id);
+                    setEsFavorito(false);
+                }
+            } else {
+                await agregarFavorito('servicio', Number.parseInt(id, 10));
+                setEsFavorito(true);
+            }
+        } catch (error) {
+            console.error('Error al manejar favorito:', error);
+        }
     };
 
     const compartir = () => {

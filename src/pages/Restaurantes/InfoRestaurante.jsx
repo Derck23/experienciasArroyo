@@ -3,11 +3,14 @@ import {
   InstagramOutlined,
   FacebookOutlined,
   TwitterOutlined,
+  HeartOutlined,
+  HeartFilled,
 } from "@ant-design/icons";
 import { Typography, Space } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { getRestaurant } from '../../service/restaurantService';
 import { getDishesByRestaurant } from '../../service/dishService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import imagenHome from '../../assets/imagenHome.jpg';
 import './InfoRestaurante.css';
 
@@ -20,6 +23,7 @@ function InfoRestaurante() {
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [esFavorito, setEsFavorito] = useState(false);
 
   useEffect(() => {
     const fetchRestaurantInfo = async () => {
@@ -45,6 +49,15 @@ function InfoRestaurante() {
           console.log('No se pudieron cargar los platillos:', dishError);
           setDishes([]);
         }
+        
+        // Verificar si es favorito
+        try {
+          const favs = await obtenerFavoritos();
+          const isFav = favs.some(f => f.tipo === 'restaurante' && f.itemId === Number.parseInt(id, 10));
+          setEsFavorito(isFav);
+        } catch (favError) {
+          console.log('No se pudo verificar favorito:', favError);
+        }
 
       } catch (error) {
         console.error('Error al cargar información del restaurante:', error);
@@ -61,6 +74,24 @@ function InfoRestaurante() {
 
     fetchRestaurantInfo();
   }, [id]);
+
+  const toggleFavorito = async () => {
+    try {
+      if (esFavorito) {
+        const favs = await obtenerFavoritos();
+        const fav = favs.find(f => f.tipo === 'restaurante' && f.itemId === Number.parseInt(id, 10));
+        if (fav) {
+          await eliminarFavorito(fav.id);
+          setEsFavorito(false);
+        }
+      } else {
+        await agregarFavorito('restaurante', Number.parseInt(id, 10));
+        setEsFavorito(true);
+      }
+    } catch (error) {
+      console.error('Error al manejar favorito:', error);
+    }
+  };
 
   // Estado de Carga
   if (loading) {
@@ -148,6 +179,28 @@ function InfoRestaurante() {
               className="info-restaurant-back-button"
             >
               ← Volver a Restaurantes
+            </button>
+            <button
+              onClick={toggleFavorito}
+              className="info-restaurant-favorite-button"
+              style={{ 
+                background: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+              }}
+            >
+              {esFavorito ? (
+                <HeartFilled style={{ color: '#ff4d4f', fontSize: '20px' }} />
+              ) : (
+                <HeartOutlined style={{ fontSize: '20px' }} />
+              )}
             </button>
           </div>
 
