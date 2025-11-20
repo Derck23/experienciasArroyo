@@ -43,7 +43,6 @@ const ListaEventos = () => {
     const [ordenamiento, setOrdenamiento] = useState('fecha');
     const [vistaActual, setVistaActual] = useState('lista');
     const [favoritos, setFavoritos] = useState([]);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [mesActual, setMesActual] = useState(new Date().getMonth());
     const [anioActual, setAnioActual] = useState(new Date().getFullYear());
@@ -528,17 +527,6 @@ const ListaEventos = () => {
 
     return (
         <div className="eventos-container">
-<<<<<<< HEAD
-            {/* Overlay para cerrar filtros en móvil */}
-            <div 
-                className={`filtros-overlay ${sidebarOpen ? 'show' : ''}`}
-                onClick={() => setSidebarOpen(false)}
-            />
-
-            {/* Sidebar de Filtros */}
-            <aside className={`eventos-sidebar ${sidebarOpen ? 'open' : ''}`}>
-                <div className="sidebar-handle" />
-=======
             {/* Drawer de Filtros para móvil */}
             <Drawer
                 title="Filtros"
@@ -653,7 +641,6 @@ const ListaEventos = () => {
 
             {/* Sidebar de Filtros - Solo Desktop */}
             <aside className="eventos-sidebar eventos-sidebar-desktop">
->>>>>>> dev
                 <div className="sidebar-header">
                     <CalendarOutlined className="sidebar-icon" />
                     <h1 className="sidebar-title">Eventia</h1>
@@ -663,17 +650,14 @@ const ListaEventos = () => {
                     {/* Búsqueda */}
                     <div className="filtro-section">
                         <h2 className="filtro-label">Buscar por nombre</h2>
-                        <div className="search-input-wrapper">
-                            <Input
-                                size="large"
-                                placeholder="Buscar eventos..."
-                                prefix={<SearchOutlined />}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="search-input"
-                                allowClear
-                            />
-                        </div>
+                        <Input
+                            size="large"
+                            placeholder="Buscar por palabra clave..."
+                            prefix={<SearchOutlined />}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="search-input"
+                        />
                     </div>
 
                     {/* Fechas */}
@@ -750,20 +734,14 @@ const ListaEventos = () => {
                             type="primary"
                             block
                             size="large"
-                            onClick={() => {
-                                aplicarFiltros();
-                                setSidebarOpen(false);
-                            }}
+                            onClick={aplicarFiltros}
                         >
                             Aplicar Filtros
                         </Button>
                         <Button
                             block
                             size="large"
-                            onClick={() => {
-                                limpiarFiltros();
-                                setSidebarOpen(false);
-                            }}
+                            onClick={limpiarFiltros}
                         >
                             Limpiar
                         </Button>
@@ -967,16 +945,6 @@ const ListaEventos = () => {
                 </div>
             </main>
 
-<<<<<<< HEAD
-            {/* Botón flotante para abrir filtros en móvil */}
-            <button 
-                className="filtros-fab"
-                onClick={() => setSidebarOpen(true)}
-                aria-label="Abrir filtros"
-            >
-                <FilterOutlined />
-            </button>
-=======
             {/* Modal de detalle de evento */}
             <Modal
                 open={modalEventoVisible}
@@ -1103,7 +1071,6 @@ const ListaEventos = () => {
                     </div>
                 )}
             </Modal>
->>>>>>> dev
         </div>
     );
 };
