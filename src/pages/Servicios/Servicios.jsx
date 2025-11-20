@@ -1,14 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { obtenerServicios } from '../../service/servicioService'; // ¡El que creamos!
-import ServicioCard from '../../components/ServicioCard/ServicioCard'; // ¡El que creamos!
-import './Servicios.css'; // Crearemos este archivo ahora
+import { useSearchParams } from 'react-router-dom';
+import { Input, Radio, Button, Select, Card, Tag, Empty, Spin, Drawer } from 'antd';
+import {
+    SearchOutlined,
+    HeartOutlined,
+    HeartFilled,
+    FilterOutlined,
+    AppstoreOutlined
+} from '@ant-design/icons';
+import { obtenerServicios } from '../../service/servicioService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
+import ServicioCard from '../../components/ServicioCard/ServicioCard';
+import './Servicios.css';
+
+const { Option } = Select;
 
 const Servicios = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [todosLosServicios, setTodosLosServicios] = useState([]);
     const [serviciosFiltrados, setServiciosFiltrados] = useState([]);
-    const [filtroCategoria, setFiltroCategoria] = useState('todos'); // 'todos', 'alojamiento', 'gastronomia', 'tour'
+    const [filtroCategoria, setFiltroCategoria] = useState('todos');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [drawerVisible, setDrawerVisible] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const [ordenamiento, setOrdenamiento] = useState('nombre');
+    const [favoritos, setFavoritos] = useState([]);
 
     // 1. Cargar todos los servicios desde la API al montar
     useEffect(() => {
@@ -16,12 +33,24 @@ const Servicios = () => {
             try {
                 setLoading(true);
                 const data = await obtenerServicios();
-                // Si tu API devuelve { data: [...] }, usa data.data
-                // Si devuelve [...], usa data
-                // Basado en el backend, debe ser 'data'
                 setTodosLosServicios(data || []);
-                setServiciosFiltrados(data || []); 
+                setServiciosFiltrados(data || []);
                 setError(null);
+
+                // Aplicar filtro de la URL si existe
+                const categoriaUrl = searchParams.get('categoria');
+                if (categoriaUrl && ['tour', 'alojamiento', 'gastronomia'].includes(categoriaUrl)) {
+                    setFiltroCategoria(categoriaUrl);
+                }
+                
+                // Cargar favoritos
+                try {
+                    const favs = await obtenerFavoritos();
+                    const favServicios = favs.filter(f => f.tipo === 'servicio').map(f => f.itemId);
+                    setFavoritos(favServicios);
+                } catch (favErr) {
+                    console.log('No se pudieron cargar favoritos:', favErr);
+                }
             } catch (err) {
                 setError('No se pudieron cargar los servicios. Intenta más tarde.');
                 console.error(err);
@@ -30,68 +59,283 @@ const Servicios = () => {
             }
         };
         cargarServicios();
-    }, []);
+    }, [searchParams]);
 
-    // 2. Aplicar filtros cuando cambie la categoría seleccionada
+    // 2. Aplicar filtros cuando cambie la categoría o búsqueda
     useEffect(() => {
-        if (filtroCategoria === 'todos') {
-            setServiciosFiltrados(todosLosServicios);
-        } else {
-            const filtrados = todosLosServicios.filter(
-                (s) => s.categoria === filtroCategoria
-            );
-            setServiciosFiltrados(filtrados);
+        let filtrados = todosLosServicios;
+
+        // Filtro por categoría
+        if (filtroCategoria !== 'todos') {
+            filtrados = filtrados.filter((s) => s.categoria === filtroCategoria);
         }
-    }, [filtroCategoria, todosLosServicios]);
+
+        // Filtro por búsqueda
+        if (searchText) {
+            filtrados = filtrados.filter((s) =>
+                s.nombre?.toLowerCase().includes(searchText.toLowerCase()) ||
+                s.descripcion?.toLowerCase().includes(searchText.toLowerCase())
+            );
+        }
+
+        // Ordenamiento
+        switch (ordenamiento) {
+            case 'nombre':
+                filtrados.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+                break;
+            case 'categoria':
+                filtrados.sort((a, b) => (a.categoria || '').localeCompare(b.categoria || ''));
+                break;
+            default:
+                break;
+        }
+
+        setServiciosFiltrados(filtrados);
+    }, [filtroCategoria, todosLosServicios, searchText, ordenamiento]);
+
+    const limpiarFiltros = () => {
+        setSearchText('');
+        setFiltroCategoria('todos');
+    };
+
+    const contarFiltrosActivos = () => {
+        let count = 0;
+        if (searchText) count++;
+        if (filtroCategoria !== 'todos') count++;
+        return count;
+    };
+
+    const toggleFavorito = async (servicioId) => {
+        try {
+            if (favoritos.includes(servicioId)) {
+                const allFavs = await obtenerFavoritos();
+                const fav = allFavs.find(f => f.tipo === 'servicio' && f.itemId === servicioId);
+                if (fav) {
+                    await eliminarFavorito(fav.id);
+                    setFavoritos(prev => prev.filter(id => id !== servicioId));
+                }
+            } else {
+                await agregarFavorito('servicio', servicioId);
+                setFavoritos(prev => [...prev, servicioId]);
+            }
+        } catch (error) {
+            console.error('Error al manejar favorito:', error);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="servicios-container">
+                <div className="loading-container">
+                    <Spin size="large" />
+                    <p>Cargando servicios...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="servicios-container">
+                <div className="error-container">
+                    <p>{error}</p>
+                    <Button type="primary" onClick={() => window.location.reload()}>
+                        Reintentar
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="servicios-page">
-            <h1 className="servicios-titulo">Servicios</h1>
-            <p className="servicios-subtitulo">Descubre los mejores tours, alojamientos y restaurantes.</p>
+        <div className="servicios-container">
+            {/* Drawer de Filtros para móvil */}
+            <Drawer
+                title="Filtros"
+                placement="left"
+                onClose={() => setDrawerVisible(false)}
+                open={drawerVisible}
+                width={300}
+                className="filtros-drawer"
+            >
+                <div className="filtros-container">
+                    {/* Búsqueda */}
+                    <div className="filtro-section">
+                        <h2 className="filtro-label">Buscar por nombre</h2>
+                        <Input
+                            size="large"
+                            placeholder="Buscar por palabra clave..."
+                            prefix={<SearchOutlined />}
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            className="search-input"
+                        />
+                    </div>
 
-            {/* --- Barra de Filtros --- */}
-            <div className="servicios-filtros">
-                <button
-                    className={`filtro-btn ${filtroCategoria === 'todos' ? 'activo' : ''}`}
-                    onClick={() => setFiltroCategoria('todos')}
-                >
-                    Todos
-                </button>
-                <button
-                    className={`filtro-btn ${filtroCategoria === 'alojamiento' ? 'activo' : ''}`}
-                    onClick={() => setFiltroCategoria('alojamiento')}
-                >
-                    🏨 Alojamientos
-                </button>
-                <button
-                    className={`filtro-btn ${filtroCategoria === 'gastronomia' ? 'activo' : ''}`}
-                    onClick={() => setFiltroCategoria('gastronomia')}
-                >
-                    🍽️ Gastronomía
-                </button>
-                <button
-                    className={`filtro-btn ${filtroCategoria === 'tour' ? 'activo' : ''}`}
-                    onClick={() => setFiltroCategoria('tour')}
-                >
-                    🚶‍♂️ Tours
-                </button>
-            </div>
+                    {/* Categorías */}
+                    <div className="filtro-section">
+                        <h2 className="filtro-label">Categorías</h2>
+                        <Radio.Group
+                            value={filtroCategoria}
+                            onChange={(e) => setFiltroCategoria(e.target.value)}
+                            className="radio-group"
+                        >
+                            <Radio value="todos">Todos</Radio>
+                            <Radio value="alojamiento">🏨 Alojamientos</Radio>
+                            <Radio value="gastronomia">🍽️ Gastronomía</Radio>
+                            <Radio value="tour">🚶‍♂️ Tours</Radio>
+                        </Radio.Group>
+                    </div>
 
-            {/* --- Cuadrícula de Servicios --- */}
-            {loading && <p>Cargando servicios...</p>}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            
-            {!loading && !error && (
-                <div className="servicios-grid">
-                    {serviciosFiltrados.length > 0 ? (
-                        serviciosFiltrados.map((servicio) => (
-                            <ServicioCard key={servicio.id} servicio={servicio} />
-                        ))
+                    {/* Botones de acción */}
+                    <div className="filtro-actions">
+                        <Button
+                            type="primary"
+                            block
+                            size="large"
+                        >
+                            Aplicar Filtros
+                        </Button>
+                        <Button
+                            block
+                            size="large"
+                            onClick={limpiarFiltros}
+                        >
+                            Limpiar
+                        </Button>
+                    </div>
+                </div>
+            </Drawer>
+
+            {/* Sidebar de Filtros - Solo Desktop */}
+            <aside className="servicios-sidebar servicios-sidebar-desktop">
+                <div className="sidebar-header">
+                    <AppstoreOutlined className="sidebar-icon" />
+                    <h1 className="sidebar-title">Servicios</h1>
+                </div>
+
+                <div className="filtros-container">
+                    {/* Búsqueda */}
+                    <div className="filtro-section">
+                        <h2 className="filtro-label">Buscar por nombre</h2>
+                        <Input
+                            size="large"
+                            placeholder="Buscar por palabra clave..."
+                            prefix={<SearchOutlined />}
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            className="search-input"
+                        />
+                    </div>
+
+                    {/* Categorías */}
+                    <div className="filtro-section">
+                        <h2 className="filtro-label">Categorías</h2>
+                        <Radio.Group
+                            value={filtroCategoria}
+                            onChange={(e) => setFiltroCategoria(e.target.value)}
+                            className="radio-group"
+                        >
+                            <Radio value="todos">Todos</Radio>
+                            <Radio value="alojamiento">🏨 Alojamientos</Radio>
+                            <Radio value="gastronomia">🍽️ Gastronomía</Radio>
+                            <Radio value="tour">🚶‍♂️ Tours</Radio>
+                        </Radio.Group>
+                    </div>
+
+                    {/* Botones de acción */}
+                    <div className="filtro-actions">
+                        <Button
+                            type="primary"
+                            block
+                            size="large"
+                        >
+                            Aplicar Filtros
+                        </Button>
+                        <Button
+                            block
+                            size="large"
+                            onClick={limpiarFiltros}
+                        >
+                            Limpiar
+                        </Button>
+                    </div>
+                </div>
+            </aside>
+
+            {/* Contenido Principal */}
+            <main className="servicios-main">
+                <div className="servicios-content">
+                    {/* Barra de filtros móvil */}
+                    <div className="mobile-filter-bar">
+                        <Button
+                            icon={<FilterOutlined />}
+                            onClick={() => setDrawerVisible(true)}
+                            className="filter-btn"
+                        >
+                            Filtros {contarFiltrosActivos() > 0 && `(${contarFiltrosActivos()})`}
+                        </Button>
+                        <Select
+                            value={ordenamiento}
+                            onChange={setOrdenamiento}
+                            className="mobile-sort-select"
+                            suffixIcon={null}
+                        >
+                            <Option value="nombre">Nombre</Option>
+                            <Option value="categoria">Categoría</Option>
+                        </Select>
+                    </div>
+
+                    {/* Header */}
+                    <div className="page-header">
+                        <div>
+                            <h1 className="page-title">Servicios</h1>
+                            <p className="page-subtitle">Descubre los mejores tours, alojamientos y restaurantes</p>
+                        </div>
+                    </div>
+
+                    {/* Controles de ordenamiento - Desktop */}
+                    <div className="controles-wrapper">
+                        <div></div>
+                        <Select
+                            value={ordenamiento}
+                            onChange={setOrdenamiento}
+                            style={{ width: 250 }}
+                            size="large"
+                        >
+                            <Option value="nombre">Ordenar por: Nombre</Option>
+                            <Option value="categoria">Ordenar por: Categoría</Option>
+                        </Select>
+                    </div>
+
+                    {/* Grid de servicios */}
+                    {serviciosFiltrados.length === 0 ? (
+                        <div className="empty-state">
+                            <Empty
+                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                description={
+                                    <div>
+                                        <h3>No se encontraron servicios</h3>
+                                        <p>No hay servicios que coincidan con tu búsqueda.<br/>
+                                            ¡Intenta ajustar tus filtros!</p>
+                                    </div>
+                                }
+                            />
+                        </div>
                     ) : (
-                        <p>No se encontraron servicios para esta categoría.</p>
+                        <div className="servicios-grid">
+                            {serviciosFiltrados.map((servicio) => (
+                                <ServicioCard 
+                                    key={servicio.id} 
+                                    servicio={servicio}
+                                    esFavorito={favoritos.includes(servicio.id)}
+                                    onToggleFavorito={toggleFavorito}
+                                />
+                            ))}
+                        </div>
                     )}
                 </div>
-            )}
+            </main>
         </div>
     );
 };

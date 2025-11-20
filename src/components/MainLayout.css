@@ -8,8 +8,20 @@
 
 .main-layout-content {
     flex: 1;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: #f6f8f6;
+}
+
+/* Ocultar scrollbar del contenido principal */
+.main-layout-content::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+.main-layout-content {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .coming-soon {

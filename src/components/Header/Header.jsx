@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { logout, getCurrentUser } from '../../utils/auth';
 import './Header.css';
-import { FaHouseUser } from "react-icons/fa";
+import ProfileIcon from '../../Iconos/Profile.png';
+import FavoritosIcon from '../../Iconos/favoritos.png';
+import LogoIcon from '../../Iconos/logo.svg';
 
 const Header = ({ searchTerm, onSearchChange }) => {
     const location = useLocation();
@@ -41,9 +43,8 @@ const Header = ({ searchTerm, onSearchChange }) => {
         <header className="mapa-app-header">
             <div className="header-left">
                 <div className="logo-section">
-                    <span className="logo-icon">🏞️</span>
-                    <h2 className="logo-title">SIERRA
-EXPLORA</h2>
+                    <img src={LogoIcon} alt="Sierra Explora" className="logo-img" />
+                    <h2 className="logo-title">SIERRA EXPLORA</h2>
                 </div>
                 <nav className="nav-desktop">
                     <Link to="/experiencia/inicio" className={isActive('/experiencia/inicio')}>Inicio</Link>
@@ -53,26 +54,21 @@ EXPLORA</h2>
                 </nav>
             </div>
             <div className="header-right">
-                <div className="search-container-header">
-                    <span className="search-icon">🔍</span>
-                    <input
-                        type="text"
-                        placeholder="Buscar"
-                        className="search-input-header"
-                        value={searchTerm}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                    />
-                </div>
                 <Link to="/experiencia/mapa" className="btn-icon-header" aria-label="Mapa">
                     🗺️
                 </Link>
-                
+                <Link to="/experiencia/favoritos" className="btn-icon-header btn-favoritos" aria-label="Favoritos">
+                    <img src={FavoritosIcon} alt="Favoritos" className="icon-img" />
+                </Link>
+
                 {/* Avatar con menú desplegable */}
                 <div className="avatar-container" ref={menuRef}>
-                    <div 
+                    <div
                         className="avatar-header"
                         onClick={() => setMenuOpen(!menuOpen)}
-                    ><div style={{ fontSize: 'clamp(33px, 1vw, 30px)', alignItems: 'center', marginBottom: '10px', color: '#dfd9cfff' }}><FaHouseUser /></div>{/*<div style={{ fontSize: 'clamp(25px, 5vw, 20px)', marginBottom: '10px', color: '#16a085' }}>🏠</div>*/}</div>
+                    >
+                        <img src={ProfileIcon} alt="Perfil" className="profile-icon-img" />
+                    </div>
 
                     {/* Menú desplegable */}
                     {menuOpen && (

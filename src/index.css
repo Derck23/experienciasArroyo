@@ -33,6 +33,58 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+  border: none !important;
+}
+
+/* Quitar cualquier borde verde del body y elementos raíz */
+body, #root, .main-layout, .main-layout-content {
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Quitar línea verde del lado derecho en móvil */
+@media (max-width: 768px) {
+  body, #root, .main-layout, .main-layout-content,
+  .eventos-container, .eventos-main, .eventos-content,
+  .calendario-view, .calendario-container {
+    border-right: 0 !important;
+    box-shadow: none !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  * {
+    border-right-color: transparent !important;
+    border-right-width: 0 !important;
+  }
+
+  body::after, #root::after, .main-layout::after {
+    content: none !important;
+  }
+}
+
+/* Ocultar scrollbar en todos lados */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 20px;
+  border: transparent;
 }
 
 h1 {
@@ -70,4 +122,35 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Quitar línea verde de modal en móvil */
+.ant-modal-root,
+.ant-modal-wrap,
+.ant-modal-mask,
+.ant-modal,
+.ant-modal-content,
+.ant-modal-header,
+.ant-modal-body,
+.ant-modal-footer {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.ant-modal-content {
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+  border-style: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Quitar la línea verde de todos los elementos dentro de la modal */
+.ant-modal * {
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
 }

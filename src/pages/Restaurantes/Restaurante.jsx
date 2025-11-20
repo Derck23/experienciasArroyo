@@ -17,11 +17,14 @@ import {
   InstagramOutlined,
   FacebookOutlined,
   TwitterOutlined,
-  FireOutlined
+  FireOutlined,
+  HeartOutlined,
+  HeartFilled
 } from "@ant-design/icons";
 import imagenHome from '../../assets/imagenHome.jpg';
 import { logout, getCurrentUser } from '../../utils/auth';
 import { listRestaurants } from '../../service/restaurantService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import './Restaurante.css';
 
 const { Content } = Layout;
@@ -33,6 +36,7 @@ function Restaurante() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [favoritos, setFavoritos] = useState([]);
   const user = getCurrentUser();
   
   useEffect(() => {
@@ -42,6 +46,15 @@ function Restaurante() {
         setError(null);
         const resp = await listRestaurants();
         setRestaurants(resp.data || []);
+        
+        // Cargar favoritos
+        try {
+          const favs = await obtenerFavoritos();
+          const favRestaurantes = favs.filter(f => f.tipo === 'restaurante').map(f => f.itemId);
+          setFavoritos(favRestaurantes);
+        } catch (err) {
+          console.log('No se pudieron cargar favoritos:', err);
+        }
       } catch (error) {
         console.error('Error completo al cargar restaurantes:', error);
         if (error.response?.status === 403) {
@@ -68,6 +81,26 @@ function Restaurante() {
     ? restaurants 
     : restaurants.filter(r => r.category === selectedCategory);
 
+  const toggleFavorito = async (restaurantId, e) => {
+    e.stopPropagation();
+    try {
+      if (favoritos.includes(restaurantId)) {
+        // Buscar el favorito para eliminarlo
+        const allFavs = await obtenerFavoritos();
+        const fav = allFavs.find(f => f.tipo === 'restaurante' && f.itemId === restaurantId);
+        if (fav) {
+          await eliminarFavorito(fav.id);
+          setFavoritos(prev => prev.filter(id => id !== restaurantId));
+        }
+      } else {
+        await agregarFavorito('restaurante', restaurantId);
+        setFavoritos(prev => [...prev, restaurantId]);
+      }
+    } catch (error) {
+      console.error('Error al manejar favorito:', error);
+    }
+  };
+
   const renderRestaurantCard = (restaurant) => (
     <div 
       key={restaurant.id} 
@@ -80,6 +113,16 @@ function Restaurante() {
             src={restaurant.image}
             alt={restaurant.name}
             className="restaurant-service-card-image"
+          />
+          <Button
+            type="text"
+            icon={
+              favoritos.includes(restaurant.id)
+                ? <HeartFilled style={{ color: '#ff4d4f', fontSize: '20px' }} />
+                : <HeartOutlined style={{ fontSize: '20px' }} />
+            }
+            className="restaurant-favorito-btn"
+            onClick={(e) => toggleFavorito(restaurant.id, e)}
           />
           <div className="restaurant-service-card-overlay">
             <Button 
