@@ -2,9 +2,9 @@ import axios from 'axios';
 
 // Instancia base de Axios
 const api = axios.create({
-  //baseURL: 'https://proyecto-back-integradora.onrender.com/api',
+  baseURL: 'https://proyecto-back-integradora.onrender.com/api',
 
-  baseURL: 'http://localhost:3000/api', // Descomenta para desarrollo local
+  //baseURL: 'http://localhost:3000/api', // Descomenta para desarrollo local
 
    // baseURL: 'http://localhost:3000/api', // Descomenta para desarrollo local
 
