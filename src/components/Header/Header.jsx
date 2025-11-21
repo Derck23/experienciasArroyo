@@ -81,6 +81,14 @@ const Header = ({ searchTerm, onSearchChange }) => {
                                     {user?.email}
                                 </div>
                             </div>
+                            <Link 
+            to="/experiencia/mis-reservaciones" 
+            className="user-menu-item"
+            onClick={() => setMenuOpen(false)} // Para que se cierre el menú al hacer clic
+        >
+            <span className="menu-icon">📅</span>
+            <span>Mis Reservaciones</span>
+        </Link>
 
                             <div className="user-menu-divider"></div>
 

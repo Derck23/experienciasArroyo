@@ -44,6 +44,7 @@ const ServicioCard = ({ servicio, esFavorito, onToggleFavorito }) => {
                     />
                     <Button
                         type="text"
+                        shape="circle"
                         icon={
                             esFavorito
                                 ? <HeartFilled style={{ color: '#ff4d4f' }} />
@@ -76,7 +77,6 @@ const ServicioCard = ({ servicio, esFavorito, onToggleFavorito }) => {
                 </span>
                 <Button 
                     type="primary" 
-                    ghost
                     onClick={() => navigate(`/experiencia/servicios/${servicio.id}`)}
                 >
                     Ver Detalles

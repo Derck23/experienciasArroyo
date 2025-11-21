@@ -291,3 +291,30 @@
     padding-top: max(0.5rem, env(safe-area-inset-top));
   }
 }
+
+/* Estilos para items del menú (como Mis Reservaciones) */
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  text-decoration: none; /* Quitar subrayado del Link */
+  color: #374151; /* Gris oscuro */
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.user-menu-item:hover {
+  background-color: #f0fdf4; /* Un verde muy clarito */
+  color: #17cf17; /* Tu verde de marca */
+}
+
+.menu-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
