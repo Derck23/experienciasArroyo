@@ -12,7 +12,8 @@ import {
   AppstoreOutlined,
   EnvironmentOutlined,
   CalendarOutlined,
-  CustomerServiceOutlined
+  CustomerServiceOutlined,
+  ScheduleOutlined
 } from '@ant-design/icons';
 import { logout, getCurrentUser } from '../../utils/auth';
 import imagenLogin from '../../assets/imagenLogin.jpg';
@@ -80,6 +81,12 @@ function AdminLayout() {
       icon: <CalendarOutlined />,
       label: 'Eventos',
       onClick: () => navigate('/admin/eventos'),
+    },
+    {
+      key: '/admin/reservaciones',
+      icon: <ScheduleOutlined />,
+      label: 'Reservaciones',
+      onClick: () => navigate('/admin/reservaciones'),
     },
   ];
 

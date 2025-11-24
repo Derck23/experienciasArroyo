@@ -33,3 +33,25 @@ export const cancelarReservacion = async (id) => {
         throw error.response?.data || { message: 'Error al cancelar la reservación' };
     }
 };
+
+// Obtener TODAS las reservaciones (Solo para Admin)
+export const obtenerTodasReservaciones = async () => {
+    try {
+        const response = await api.get('/reservaciones'); // Ruta que creamos en el back
+        return response.data.data; 
+    } catch (error) {
+        throw error.response?.data || { message: 'Error al obtener todas las reservaciones' };
+    }
+};
+
+// Actualizar estado de reservación (Confirmar/Cancelar desde Admin)
+export const actualizarEstadoReservacion = async (id, nuevoEstado) => {
+    try {
+        const response = await api.patch(`/reservaciones/${id}/estado`, { 
+            estado: nuevoEstado 
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: 'Error al actualizar la reservación' };
+    }
+};
