@@ -11,6 +11,7 @@ import GestionDePlatillos from "./pages/Admin/GestionDePlatillos";
 import GestionDeAtracciones from "./pages/Admin/GestionDeAtracciones";
 import GestionDeServicios from "./pages/Admin/GestionDeServicios";
 import AdminLayout from "./pages/Admin/AdminLayout";
+import AdminReservaciones from "./pages/Admin/AdminReservaciones";
 import MainLayout from "./components/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ListaAtacciones from "./pages/AtraccionTuristicas/ListaAtacciones";
@@ -91,6 +92,7 @@ function AppRoutes() {
           <Route path="dishes" element={<GestionDePlatillos />} />
           <Route path="attractions" element={<GestionDeAtracciones />} />
           <Route path="eventos" element={<GestionEventos />} />
+          <Route path="reservaciones" element={<AdminReservaciones />} />
         </Route>
       </Routes>
     </Router>

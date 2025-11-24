@@ -1,0 +1,45 @@
+/* Contenedor principal */
+.admin-container {
+    padding: 24px;
+}
+
+/* Contenedor de filtros */
+.admin-filtros {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Inputs y Selects (por defecto tamaño fijo) */
+.filtro-item {
+    width: 250px;
+}
+
+.filtro-select {
+    width: 150px;
+}
+
+/* === RESPONSIVE (Móvil) === */
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 12px; /* Menos padding en celular */
+    }
+
+    .admin-filtros {
+        flex-direction: column; /* Apilar filtros */
+        gap: 12px;
+    }
+
+    .filtro-item, 
+    .filtro-select {
+        width: 100% !important; /* Que ocupen todo el ancho */
+    }
+    
+    /* Ajustar botón del PDF en el header del Card */
+    .ant-card-head-wrapper {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
