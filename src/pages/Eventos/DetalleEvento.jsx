@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Tag, Spin, Carousel } from 'antd';
+import { Button, Tag, Spin, Carousel, message } from 'antd';
 import {
     ArrowLeftOutlined,
     CalendarOutlined,
@@ -31,7 +31,8 @@ const DetalleEvento = () => {
     const verificarFavorito = async () => {
         try {
             const favs = await obtenerFavoritos();
-            const isFav = favs.some(f => f.tipo === 'evento' && f.itemId === Number.parseInt(id, 10));
+            // Usamos '==' para comparar string con number sin problemas
+            const isFav = favs.some(f => f.tipo === 'evento' && f.itemId == id);
             setEsFavorito(isFav);
         } catch (error) {
             console.log('No se pudo verificar favorito:', error);

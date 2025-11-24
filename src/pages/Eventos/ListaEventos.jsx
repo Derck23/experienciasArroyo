@@ -932,7 +932,7 @@ const ListaEventos = () => {
                                         </span>
                                         <Button 
                                             type="primary" 
-                                            ghost
+
                                             onClick={() => navigate(`/experiencia/eventos/${evento.id}`)}
                                         >
                                             Ver Detalles

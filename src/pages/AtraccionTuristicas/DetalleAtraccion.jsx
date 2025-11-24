@@ -31,7 +31,7 @@ const DetalleAtraccion = () => {
     const verificarFavorito = async () => {
         try {
             const favs = await obtenerFavoritos();
-            const isFav = favs.some(f => f.tipo === 'atraccion' && f.itemId === Number.parseInt(id, 10));
+            const isFav = favs.some(f => f.tipo === 'atraccion' && f.itemId == id);
             setEsFavorito(isFav);
         } catch (error) {
             console.log('No se pudo verificar favorito:', error);
