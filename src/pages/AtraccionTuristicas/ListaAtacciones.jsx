@@ -404,7 +404,6 @@ const ListaAtacciones = () => {
                                         </span>
                                         <Button 
                                             type="primary" 
-                                            ghost
                                             onClick={() => navigate(`/experiencia/atracciones/${atraccion.id}`)}
                                         >
                                             Ver Detalles
