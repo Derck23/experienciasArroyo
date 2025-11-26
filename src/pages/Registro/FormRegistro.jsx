@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { register } from '../../service/authService';
-import { Form, Input, Button, message, Spin } from 'antd';
-import { UserOutlined, LockOutlined, PhoneOutlined, MailOutlined, CheckCircleOutlined} from '@ant-design/icons';
+import { Form, Input, Button, message, Spin, Alert } from 'antd';
+import { UserOutlined, LockOutlined, PhoneOutlined, MailOutlined, CheckCircleOutlined, InfoCircleOutlined} from '@ant-design/icons';
 import ModalCodigoRegistro from './ModalCodigoRegistro';
 
 function FormRegistro() {
@@ -10,34 +10,132 @@ function FormRegistro() {
   const [userEmail, setUserEmail] = useState('');
   const [form] = Form.useForm();
   const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Validación personalizada para email
+  const validateEmail = (_, value) => {
+    if (!value) {
+      return Promise.reject(new Error('El correo electrónico es requerido'));
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value.trim())) {
+      return Promise.reject(new Error('Por favor ingresa un correo electrónico válido'));
+    }
+    return Promise.resolve();
+  };
+
+  // Validación personalizada para contraseña
+  const validatePassword = (_, value) => {
+    if (!value) {
+      return Promise.reject(new Error('La contraseña es requerida'));
+    }
+    if (value.length < 8) {
+      return Promise.reject(new Error('La contraseña debe tener al menos 8 caracteres'));
+    }
+    if (!/[a-z]/.test(value)) {
+      return Promise.reject(new Error('Debe contener al menos una letra minúscula'));
+    }
+    if (!/[A-Z]/.test(value)) {
+      return Promise.reject(new Error('Debe contener al menos una letra mayúscula'));
+    }
+    if (!/[0-9]/.test(value)) {
+      return Promise.reject(new Error('Debe contener al menos un número'));
+    }
+    return Promise.resolve();
+  };
+
+  // Validación para confirmar contraseña
+  const validateConfirmPassword = (_, value) => {
+    const password = form.getFieldValue('password');
+    if (!value) {
+      return Promise.reject(new Error('Por favor confirma tu contraseña'));
+    }
+    if (value !== password) {
+      return Promise.reject(new Error('Las contraseñas no coinciden'));
+    }
+    return Promise.resolve();
+  };
+
+  // Validación para nombre
+  const validateFirstName = (_, value) => {
+    if (!value) {
+      return Promise.reject(new Error('El nombre es requerido'));
+    }
+    if (value.trim().length < 2) {
+      return Promise.reject(new Error('El nombre debe tener al menos 2 caracteres'));
+    }
+    return Promise.resolve();
+  };
+
+  // Validación para apellido
+  const validateLastName = (_, value) => {
+    if (!value) {
+      return Promise.reject(new Error('El apellido es requerido'));
+    }
+    if (value.trim().length < 2) {
+      return Promise.reject(new Error('El apellido debe tener al menos 2 caracteres'));
+    }
+    return Promise.resolve();
+  };
 
   const handleSubmit = async (values) => {
     setLoading(true);
+    setErrorMessage('');
+    
     try {
-      console.log('Enviando datos de registro:', values);
-      const response = await register(values);
+      // Normalizar y limpiar datos (sin incluir confirmPassword)
+      const normalizedValues = {
+        email: values.email.trim().toLowerCase(),
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
+        password: values.password,
+        phone: values.phone
+      };
+
+      console.log('Enviando datos de registro:', normalizedValues);
+      const response = await register(normalizedValues);
       console.log('Registro response:', response);
 
       if (response.success) {
         message.success('Código de verificación enviado a tu correo');
-        setUserEmail(values.email);
+        setUserEmail(normalizedValues.email);
         setModalVisible(true);
       }
 
     } catch (error) {
       console.error('Registro failed:', error);
 
-      let errorMessage = 'Error en el registro. Intenta nuevamente.';
+      let errorMsg = '';
 
-      if (error.message) {
-        errorMessage = error.message;
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+      if (error.response) {
+        const status = error.response.status;
+        const serverMessage = error.response.data?.message;
+
+        switch (status) {
+          case 400:
+            errorMsg = serverMessage || 'Datos de registro inválidos';
+            break;
+          case 409:
+            errorMsg = 'Este correo electrónico ya está registrado';
+            break;
+          case 500:
+            errorMsg = 'Error del servidor. Por favor intenta más tarde';
+            break;
+          default:
+            errorMsg = serverMessage || 'Error en el registro';
+        }
+      } else if (error.request) {
+        errorMsg = 'No se puede conectar con el servidor. Verifica tu conexión a internet';
+      } else if (error.message) {
+        errorMsg = error.message;
       } else if (error.code === 'ERR_NETWORK') {
-        errorMessage = 'Error de conexión. Verifica tu internet.';
+        errorMsg = 'Error de conexión. Verifica tu internet';
+      } else {
+        errorMsg = 'Error desconocido. Por favor intenta nuevamente';
       }
 
-      message.error(errorMessage);
+      setErrorMessage(errorMsg);
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -45,7 +143,14 @@ function FormRegistro() {
 
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
-    message.error('Por favor completa todos los campos correctamente.');
+    setErrorMessage('');
+    message.error('Por favor completa correctamente todos los campos requeridos.');
+  };
+
+  const handleFieldChange = () => {
+    if (errorMessage) {
+      setErrorMessage('');
+    }
   };
 
   const handleModalClose = () => {
@@ -130,6 +235,21 @@ function FormRegistro() {
             </h2>
           </div>
 
+          {errorMessage && (
+            <Alert
+              message="Error de registro"
+              description={errorMessage}
+              type="error"
+              showIcon
+              closable
+              onClose={() => setErrorMessage('')}
+              style={{
+                marginBottom: '20px',
+                borderRadius: '8px'
+              }}
+            />
+          )}
+
           <Form
             form={form}
             name="registro"
@@ -137,13 +257,13 @@ function FormRegistro() {
             onFinishFailed={onFinishFailed}
             size="large"
             layout="vertical"
+            scrollToFirstError
+            onValuesChange={handleFieldChange}
           >
             <Form.Item
               name="email"
-              rules={[
-                { required: true, message: 'Por favor ingresa tu correo!' },
-                { type: 'email', message: 'Por favor ingresa un correo válido!' }
-              ]}
+              rules={[{ validator: validateEmail }]}
+              hasFeedback
             >
               <Input
                 prefix={<MailOutlined style={{ color: '#7f8c8d' }} />}
@@ -154,15 +274,16 @@ function FormRegistro() {
                   padding: '12px',
                   fontSize: '16px'
                 }}
+                onChange={(e) => {
+                  e.target.value = e.target.value.trim();
+                }}
               />
             </Form.Item>
 
             <Form.Item
               name="firstName"
-              rules={[
-                { required: true, message: 'Por favor ingresa tu nombre!' },
-                { min: 2, message: 'El nombre debe tener al menos 2 caracteres!' }
-              ]}
+              rules={[{ validator: validateFirstName }]}
+              hasFeedback
             >
               <Input
                 prefix={<UserOutlined style={{ color: '#7f8c8d' }} />}
@@ -177,10 +298,8 @@ function FormRegistro() {
 
             <Form.Item
               name="lastName"
-              rules={[
-                { required: true, message: 'Por favor ingresa tus apellidos!' },
-                { min: 2, message: 'Los apellidos deben tener al menos 2 caracteres!' }
-              ]}
+              rules={[{ validator: validateLastName }]}
+              hasFeedback
             >
               <Input
                 prefix={<UserOutlined style={{ color: '#7f8c8d' }} />}
@@ -195,14 +314,34 @@ function FormRegistro() {
 
             <Form.Item
               name="password"
-              rules={[
-                { required: true, message: 'Por favor ingresa tu contraseña!' },
-                { min: 6, message: 'La contraseña debe tener al menos 6 caracteres!' }
-              ]}
+              rules={[{ validator: validatePassword }]}
+              hasFeedback
+              extra={
+                <div style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '8px' }}>
+                  <InfoCircleOutlined /> La contraseña debe tener: mínimo 8 caracteres, una mayúscula, una minúscula y un número
+                </div>
+              }
             >
               <Input.Password
                 prefix={<LockOutlined style={{ color: '#7f8c8d' }} />}
                 placeholder="Contraseña"
+                style={{
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '16px'
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="confirmPassword"
+              dependencies={['password']}
+              rules={[{ validator: validateConfirmPassword }]}
+              hasFeedback
+            >
+              <Input.Password
+                prefix={<LockOutlined style={{ color: '#7f8c8d' }} />}
+                placeholder="Confirmar contraseña"
                 style={{
                   borderRadius: '8px',
                   padding: '12px',
@@ -217,6 +356,7 @@ function FormRegistro() {
                 { required: true, message: 'Por favor ingresa tu teléfono!' },
                 { pattern: /^[0-9]{10}$/, message: 'El teléfono debe tener 10 dígitos!' }
               ]}
+              hasFeedback
             >
               <Input
                 prefix={<PhoneOutlined style={{ color: '#7f8c8d' }} />}

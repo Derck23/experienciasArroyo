@@ -4,25 +4,50 @@ import { MailOutlined, LockOutlined, SafetyOutlined, ExclamationCircleOutlined }
 import { forgotPassword, resetPassword } from '../../service/authService';
 
 function ModalRecuperarPassword({ visible, onClose }) {
-  const [step, setStep] = useState(1); // 1: Email, 2: Código y nueva contraseña
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [passwordErrors, setPasswordErrors] = useState([]);
+
+  // Validación de email mejorada
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
+  // Validación de contraseña mejorada
+  const validatePasswordStrength = (password) => {
+    const errors = [];
+    if (password.length < 8) {
+      errors.push('Mínimo 8 caracteres');
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push('Una letra minúscula');
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Una letra mayúscula');
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push('Un número');
+    }
+    return errors;
+  };
 
   const handleRequestCode = async () => {
     setError(null);
 
-    if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      setError('Por favor ingresa un correo válido');
+    if (!email || !validateEmail(email)) {
+      setError('Por favor ingresa un correo electrónico válido');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await forgotPassword(email);
+      const response = await forgotPassword(email.trim().toLowerCase());
 
       if (response.success) {
         message.success('Código de recuperación enviado a tu correo');
@@ -38,14 +63,17 @@ function ModalRecuperarPassword({ visible, onClose }) {
 
   const handleResetPassword = async () => {
     setError(null);
+    setPasswordErrors([]);
 
     if (!verificationCode || verificationCode.length !== 6) {
       setError('Por favor ingresa el código de 6 caracteres');
       return;
     }
 
-    if (!newPassword || newPassword.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    const passwordValidationErrors = validatePasswordStrength(newPassword);
+    if (passwordValidationErrors.length > 0) {
+      setPasswordErrors(passwordValidationErrors);
+      setError('La contraseña no cumple con los requisitos de seguridad');
       return;
     }
 
@@ -56,7 +84,7 @@ function ModalRecuperarPassword({ visible, onClose }) {
 
     setLoading(true);
     try {
-      const response = await resetPassword(email, verificationCode, newPassword);
+      const response = await resetPassword(email.trim().toLowerCase(), verificationCode, newPassword);
 
       if (response.success) {
         message.success('¡Contraseña actualizada exitosamente!');
@@ -67,6 +95,20 @@ function ModalRecuperarPassword({ visible, onClose }) {
       setError(error.message || 'Error al actualizar la contraseña');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    if (error) setError(null);
+    const value = e.target.value;
+    setNewPassword(value);
+    
+    // Validar en tiempo real
+    if (value.length > 0) {
+      const errors = validatePasswordStrength(value);
+      setPasswordErrors(errors);
+    } else {
+      setPasswordErrors([]);
     }
   };
 
@@ -141,7 +183,7 @@ function ModalRecuperarPassword({ visible, onClose }) {
                 value={email}
                 onChange={(e) => {
                   if (error) setError(null);
-                  setEmail(e.target.value);
+                  setEmail(e.target.value.trim());
                 }}
                 placeholder="Correo electrónico"
                 prefix={<MailOutlined style={{ color: '#7f8c8d' }} />}
@@ -240,20 +282,35 @@ function ModalRecuperarPassword({ visible, onClose }) {
               }}>Nueva contraseña</label>
               <Input.Password
                 value={newPassword}
-                onChange={(e) => {
-                  if (error) setError(null);
-                  setNewPassword(e.target.value);
-                }}
-                placeholder="Mínimo 6 caracteres"
+                onChange={handlePasswordChange}
+                placeholder="Mínimo 8 caracteres"
                 prefix={<LockOutlined style={{ color: '#7f8c8d' }} />}
                 size="large"
                 style={{
                   borderRadius: '8px',
                   padding: '12px',
                   fontSize: '16px',
-                  marginBottom: '15px'
+                  marginBottom: '8px'
                 }}
               />
+              
+              {passwordErrors.length > 0 && (
+                <div style={{
+                  fontSize: '12px',
+                  color: '#ff4d4f',
+                  marginBottom: '15px',
+                  padding: '8px',
+                  backgroundColor: '#fff2f0',
+                  borderRadius: '6px'
+                }}>
+                  <strong>Requisitos faltantes:</strong>
+                  <ul style={{ margin: '5px 0 0 20px', padding: 0 }}>
+                    {passwordErrors.map((err, index) => (
+                      <li key={index}>{err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <label style={{
                 display: 'block',

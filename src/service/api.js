@@ -6,8 +6,6 @@ const api = axios.create({
 
   //baseURL: 'http://localhost:3000/api', // Descomenta para desarrollo local
 
-  // baseURL: 'http://localhost:3000/api', // Descomenta para desarrollo local
-
   timeout: 60000, // 60 segundos para dar tiempo a que Render despierte
   headers: {
     'Content-Type': 'application/json',
