@@ -294,7 +294,7 @@ const MapadeAtracciones = () => {
                 {/* Sidebar */}
                 <aside className="mapa-sidebar">
                     <div className="sidebar-content">
-                        <h1 className="sidebar-title">
+                        <h1 className="sidebar-title" style={{ color: '#2D5016', fontWeight: 'normal' }}>
                             {selectedLocation ? selectedLocation.name : 'Arroyo Seco'}
                         </h1>
 

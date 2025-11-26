@@ -11,15 +11,23 @@ import {
 } from '@ant-design/icons';
 import { obtenerAtracciones } from '../../service/atraccionService';
 import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
+import useBackButton from '../../hooks/useBackButton.jsx';
 import './ListaAtacciones.css';
 
 const { Option } = Select;
 
 const ListaAtacciones = () => {
     const navigate = useNavigate();
+
+    // Hook para manejar botón atrás del teléfono
+    useBackButton('/experiencia');
+
     const [searchText, setSearchText] = useState('');
+    const [searchTextTemp, setSearchTextTemp] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Todas');
+    const [selectedCategoryTemp, setSelectedCategoryTemp] = useState('Todas');
     const [selectedDifficulty, setSelectedDifficulty] = useState('Todas');
+    const [selectedDifficultyTemp, setSelectedDifficultyTemp] = useState('Todas');
     const [atracciones, setAtracciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -99,10 +107,20 @@ const ListaAtacciones = () => {
         }
     };
 
+    const aplicarFiltros = () => {
+        setSearchText(searchTextTemp);
+        setSelectedCategory(selectedCategoryTemp);
+        setSelectedDifficulty(selectedDifficultyTemp);
+        setDrawerVisible(false);
+    };
+
     const limpiarFiltros = () => {
         setSearchText('');
+        setSearchTextTemp('');
         setSelectedCategory('Todas');
+        setSelectedCategoryTemp('Todas');
         setSelectedDifficulty('Todas');
+        setSelectedDifficultyTemp('Todas');
     };
 
     const contarFiltrosActivos = () => {
@@ -179,8 +197,8 @@ const ListaAtacciones = () => {
                             size="large"
                             placeholder="Buscar por palabra clave..."
                             prefix={<SearchOutlined />}
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            value={searchTextTemp}
+                            onChange={(e) => setSearchTextTemp(e.target.value)}
                             className="search-input"
                         />
                     </div>
@@ -189,8 +207,8 @@ const ListaAtacciones = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Categorías</h2>
                         <Radio.Group
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            value={selectedCategoryTemp}
+                            onChange={(e) => setSelectedCategoryTemp(e.target.value)}
                             className="radio-group"
                         >
                             {categorias.map(cat => (
@@ -203,8 +221,8 @@ const ListaAtacciones = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Dificultad</h2>
                         <Radio.Group
-                            value={selectedDifficulty}
-                            onChange={(e) => setSelectedDifficulty(e.target.value)}
+                            value={selectedDifficultyTemp}
+                            onChange={(e) => setSelectedDifficultyTemp(e.target.value)}
                             className="radio-group"
                         >
                             {dificultades.map(dif => (
@@ -219,6 +237,7 @@ const ListaAtacciones = () => {
                             type="primary"
                             block
                             size="large"
+                            onClick={aplicarFiltros}
                         >
                             Aplicar Filtros
                         </Button>
@@ -248,8 +267,8 @@ const ListaAtacciones = () => {
                             size="large"
                             placeholder="Buscar por palabra clave..."
                             prefix={<SearchOutlined />}
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            value={searchTextTemp}
+                            onChange={(e) => setSearchTextTemp(e.target.value)}
                             className="search-input"
                         />
                     </div>
@@ -258,8 +277,8 @@ const ListaAtacciones = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Categorías</h2>
                         <Radio.Group
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            value={selectedCategoryTemp}
+                            onChange={(e) => setSelectedCategoryTemp(e.target.value)}
                             className="radio-group"
                         >
                             {categorias.map(cat => (
@@ -272,8 +291,8 @@ const ListaAtacciones = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Dificultad</h2>
                         <Radio.Group
-                            value={selectedDifficulty}
-                            onChange={(e) => setSelectedDifficulty(e.target.value)}
+                            value={selectedDifficultyTemp}
+                            onChange={(e) => setSelectedDifficultyTemp(e.target.value)}
                             className="radio-group"
                         >
                             {dificultades.map(dif => (
@@ -288,6 +307,7 @@ const ListaAtacciones = () => {
                             type="primary"
                             block
                             size="large"
+                            onClick={aplicarFiltros}
                         >
                             Aplicar Filtros
                         </Button>
@@ -329,7 +349,7 @@ const ListaAtacciones = () => {
                     {/* Header */}
                     <div className="page-header">
                         <div>
-                            <h1 className="page-title">Atracciones Turísticas</h1>
+                            <h1 className="page-title" style={{ color: '#2D5016', fontWeight: 'normal' }}>Atracciones Turísticas</h1>
                             <p className="page-subtitle">Descubre lugares increíbles</p>
                         </div>
                     </div>

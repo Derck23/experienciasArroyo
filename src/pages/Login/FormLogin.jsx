@@ -1,15 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { login } from '../../service/authService';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, message, Spin } from 'antd';
+import { Form, Input, Button, message, Spin, Alert } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import ModalRecuperarPassword from './ModalRecuperarPassword';
 
 function FormLogin() {
   const [loading, setLoading] = useState(false);
   const [modalRecuperarVisible, setModalRecuperarVisible] = useState(false);
+  const [showInactivityAlert, setShowInactivityAlert] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
+  // Verificar si se cerró sesión por inactividad
+  useEffect(() => {
+    const logoutReason = sessionStorage.getItem('logoutReason');
+    if (logoutReason === 'inactivity') {
+      setShowInactivityAlert(true);
+      sessionStorage.removeItem('logoutReason');
+
+      // Ocultar alerta después de 8 segundos
+      setTimeout(() => {
+        setShowInactivityAlert(false);
+      }, 8000);
+    }
+  }, []);
 
   const handleSubmit = async (values) => {
     setLoading(true);
@@ -68,6 +83,22 @@ function FormLogin() {
   return (
     <div>
       <Spin spinning={loading} tip="Iniciando sesión...">
+        {/* Alerta de sesión cerrada por inactividad */}
+        {showInactivityAlert && (
+          <Alert
+            message="Sesión cerrada por inactividad"
+            description="Tu sesión se cerró automáticamente debido a un período prolongado de inactividad. Por favor, inicia sesión nuevamente."
+            type="warning"
+            showIcon
+            closable
+            onClose={() => setShowInactivityAlert(false)}
+            style={{
+              marginBottom: '20px',
+              borderRadius: '8px'
+            }}
+          />
+        )}
+
         <div style={{
           textAlign: 'center',
           marginBottom: '25px'

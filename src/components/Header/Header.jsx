@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { logout, getCurrentUser } from '../../utils/auth';
+import { Modal } from 'antd';
 import './Header.css';
 import ProfileIcon from '../../Iconos/Profile.png';
 import FavoritosIcon from '../../Iconos/favoritos.png';
@@ -10,6 +11,7 @@ const Header = ({ searchTerm, onSearchChange }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [modalCerrarSesion, setModalCerrarSesion] = useState(false);
     const menuRef = useRef(null);
     const user = getCurrentUser();
 
@@ -34,9 +36,19 @@ const Header = ({ searchTerm, onSearchChange }) => {
         };
     }, [menuOpen]);
 
-    const handleLogout = () => {
+    const mostrarModalCerrarSesion = () => {
+        setModalCerrarSesion(true);
+        setMenuOpen(false);
+    };
+
+    const confirmarCerrarSesion = () => {
         logout();
+        setModalCerrarSesion(false);
         navigate('/login');
+    };
+
+    const cancelarCerrarSesion = () => {
+        setModalCerrarSesion(false);
     };
 
     return (
@@ -93,9 +105,9 @@ const Header = ({ searchTerm, onSearchChange }) => {
                             <div className="user-menu-divider"></div>
 
                             <button
-                                onClick={handleLogout}
+                                onClick={mostrarModalCerrarSesion}
                                 className="user-menu-logout"
-                            >   
+                            >
                                 <span className="logout-icon">🚪</span>
                                 <span>Cerrar Sesión</span>
                             </button>
@@ -103,6 +115,26 @@ const Header = ({ searchTerm, onSearchChange }) => {
                     )}
                 </div>
             </div>
+
+            {/* Modal de confirmación de cierre de sesión */}
+            <Modal
+                title="¿Cerrar sesión?"
+                open={modalCerrarSesion}
+                onOk={confirmarCerrarSesion}
+                onCancel={cancelarCerrarSesion}
+                centered
+                okText="Sí, cerrar sesión"
+                cancelText="Cancelar"
+                okButtonProps={{
+                    danger: true,
+                    style: {
+                        backgroundColor: '#ff4d4f',
+                        borderColor: '#ff4d4f'
+                    }
+                }}
+            >
+                <p>¿Estás seguro que deseas cerrar tu sesión?</p>
+            </Modal>
         </header>
     );
 };

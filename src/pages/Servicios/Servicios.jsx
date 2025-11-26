@@ -11,6 +11,7 @@ import {
 import { obtenerServicios } from '../../service/servicioService';
 import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import ServicioCard from '../../components/ServicioCard/ServicioCard';
+import useBackButton from '../../hooks/useBackButton.jsx';
 import './Servicios.css';
 
 const { Option } = Select;
@@ -20,12 +21,17 @@ const Servicios = () => {
     const [todosLosServicios, setTodosLosServicios] = useState([]);
     const [serviciosFiltrados, setServiciosFiltrados] = useState([]);
     const [filtroCategoria, setFiltroCategoria] = useState('todos');
+    const [filtroCategoriaTemp, setFiltroCategoriaTemp] = useState('todos');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [searchText, setSearchText] = useState('');
+    const [searchTextTemp, setSearchTextTemp] = useState('');
     const [ordenamiento, setOrdenamiento] = useState('nombre');
     const [favoritos, setFavoritos] = useState([]);
+
+    // Hook para manejar botón atrás del teléfono
+    useBackButton('/experiencia');
 
     // 1. Cargar todos los servicios desde la API al montar
     useEffect(() => {
@@ -41,6 +47,7 @@ const Servicios = () => {
                 const categoriaUrl = searchParams.get('categoria');
                 if (categoriaUrl && ['tour', 'alojamiento', 'gastronomia'].includes(categoriaUrl)) {
                     setFiltroCategoria(categoriaUrl);
+                    setFiltroCategoriaTemp(categoriaUrl);
                 }
                 
                 // Cargar favoritos
@@ -93,9 +100,17 @@ const Servicios = () => {
         setServiciosFiltrados(filtrados);
     }, [filtroCategoria, todosLosServicios, searchText, ordenamiento]);
 
+    const aplicarFiltros = () => {
+        setFiltroCategoria(filtroCategoriaTemp);
+        setSearchText(searchTextTemp);
+        setDrawerVisible(false);
+    };
+
     const limpiarFiltros = () => {
         setSearchText('');
+        setSearchTextTemp('');
         setFiltroCategoria('todos');
+        setFiltroCategoriaTemp('todos');
     };
 
     const contarFiltrosActivos = () => {
@@ -166,8 +181,8 @@ const Servicios = () => {
                             size="large"
                             placeholder="Buscar por palabra clave..."
                             prefix={<SearchOutlined />}
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            value={searchTextTemp}
+                            onChange={(e) => setSearchTextTemp(e.target.value)}
                             className="search-input"
                         />
                     </div>
@@ -176,8 +191,8 @@ const Servicios = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Categorías</h2>
                         <Radio.Group
-                            value={filtroCategoria}
-                            onChange={(e) => setFiltroCategoria(e.target.value)}
+                            value={filtroCategoriaTemp}
+                            onChange={(e) => setFiltroCategoriaTemp(e.target.value)}
                             className="radio-group"
                         >
                             <Radio value="todos">Todos</Radio>
@@ -193,6 +208,7 @@ const Servicios = () => {
                             type="primary"
                             block
                             size="large"
+                            onClick={aplicarFiltros}
                         >
                             Aplicar Filtros
                         </Button>
@@ -211,7 +227,7 @@ const Servicios = () => {
             <aside className="servicios-sidebar servicios-sidebar-desktop">
                 <div className="sidebar-header">
                     <AppstoreOutlined className="sidebar-icon" />
-                    <h1 className="sidebar-title">Servicios</h1>
+                    <h1 className="sidebar-title" style={{ color: '#1a1a1a' }}>Servicios</h1>
                 </div>
 
                 <div className="filtros-container">
@@ -222,8 +238,8 @@ const Servicios = () => {
                             size="large"
                             placeholder="Buscar por palabra clave..."
                             prefix={<SearchOutlined />}
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            value={searchTextTemp}
+                            onChange={(e) => setSearchTextTemp(e.target.value)}
                             className="search-input"
                         />
                     </div>
@@ -232,8 +248,8 @@ const Servicios = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Categorías</h2>
                         <Radio.Group
-                            value={filtroCategoria}
-                            onChange={(e) => setFiltroCategoria(e.target.value)}
+                            value={filtroCategoriaTemp}
+                            onChange={(e) => setFiltroCategoriaTemp(e.target.value)}
                             className="radio-group"
                         >
                             <Radio value="todos">Todos</Radio>
@@ -249,6 +265,7 @@ const Servicios = () => {
                             type="primary"
                             block
                             size="large"
+                            onClick={aplicarFiltros}
                         >
                             Aplicar Filtros
                         </Button>
@@ -275,37 +292,14 @@ const Servicios = () => {
                         >
                             Filtros {contarFiltrosActivos() > 0 && `(${contarFiltrosActivos()})`}
                         </Button>
-                        <Select
-                            value={ordenamiento}
-                            onChange={setOrdenamiento}
-                            className="mobile-sort-select"
-                            suffixIcon={null}
-                        >
-                            <Option value="nombre">Nombre</Option>
-                            <Option value="categoria">Categoría</Option>
-                        </Select>
                     </div>
 
                     {/* Header */}
                     <div className="page-header">
                         <div>
-                            <h1 className="page-title">Servicios</h1>
+                            <h1 className="page-title" style={{ color: '#2D5016', fontWeight: 'normal' }}>Servicios</h1>
                             <p className="page-subtitle">Descubre los mejores tours, alojamientos y restaurantes</p>
                         </div>
-                    </div>
-
-                    {/* Controles de ordenamiento - Desktop */}
-                    <div className="controles-wrapper">
-                        <div></div>
-                        <Select
-                            value={ordenamiento}
-                            onChange={setOrdenamiento}
-                            style={{ width: 250 }}
-                            size="large"
-                        >
-                            <Option value="nombre">Ordenar por: Nombre</Option>
-                            <Option value="categoria">Ordenar por: Categoría</Option>
-                        </Select>
                     </div>
 
                     {/* Grid de servicios */}

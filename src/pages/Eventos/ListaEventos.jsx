@@ -14,6 +14,7 @@ import {
 import { obtenerEventos } from '../../service/eventoService';
 import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import { useNavigate } from 'react-router-dom';
+import useBackButton from '../../hooks/useBackButton.jsx';
 import './ListaEventos.css';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyD6vEAeGtBjMT1zQUlFnuvJV9YORgXSFGk';
@@ -22,6 +23,9 @@ const { Option } = Select;
 
 const ListaEventos = () => {
     const navigate = useNavigate();
+
+    // Hook para manejar botón atrás del teléfono
+    useBackButton('/experiencia');
 
     // Estados
     const [eventos, setEventos] = useState([]);
@@ -800,7 +804,7 @@ const ListaEventos = () => {
                     {/* Header */}
                     <div className="page-header">
                         <div>
-                            <h1 className="page-title">Próximos Eventos</h1>
+                            <h1 className="page-title" style={{ color: '#2D5016', fontWeight: 'normal' }}>Próximos Eventos</h1>
                             <p className="page-subtitle">Encuentra tu próxima aventura</p>
                         </div>
                     </div>
