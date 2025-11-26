@@ -38,6 +38,9 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // SOLUCIÓN AL ERROR: Aumentamos el límite a 4 MiB
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, 
+        
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
@@ -72,4 +75,17 @@ export default defineConfig({
       }
     })
   ],
+  // OPTIMIZACIÓN: Divide el código para que cargue más rápido
+  build: {
+    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
+  }
 })
