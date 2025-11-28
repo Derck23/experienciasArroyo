@@ -147,8 +147,15 @@ function GestionDeServicios() {
   };
 
   const handleSubmit = async (values) => {
+    // Validar ubicación en el mapa
     if (!selectedPosition) {
       message.error('Por favor selecciona una ubicación en el mapa');
+      return;
+    }
+
+    // Validar que haya al menos una imagen
+    if (imageFiles.length === 0) {
+      message.error('Por favor agrega al menos una imagen del servicio');
       return;
     }
 
@@ -174,10 +181,10 @@ function GestionDeServicios() {
 
       if (editingServicio) {
         await servicioService.actualizarServicio(editingServicio.id, data);
-        message.success('Servicio actualizado');
+        message.success('Servicio actualizado exitosamente');
       } else {
         await servicioService.crearServicio(data);
-        message.success('Servicio creado');
+        message.success('Servicio creado exitosamente');
       }
 
       setModalVisible(false);
@@ -186,7 +193,7 @@ function GestionDeServicios() {
       fetchServicios();
     } catch (err) {
       console.error(err);
-      message.error('Error al guardar servicio');
+      message.error(err?.message || 'Error al guardar servicio');
     }
   };
 
@@ -363,17 +370,26 @@ function GestionDeServicios() {
           <Form.Item
             label="Nombre del servicio"
             name="nombre"
-            rules={[{ required: true, message: 'Por favor ingresa el nombre' }]}
+            rules={[
+              { required: true, message: 'Por favor ingresa el nombre' },
+              { min: 3, message: 'El nombre debe tener al menos 3 caracteres' },
+              { max: 100, message: 'El nombre no puede exceder 100 caracteres' },
+              { whitespace: true, message: 'El nombre no puede estar vacío' }
+            ]}
           >
-            <Input placeholder="Ej: Tour a la Cascada El Chuvejé" size="large" />
+            <Input placeholder="Ej: Tour a la Cascada El Chuvejé" size="large" maxLength={100} showCount />
           </Form.Item>
 
           <Form.Item
             label="Descripción"
             name="descripcion"
-            rules={[{ required: true, message: 'Por favor ingresa la descripción' }]}
+            rules={[
+              { required: true, message: 'Por favor ingresa la descripción' },
+              { min: 10, message: 'La descripción debe tener al menos 10 caracteres' },
+              { max: 1000, message: 'La descripción no puede exceder 1000 caracteres' }
+            ]}
           >
-            <TextArea rows={4} placeholder="Describe el servicio..." size="large" />
+            <TextArea rows={4} placeholder="Describe el servicio..." size="large" maxLength={1000} showCount />
           </Form.Item>
 
           <Form.Item
@@ -391,7 +407,22 @@ function GestionDeServicios() {
           <Form.Item
             label="Costo"
             name="costo"
-            rules={[{ required: true, message: 'Por favor ingresa el costo' }]}
+            rules={[
+              { required: true, message: 'Por favor ingresa el costo' },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  const num = parseFloat(value);
+                  if (isNaN(num) || num < 0) {
+                    return Promise.reject('El costo debe ser un número mayor o igual a 0');
+                  }
+                  if (num > 50000) {
+                    return Promise.reject('El costo no puede exceder $50,000 MXN');
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
           >
             <Input
               placeholder="0"

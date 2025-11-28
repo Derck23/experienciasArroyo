@@ -95,16 +95,68 @@ const GestionDeAtracciones = () => {
   };
 
   const validarFormulario = () => {
+    // Validar campos requeridos
     const camposRequeridos = ['nombre', 'descripcion'];
-    const camposFaltantes = camposRequeridos.filter(campo => !formData[campo]);
+    const camposFaltantes = camposRequeridos.filter(campo => !formData[campo]?.trim());
     if (camposFaltantes.length > 0) {
       message.error(`Por favor completa los campos: ${camposFaltantes.join(', ')}`);
       return false;
     }
+
+    // Validar longitud de nombre
+    if (formData.nombre.trim().length < 3) {
+      message.error('El nombre debe tener al menos 3 caracteres');
+      return false;
+    }
+    if (formData.nombre.trim().length > 100) {
+      message.error('El nombre no puede exceder 100 caracteres');
+      return false;
+    }
+
+    // Validar longitud de descripción
+    if (formData.descripcion.trim().length < 10) {
+      message.error('La descripción debe tener al menos 10 caracteres');
+      return false;
+    }
+    if (formData.descripcion.trim().length > 1000) {
+      message.error('La descripción no puede exceder 1000 caracteres');
+      return false;
+    }
+
+    // Validar ubicación en el mapa
     if (!selectedPosition) {
       message.error('Por favor selecciona una ubicación en el mapa');
       return false;
     }
+
+    // Validar costo de entrada si se proporciona
+    if (formData.costoEntrada && formData.costoEntrada !== 'Gratuito') {
+      const costo = parseFloat(formData.costoEntrada);
+      if (isNaN(costo) || costo < 0) {
+        message.error('El costo de entrada debe ser un número válido mayor o igual a 0');
+        return false;
+      }
+      if (costo > 10000) {
+        message.error('El costo de entrada no puede exceder $10,000 MXN');
+        return false;
+      }
+    }
+
+    // Validar URL del video si se proporciona
+    if (formData.videoUrl && formData.videoUrl.trim()) {
+      const urlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|vimeo\.com)\/.+/i;
+      if (!urlPattern.test(formData.videoUrl)) {
+        message.error('Por favor ingresa una URL válida de YouTube o Vimeo');
+        return false;
+      }
+    }
+
+    // Validar que haya al menos una imagen
+    if (fileList.length === 0) {
+      message.error('Por favor agrega al menos una imagen de la atracción');
+      return false;
+    }
+
     return true;
   };
 
