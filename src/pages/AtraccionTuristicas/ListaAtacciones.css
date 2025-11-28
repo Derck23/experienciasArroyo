@@ -499,6 +499,10 @@
   }
 }
 
+.atraccion-precio.gratis {
+  color: #4caf50;
+}
+
 .empty-state {
   text-align: center;
   padding: 80px 20px;

@@ -31,6 +31,22 @@ const ServicioCard = ({ servicio, esFavorito, onToggleFavorito }) => {
         return textos[categoria] || categoria;
     };
 
+    const formatearPrecio = (precio) => {
+        if (!precio || precio === 0 || precio === '0' || precio === 'Gratuito' || precio === 'Gratis') {
+            return 'Gratis';
+        }
+        // Si ya viene formateado como rango ($$, $$$, etc), dejarlo así
+        if (typeof precio === 'string' && precio.startsWith('$') && !precio.includes('.')) {
+            return precio;
+        }
+        // Si es un número, formatear con MXN
+        const precioNum = parseFloat(precio);
+        if (!isNaN(precioNum)) {
+            return `$${precioNum.toLocaleString('es-MX')} MXN`;
+        }
+        return precio;
+    };
+
     return (
         <Card
             hoverable
@@ -72,8 +88,8 @@ const ServicioCard = ({ servicio, esFavorito, onToggleFavorito }) => {
             </div>
 
             <div className="servicio-footer">
-                <span className="servicio-precio">
-                    {servicio.rangoPrecios || '$$'}
+                <span className={`servicio-precio ${(!servicio.costo && !servicio.rangoPrecios) || servicio.costo === 0 || servicio.costo === 'Gratuito' ? 'gratis' : ''}`}>
+                    {formatearPrecio(servicio.costo || servicio.rangoPrecios || '$$')}
                 </span>
                 <Button 
                     type="primary" 

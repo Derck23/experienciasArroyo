@@ -125,3 +125,7 @@
         font-size: 18px;
     }
 }
+
+.servicio-precio.gratis {
+    color: #4caf50;
+}

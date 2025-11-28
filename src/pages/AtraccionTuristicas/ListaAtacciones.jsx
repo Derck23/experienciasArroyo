@@ -131,6 +131,18 @@ const ListaAtacciones = () => {
         return count;
     };
 
+    const formatearPrecio = (precio) => {
+        if (!precio || precio === 0 || precio === '0' || precio === 'Gratuito' || precio === 'Gratis') {
+            return 'Gratis';
+        }
+        // Si es un número, formatear con MXN
+        const precioNum = parseFloat(precio);
+        if (!isNaN(precioNum)) {
+            return `$${precioNum.toLocaleString('es-MX')} MXN`;
+        }
+        return precio;
+    };
+
     // Filtrar y ordenar
     let atraccionesFiltradas = atracciones.filter(atraccion => {
         const matchSearch = atraccion.nombre.toLowerCase().includes(searchText.toLowerCase());
@@ -419,8 +431,8 @@ const ListaAtacciones = () => {
                                     </div>
 
                                     <div className="atraccion-footer">
-                                        <span className="atraccion-precio">
-                                            {atraccion.costo === 'Gratuito' ? 'Gratis' : atraccion.costo}
+                                        <span className={`atraccion-precio ${!atraccion.costo || atraccion.costo === 0 || atraccion.costo === 'Gratuito' ? 'gratis' : ''}`}>
+                                            {formatearPrecio(atraccion.costo)}
                                         </span>
                                         <Button 
                                             type="primary" 
