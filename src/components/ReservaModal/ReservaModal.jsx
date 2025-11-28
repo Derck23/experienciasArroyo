@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { crearReservacion } from '../../service/reservacionService';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import {
     CalendarOutlined,
     ClockCircleOutlined,
@@ -12,6 +13,7 @@ import {
 import './ReservaModal.css';
 
 const ReservaModal = ({ servicio, onClose, onSuccess }) => {
+    const navigate = useNavigate();
     // Si es un evento, usar la fecha y hora del evento
     const esEvento = servicio.tipo === 'evento';
     const fechaInicialEvento = esEvento && servicio.fechaEvento ? servicio.fechaEvento.split('T')[0] : '';
@@ -34,6 +36,7 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [mensajeExito, setMensajeExito] = useState(false);
 
     // Obtener fecha mínima (hoy)
     const getFechaMinima = () => {
@@ -45,24 +48,150 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
     const validarFechaHora = (fecha, hora) => {
         if (!fecha || !hora) return false;
 
-        const fechaHoraReserva = new Date(`${fecha}T${hora}`);
+        // Construir fecha en hora local (no UTC)
+        const [year, month, day] = fecha.split('-').map(Number);
+        const [hours, minutes] = hora.split(':').map(Number);
+        const fechaHoraReserva = new Date(year, month - 1, day, hours, minutes, 0);
+
         const ahora = new Date();
-        
-        // Agregar un margen de al menos 1 hora desde ahora
-        const minimaFechaHora = new Date(ahora.getTime() + 60 * 60 * 1000);
-        
+
+        // Agregar un margen de al menos 30 minutos desde ahora
+        const minimaFechaHora = new Date(ahora.getTime() + 30 * 60 * 1000);
+
+        console.log('🕐 Validando fecha y hora:', {
+            fechaInput: fecha,
+            horaInput: hora,
+            fechaHoraReserva: fechaHoraReserva.toLocaleString('es-MX'),
+            ahora: ahora.toLocaleString('es-MX'),
+            minimaFechaHora: minimaFechaHora.toLocaleString('es-MX'),
+            diferenciaMinutos: Math.round((fechaHoraReserva - ahora) / (60 * 1000)),
+            esValido: fechaHoraReserva >= minimaFechaHora
+        });
+
         return fechaHoraReserva >= minimaFechaHora;
     };
 
-    // Validar horario de negocio (8:00 AM - 10:00 PM)
-    const validarHorarioNegocio = (hora) => {
+    // Validar día laboral de la atracción
+    const validarDiaLaboral = (fecha) => {
+        if (!fecha || !servicio.diaInicio || !servicio.diaFin) return true; // Si no hay horarios definidos, permitir cualquier día
+
+        const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+        // Crear fecha en UTC para evitar problemas de zona horaria
+        const [year, month, day] = fecha.split('-').map(Number);
+        const fechaObj = new Date(year, month - 1, day);
+        const diaSemana = diasSemana[fechaObj.getDay()];
+
+        console.log('Validando día laboral:', {
+            fechaSeleccionada: fecha,
+            diaSemana,
+            diaInicio: servicio.diaInicio,
+            diaFin: servicio.diaFin
+        });
+
+        const diasOrdenados = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        const indiceInicio = diasOrdenados.indexOf(servicio.diaInicio);
+        const indiceFin = diasOrdenados.indexOf(servicio.diaFin);
+        const indiceDia = diasOrdenados.indexOf(diaSemana);
+
+        console.log('Índices:', { indiceInicio, indiceFin, indiceDia });
+
+        // Si el rango no cruza la semana (ej: Lunes a Viernes)
+        if (indiceInicio <= indiceFin) {
+            const resultado = indiceDia >= indiceInicio && indiceDia <= indiceFin;
+            console.log('Validación (no cruza semana):', resultado);
+            return resultado;
+        } else {
+            // Si el rango cruza la semana (ej: Viernes a Lunes)
+            const resultado = indiceDia >= indiceInicio || indiceDia <= indiceFin;
+            console.log('Validación (cruza semana):', resultado);
+            return resultado;
+        }
+    };
+
+    // Convertir hora en formato "hh:mm A" a minutos desde medianoche
+    const convertirHoraAMinutos = (horaStr) => {
+        if (!horaStr) return null;
+
+        // Si viene en formato "hh:mm A" (12 horas)
+        if (horaStr.includes('AM') || horaStr.includes('PM')) {
+            const match = horaStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!match) return null;
+
+            let horas = parseInt(match[1]);
+            const minutos = parseInt(match[2]);
+            const periodo = match[3].toUpperCase();
+
+            if (periodo === 'PM' && horas !== 12) horas += 12;
+            if (periodo === 'AM' && horas === 12) horas = 0;
+
+            return horas * 60 + minutos;
+        }
+
+        // Si viene en formato "HH:mm" (24 horas)
+        const [horas, minutos] = horaStr.split(':').map(Number);
+        return horas * 60 + minutos;
+    };
+
+    // Validar horario laboral de la atracción
+    const validarHorarioLaboral = (hora) => {
         if (!hora) return false;
-        
+
+        console.log('Validando horario laboral:', {
+            horaReserva: hora,
+            horaInicio: servicio.horaInicio,
+            horaFin: servicio.horaFin
+        });
+
+        // Si la atracción tiene horarios definidos, validar contra ellos
+        if (servicio.horaInicio && servicio.horaFin) {
+            const horaReservaMinutos = convertirHoraAMinutos(hora);
+            const horaInicioMinutos = convertirHoraAMinutos(servicio.horaInicio);
+            const horaFinMinutos = convertirHoraAMinutos(servicio.horaFin);
+
+            console.log('Conversión a minutos:', {
+                horaReservaMinutos,
+                horaInicioMinutos,
+                horaFinMinutos
+            });
+
+            if (horaReservaMinutos === null || horaInicioMinutos === null || horaFinMinutos === null) {
+                console.log('Error al parsear horas, permitiendo por defecto');
+                return true; // Si no se puede parsear, permitir
+            }
+
+            const resultado = horaReservaMinutos >= horaInicioMinutos && horaReservaMinutos <= horaFinMinutos;
+            console.log('Validación horario:', resultado);
+            return resultado;
+        }
+
+        // Si no hay horarios definidos, usar el horario general (8:00 AM - 10:00 PM)
         const [horas, minutos] = hora.split(':').map(Number);
         const horaEnMinutos = horas * 60 + minutos;
-        
+
+        console.log('Usando horario general:', { horaEnMinutos, min: 480, max: 1320 });
+
         // Horario de 8:00 AM (480 min) a 10:00 PM (1320 min)
         return horaEnMinutos >= 480 && horaEnMinutos <= 1320;
+    };
+
+    // Obtener mensaje de horario
+    const getMensajeHorario = () => {
+        if (servicio.horaInicio && servicio.horaFin) {
+            return `${servicio.horaInicio} - ${servicio.horaFin}`;
+        }
+        return '8:00 AM - 10:00 PM';
+    };
+
+    // Obtener mensaje de días laborales
+    const getMensajeDias = () => {
+        if (servicio.diaInicio && servicio.diaFin) {
+            if (servicio.diaInicio === servicio.diaFin) {
+                return `Solo ${servicio.diaInicio}`;
+            }
+            return `${servicio.diaInicio} a ${servicio.diaFin}`;
+        }
+        return 'Todos los días';
     };
 
     const handleChange = (e) => {
@@ -105,16 +234,22 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
 
         // Para eventos, no validar horario de negocio (pueden ser a cualquier hora)
         if (!esEvento) {
-            // Validar horario de negocio solo para servicios y atracciones
-            if (!validarHorarioNegocio(horaReserva)) {
-                setError('El horario de atención es de 8:00 AM a 10:00 PM');
+            // Validar día laboral de la atracción
+            if (!validarDiaLaboral(fechaReserva)) {
+                setError(`Esta atracción solo está disponible ${getMensajeDias()}`);
+                return false;
+            }
+
+            // Validar horario laboral de la atracción
+            if (!validarHorarioLaboral(horaReserva)) {
+                setError(`El horario de atención es ${getMensajeHorario()}`);
                 return false;
             }
         }
 
         // Validar que la fecha y hora no sean del pasado
         if (!validarFechaHora(fechaReserva, horaReserva)) {
-            setError('La reservación debe ser al menos 1 hora desde ahora');
+            setError('La reservación debe ser al menos 30 minutos desde ahora');
             return false;
         }
 
@@ -135,7 +270,7 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
         try {
             // Sanitizar y preparar datos
             const datosReserva = {
-                servicioId: parseInt(servicio.id),
+                servicioId: servicio.id, // Mantener como string (Firebase ID)
                 nombreServicio: servicio.nombre.trim(),
                 tipoServicio: servicio.tipo || 'servicio', // Puede ser: 'servicio', 'atraccion', 'evento'
                 fechaReserva: formData.fechaReserva,
@@ -144,10 +279,28 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
                 comentarios: formData.comentarios.trim().substring(0, 500) // Limitar a 500 caracteres
             };
 
+            console.log('📝 Datos de reserva a enviar:', datosReserva);
+
             await crearReservacion(datosReserva);
-            onSuccess();
+
+            // Cerrar modal
             onClose();
+
+            // Llamar onSuccess para que el padre muestre el mensaje
+            if (onSuccess) {
+                onSuccess();
+            }
+
+            // Mostrar mensaje desde este componente
+            setMensajeExito(true);
+
+            // Redirigir a servicios después de 2.5 segundos
+            setTimeout(() => {
+                navigate('/experiencia/servicios');
+            }, 2500);
+
         } catch (err) {
+            console.error('❌ Error al crear reservación:', err);
             setError(err.message || 'Error al crear la reservación');
         } finally {
             setLoading(false);
@@ -168,11 +321,53 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
         }
     };
 
-    return createPortal(
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                {/* Header del Modal */}
-                <div className="modal-header">
+    return (
+        <>
+            {/* Mensaje de éxito - FUERA del modal */}
+            {mensajeExito && createPortal(
+                <div style={{
+                    position: 'fixed',
+                    top: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: 'white',
+                    color: '#333',
+                    padding: '20px 28px',
+                    borderRadius: '12px',
+                    border: '2px solid #52c41a',
+                    boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+                    zIndex: 10000,
+                    minWidth: '320px',
+                    maxWidth: '90vw'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        marginBottom: '8px'
+                    }}>
+                        <CheckCircleOutlined style={{ fontSize: '24px', color: '#52c41a' }} />
+                        <div style={{ fontSize: '17px', fontWeight: '600' }}>
+                            ✅ Reservación creada con éxito
+                        </div>
+                    </div>
+                    <div style={{
+                        fontSize: '14px',
+                        color: '#666',
+                        paddingLeft: '36px'
+                    }}>
+                        Puedes ver el estado de tu reservación en la sección "Mis Reservaciones"
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Modal de reservación */}
+            {createPortal(
+                <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    {/* Header del Modal */}
+                    <div className="modal-header">
                     <div className="modal-header-content">
                         <CalendarOutlined className="modal-header-icon" />
                         <div>
@@ -190,9 +385,9 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
 
                 {/* Mensaje informativo para eventos */}
                 {esEvento && (
-                    <div style={{ 
-                        padding: '12px 16px', 
-                        backgroundColor: '#e6f7ff', 
+                    <div style={{
+                        padding: '12px 16px',
+                        backgroundColor: '#e6f7ff',
                         border: '1px solid #91d5ff',
                         borderRadius: '8px',
                         margin: '16px 0',
@@ -204,6 +399,36 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
                         <span style={{ color: '#0050b3', fontSize: '14px' }}>
                             Este evento tiene fecha y hora específicas que no se pueden modificar
                         </span>
+                    </div>
+                )}
+
+                {/* Mensaje informativo de horarios para atracciones/servicios */}
+                {!esEvento && (servicio.diaInicio || servicio.horaInicio) && (
+                    <div style={{
+                        padding: '12px 16px',
+                        backgroundColor: '#f6ffed',
+                        border: '1px solid #b7eb8f',
+                        borderRadius: '8px',
+                        margin: '16px 0'
+                    }}>
+                        <div style={{ marginBottom: '8px' }}>
+                            <ClockCircleOutlined style={{ color: '#52c41a', fontSize: '16px', marginRight: '8px' }} />
+                            <span style={{ color: '#389e0d', fontSize: '14px', fontWeight: '600' }}>
+                                Horarios de Atención
+                            </span>
+                        </div>
+                        <div style={{ paddingLeft: '24px', fontSize: '13px', color: '#52c41a' }}>
+                            {servicio.diaInicio && servicio.diaFin && (
+                                <div style={{ marginBottom: '4px' }}>
+                                    📅 Días: {getMensajeDias()}
+                                </div>
+                            )}
+                            {servicio.horaInicio && servicio.horaFin && (
+                                <div>
+                                    🕐 Horario: {getMensajeHorario()}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -244,15 +469,13 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
                     <div className="form-group">
                         <label className="form-label">
                             <ClockCircleOutlined className="label-icon" />
-                            {esEvento ? 'Hora del Evento' : 'Hora (8:00 AM - 10:00 PM)'}
+                            {esEvento ? 'Hora del Evento' : `Hora (${getMensajeHorario()})`}
                         </label>
-                        <input 
-                            type="time" 
+                        <input
+                            type="time"
                             name="horaReserva"
                             className="form-input"
-                            min={esEvento ? undefined : "08:00"}
-                            max={esEvento ? undefined : "22:00"}
-                            required 
+                            required
                             onChange={handleChange}
                             value={formData.horaReserva}
                             disabled={loading || esEvento}
@@ -260,7 +483,7 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
                             style={esEvento ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
                         />
                         <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                            {esEvento ? 'Hora fija del evento' : 'La reservación debe ser al menos 1 hora desde ahora'}
+                            {esEvento ? 'Hora fija del evento' : 'La reservación debe ser al menos 30 minutos desde ahora'}
                         </small>
                     </div>
 
@@ -363,6 +586,8 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
             </div>
         </div>,
         document.body
+            )}
+        </>
     );
 };
 

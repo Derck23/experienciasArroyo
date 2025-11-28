@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Card, Input, Select, Button, Upload, message, Divider, Space, Typography, Row, Col, Table, Modal, Popconfirm, Tag, Spin
+  Card, Input, Select, Button, Upload, message, Divider, Space, Typography, Row, Col, Table, Modal, Popconfirm, Tag, Spin, TimePicker
 } from 'antd';
 import {
   EnvironmentOutlined, PictureOutlined, VideoCameraOutlined, AudioOutlined, ClockCircleOutlined,
@@ -8,6 +8,7 @@ import {
   PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined
 } from '@ant-design/icons';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import dayjs from 'dayjs';
 
 import {
   crearAtraccion, obtenerAtracciones, actualizarAtraccion,
@@ -33,9 +34,10 @@ const defaultCenter = {
 
 const GestionDeAtracciones = () => {
   const [formData, setFormData] = useState({
-    nombre: '', descripcion: '', latitud: '', longitud: '',
+    nombre: '', descripcion: '',
     videoUrl: '', informacionCultural: '', horarios: '', costoEntrada: '',
-    restricciones: '', nivelDificultad: '', servicios: ''
+    restricciones: '', nivelDificultad: '', servicios: '',
+    diaInicio: '', diaFin: '', horaInicio: null, horaFin: null
   });
 
   const [fileList, setFileList] = useState([]);
@@ -83,9 +85,10 @@ const GestionDeAtracciones = () => {
 
   const resetForm = () => {
     setFormData({
-      nombre: '', descripcion: '', latitud: '', longitud: '',
+      nombre: '', descripcion: '',
       videoUrl: '', informacionCultural: '', horarios: '', costoEntrada: '',
-      restricciones: '', nivelDificultad: '', servicios: ''
+      restricciones: '', nivelDificultad: '', servicios: '',
+      diaInicio: '', diaFin: '', horaInicio: null, horaFin: null
     });
     setFileList([]);
     setAudioFile([]);
@@ -95,74 +98,136 @@ const GestionDeAtracciones = () => {
   };
 
   const validarFormulario = () => {
+    console.log('=== INICIANDO VALIDACIÓN ===');
+
     // Validar campos requeridos
+    console.log('1. Validando campos requeridos...');
     const camposRequeridos = ['nombre', 'descripcion'];
     const camposFaltantes = camposRequeridos.filter(campo => !formData[campo]?.trim());
+    console.log('Campos faltantes:', camposFaltantes);
     if (camposFaltantes.length > 0) {
       message.error(`Por favor completa los campos: ${camposFaltantes.join(', ')}`);
+      console.log('FALLÓ: campos requeridos');
       return false;
     }
 
     // Validar longitud de nombre
+    console.log('2. Validando longitud de nombre:', formData.nombre.trim().length);
     if (formData.nombre.trim().length < 3) {
       message.error('El nombre debe tener al menos 3 caracteres');
+      console.log('FALLÓ: nombre muy corto');
       return false;
     }
     if (formData.nombre.trim().length > 100) {
       message.error('El nombre no puede exceder 100 caracteres');
+      console.log('FALLÓ: nombre muy largo');
       return false;
     }
 
     // Validar longitud de descripción
+    console.log('3. Validando longitud de descripción:', formData.descripcion.trim().length);
     if (formData.descripcion.trim().length < 10) {
       message.error('La descripción debe tener al menos 10 caracteres');
+      console.log('FALLÓ: descripción muy corta');
       return false;
     }
     if (formData.descripcion.trim().length > 1000) {
       message.error('La descripción no puede exceder 1000 caracteres');
+      console.log('FALLÓ: descripción muy larga');
       return false;
     }
 
     // Validar ubicación en el mapa
+    console.log('4. Validando ubicación en el mapa:', selectedPosition);
     if (!selectedPosition) {
       message.error('Por favor selecciona una ubicación en el mapa');
+      console.log('FALLÓ: sin ubicación');
       return false;
     }
 
     // Validar costo de entrada si se proporciona
+    console.log('5. Validando costo de entrada:', formData.costoEntrada);
     if (formData.costoEntrada && formData.costoEntrada !== 'Gratuito') {
       const costo = parseFloat(formData.costoEntrada);
+      console.log('Costo parseado:', costo);
       if (isNaN(costo) || costo < 0) {
         message.error('El costo de entrada debe ser un número válido mayor o igual a 0');
+        console.log('FALLÓ: costo inválido');
         return false;
       }
       if (costo > 10000) {
         message.error('El costo de entrada no puede exceder $10,000 MXN');
+        console.log('FALLÓ: costo muy alto');
         return false;
       }
     }
 
     // Validar URL del video si se proporciona
+    console.log('6. Validando URL de video:', formData.videoUrl);
     if (formData.videoUrl && formData.videoUrl.trim()) {
       const urlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|vimeo\.com)\/.+/i;
       if (!urlPattern.test(formData.videoUrl)) {
         message.error('Por favor ingresa una URL válida de YouTube o Vimeo');
+        console.log('FALLÓ: URL de video inválida');
         return false;
       }
     }
 
     // Validar que haya al menos una imagen
+    console.log('7. Validando imágenes, fileList.length:', fileList.length);
     if (fileList.length === 0) {
       message.error('Por favor agrega al menos una imagen de la atracción');
+      console.log('FALLÓ: sin imágenes');
       return false;
     }
 
+    // Validar horarios (si se proporciona alguno, deben estar todos completos)
+    console.log('8. Validando horarios...');
+    console.log('diaInicio:', formData.diaInicio);
+    console.log('diaFin:', formData.diaFin);
+    console.log('horaInicio:', formData.horaInicio);
+    console.log('horaFin:', formData.horaFin);
+    const tieneAlgunHorario = formData.diaInicio || formData.diaFin || formData.horaInicio || formData.horaFin;
+    console.log('tieneAlgunHorario:', tieneAlgunHorario);
+    if (tieneAlgunHorario) {
+      if (!formData.diaInicio) {
+        message.error('Por favor selecciona el día de inicio');
+        console.log('FALLÓ: sin día de inicio');
+        return false;
+      }
+      if (!formData.diaFin) {
+        message.error('Por favor selecciona el día de fin');
+        console.log('FALLÓ: sin día de fin');
+        return false;
+      }
+      if (!formData.horaInicio) {
+        message.error('Por favor selecciona la hora de apertura');
+        console.log('FALLÓ: sin hora de apertura');
+        return false;
+      }
+      if (!formData.horaFin) {
+        message.error('Por favor selecciona la hora de cierre');
+        console.log('FALLÓ: sin hora de cierre');
+        return false;
+      }
+    }
+
+    console.log('=== VALIDACIÓN COMPLETA - PASÓ ===');
     return true;
   };
 
   const handleSubmit = async (estado) => {
-    if (!validarFormulario()) return;
+    console.log('handleSubmit llamado con estado:', estado);
+    console.log('formData:', formData);
+    console.log('fileList:', fileList);
+    console.log('selectedPosition:', selectedPosition);
 
+    if (!validarFormulario()) {
+      console.log('Validación falló');
+      return;
+    }
+
+    console.log('Validación pasó, procediendo a guardar...');
     setLoading(true);
     try {
       // Procesar imágenes -> mantener las ya existentes (tienen url) y convertir nuevas (SOLO 1 IMAGEN)
@@ -198,7 +263,9 @@ const GestionDeAtracciones = () => {
         fotos: fotosBase64,
         audioUrl: audioBase64,
         latitud: selectedPosition.lat,
-        longitud: selectedPosition.lng
+        longitud: selectedPosition.lng,
+        horaInicio: formData.horaInicio && formData.horaInicio.format ? formData.horaInicio.format('hh:mm A') : formData.horaInicio,
+        horaFin: formData.horaFin && formData.horaFin.format ? formData.horaFin.format('hh:mm A') : formData.horaFin
       };
 
       if (modoEdicion && atraccionEditando) {
@@ -222,11 +289,13 @@ const GestionDeAtracciones = () => {
   const handleEditar = (atraccion) => {
     setFormData({
       nombre: atraccion.nombre || '', categoria: atraccion.categoria || '',
-      descripcion: atraccion.descripcion || '', latitud: atraccion.latitud || '',
-      longitud: atraccion.longitud || '', videoUrl: atraccion.videoUrl || '',
+      descripcion: atraccion.descripcion || '', videoUrl: atraccion.videoUrl || '',
       informacionCultural: atraccion.informacionCultural || '', horarios: atraccion.horarios || '',
       costoEntrada: atraccion.costoEntrada || '', restricciones: atraccion.restricciones || '',
-      nivelDificultad: atraccion.nivelDificultad || '', servicios: atraccion.servicios || ''
+      nivelDificultad: atraccion.nivelDificultad || '', servicios: atraccion.servicios || '',
+      diaInicio: atraccion.diaInicio || '', diaFin: atraccion.diaFin || '',
+      horaInicio: atraccion.horaInicio ? dayjs(atraccion.horaInicio, 'hh:mm A') : null,
+      horaFin: atraccion.horaFin ? dayjs(atraccion.horaFin, 'hh:mm A') : null
     });
 
     // Cargar posición en el mapa
@@ -468,13 +537,43 @@ const GestionDeAtracciones = () => {
             <Title level={4} className="section-title"><span className="accent" /> Información Básica</Title>
             <Space direction="vertical" size={8} style={{ width: '100%' }}>
               <Text strong className="field-label">Nombre de la Atracción *</Text>
-              <Input name="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej. Cascada El Salto" size="large" />
+              <Input
+                name="nombre"
+                value={formData.nombre}
+                onChange={handleInputChange}
+                placeholder="Ej. Cascada El Salto"
+                size="large"
+                status={formData.nombre && (formData.nombre.trim().length < 3 || formData.nombre.trim().length > 100) ? 'error' : ''}
+              />
+              <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                {formData.nombre.trim().length}/100 caracteres • Mínimo 3 caracteres
+                {formData.nombre && formData.nombre.trim().length < 3 && (
+                  <span style={{ color: '#ff4d4f', marginLeft: '8px' }}>
+                    ⚠️ Demasiado corto
+                  </span>
+                )}
+              </Text>
             </Space>
           </section>
 
           <section className="form-section">
             <Text strong className="field-label">Descripción Detallada *</Text>
-            <TextArea name="descripcion" value={formData.descripcion} onChange={handleInputChange} placeholder="Describe la atracción..." rows={5} />
+            <TextArea
+              name="descripcion"
+              value={formData.descripcion}
+              onChange={handleInputChange}
+              placeholder="Describe la atracción..."
+              rows={5}
+              status={formData.descripcion && (formData.descripcion.trim().length < 10 || formData.descripcion.trim().length > 1000) ? 'error' : ''}
+            />
+            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
+              {formData.descripcion.trim().length}/1000 caracteres • Mínimo 10 caracteres
+              {formData.descripcion && formData.descripcion.trim().length < 10 && (
+                <span style={{ color: '#ff4d4f', marginLeft: '8px' }}>
+                  ⚠️ Necesitas al menos {10 - formData.descripcion.trim().length} caracteres más
+                </span>
+              )}
+            </Text>
           </section>
 
           <Divider />
@@ -507,7 +606,7 @@ const GestionDeAtracciones = () => {
                   </GoogleMap>
                 </div>
 
-                {selectedPosition && (
+                {selectedPosition ? (
                   <div style={{
                     padding: '12px 16px',
                     background: '#f0f9ff',
@@ -515,15 +614,28 @@ const GestionDeAtracciones = () => {
                     marginBottom: 16,
                     border: '1px solid #bae6fd'
                   }}>
-                    <strong style={{ color: '#1e40af' }}>Ubicación seleccionada:</strong>
+                    <strong style={{ color: '#1e40af' }}>✓ Ubicación seleccionada:</strong>
                     <div style={{ color: '#475569', marginTop: 4 }}>
                       Lat: {selectedPosition.lat.toFixed(6)}, Lng: {selectedPosition.lng.toFixed(6)}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    padding: '12px 16px',
+                    background: '#fff7ed',
+                    borderRadius: 8,
+                    marginBottom: 16,
+                    border: '1px solid #fed7aa'
+                  }}>
+                    <strong style={{ color: '#ea580c' }}>⚠️ Ubicación requerida</strong>
+                    <div style={{ color: '#7c2d12', marginTop: 4, fontSize: '12px' }}>
+                      Haz clic en el mapa para seleccionar la ubicación de la atracción
                     </div>
                   </div>
                 )}
 
                 <Text type="secondary" style={{ fontSize: '13px' }}>
-                  <EnvironmentOutlined /> Haz clic en el mapa para seleccionar la ubicación de la atracción
+                  <EnvironmentOutlined /> Haz clic en el mapa o arrastra el marcador
                 </Text>
               </>
             ) : (
@@ -542,7 +654,7 @@ const GestionDeAtracciones = () => {
                 <div className="upload-header">
                   <div className="upload-icon"><PictureOutlined /></div>
                   <div>
-                    <Text strong className="upload-title">Imagen de la Atracción</Text>
+                    <Text strong className="upload-title">Imagen de la Atracción *</Text>
                     <Text className="upload-sub">1 imagen máxima • Formatos: JPG, PNG, WebP • Máx. 5MB</Text>
                   </div>
                 </div>
@@ -553,6 +665,20 @@ const GestionDeAtracciones = () => {
                     <div>Subir</div>
                   </div>
                 </Upload>
+
+                {fileList.length === 0 && (
+                  <div style={{
+                    padding: '8px 12px',
+                    background: '#fff7ed',
+                    borderRadius: 6,
+                    marginTop: 12,
+                    border: '1px solid #fed7aa'
+                  }}>
+                    <Text style={{ color: '#ea580c', fontSize: '12px' }}>
+                      ⚠️ Debes agregar al menos una imagen
+                    </Text>
+                  </div>
+                )}
               </div>
             </Space>
           </section>
@@ -571,11 +697,74 @@ const GestionDeAtracciones = () => {
           <section className="form-section">
             <Title level={4} className="section-title"><span className="accent" /> ⚙️ Configuración y Detalles</Title>
 
+            {/* Horario de Atención */}
+            <div style={{ marginBottom: 24 }}>
+              <Title level={5} style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: '#1a1a1a' }}>
+                <ClockCircleOutlined /> Horario de Atención
+              </Title>
+              <Row gutter={16}>
+                <Col xs={24} sm={12} md={6}>
+                  <div className="small-label"><Text strong>Día de inicio</Text></div>
+                  <Select
+                    value={formData.diaInicio || undefined}
+                    onChange={(value) => handleInputChange({ target: { name: 'diaInicio', value } })}
+                    placeholder="Selecciona día"
+                    style={{ width: '100%' }}
+                  >
+                    <Option value="Lunes">Lunes</Option>
+                    <Option value="Martes">Martes</Option>
+                    <Option value="Miércoles">Miércoles</Option>
+                    <Option value="Jueves">Jueves</Option>
+                    <Option value="Viernes">Viernes</Option>
+                    <Option value="Sábado">Sábado</Option>
+                    <Option value="Domingo">Domingo</Option>
+                  </Select>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <div className="small-label"><Text strong>Día de fin</Text></div>
+                  <Select
+                    value={formData.diaFin || undefined}
+                    onChange={(value) => handleInputChange({ target: { name: 'diaFin', value } })}
+                    placeholder="Selecciona día"
+                    style={{ width: '100%' }}
+                  >
+                    <Option value="Lunes">Lunes</Option>
+                    <Option value="Martes">Martes</Option>
+                    <Option value="Miércoles">Miércoles</Option>
+                    <Option value="Jueves">Jueves</Option>
+                    <Option value="Viernes">Viernes</Option>
+                    <Option value="Sábado">Sábado</Option>
+                    <Option value="Domingo">Domingo</Option>
+                  </Select>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <div className="small-label"><Text strong>Hora de apertura</Text></div>
+                  <TimePicker
+                    value={formData.horaInicio}
+                    onChange={(time) => setFormData(prev => ({ ...prev, horaInicio: time }))}
+                    format="hh:mm A"
+                    use12Hours
+                    placeholder="Selecciona hora"
+                    style={{ width: '100%' }}
+                    minuteStep={15}
+                  />
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <div className="small-label"><Text strong>Hora de cierre</Text></div>
+                  <TimePicker
+                    value={formData.horaFin}
+                    onChange={(time) => setFormData(prev => ({ ...prev, horaFin: time }))}
+                    format="hh:mm A"
+                    use12Hours
+                    placeholder="Selecciona hora"
+                    style={{ width: '100%' }}
+                    minuteStep={15}
+                  />
+                </Col>
+              </Row>
+            </div>
+
             <Row gutter={[24, 16]}>
-              <Col xs={24} md={12}>
-                <div className="small-label"><ClockCircleOutlined /> <Text strong>Horarios</Text></div>
-                <Input name="horarios" value={formData.horarios} onChange={handleInputChange} placeholder="Ej. Lunes a Domingo 9:00 - 18:00" />
-              </Col>
               <Col xs={24} md={12}>
                 <div className="small-label"><DollarOutlined /> <Text strong>Costo de Entrada</Text></div>
                 <Input
@@ -586,7 +775,13 @@ const GestionDeAtracciones = () => {
                   prefix="$"
                   suffix="MXN"
                   type="number"
+                  status={formData.costoEntrada && formData.costoEntrada !== 'Gratuito' && (isNaN(parseFloat(formData.costoEntrada)) || parseFloat(formData.costoEntrada) < 0 || parseFloat(formData.costoEntrada) > 10000) ? 'error' : ''}
                 />
+                {formData.costoEntrada && formData.costoEntrada !== 'Gratuito' && parseFloat(formData.costoEntrada) > 10000 && (
+                  <Text style={{ color: '#ff4d4f', fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                    ⚠️ El costo no puede exceder $10,000 MXN
+                  </Text>
+                )}
               </Col>
               <Col xs={24} md={12}>
                 <div className="small-label"><WarningOutlined /> <Text strong>Restricciones</Text></div>

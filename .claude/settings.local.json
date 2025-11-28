@@ -3,7 +3,8 @@
     "allow": [
       "Read(//d/Backend-proy-integradora/**)",
       "Bash(git restore:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

@@ -609,14 +609,14 @@
 
   /* Carrusel más pequeño y centrado en web */
   .experiencia-carousel-container {
-    max-width: 800px;
+    max-width: 700px;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 32px;
   }
 
   .carousel-slide {
-    height: 320px;
+    height: 280px;
   }
 
   .greeting-text {
@@ -654,7 +654,7 @@
   .servicios-horizontal-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 24px;
   }
 
   .servicio-card-horizontal {
@@ -700,11 +700,11 @@
 @media (min-width: 1024px) {
   /* Carrusel aún más controlado en pantallas grandes */
   .experiencia-carousel-container {
-    max-width: 900px;
+    max-width: 750px;
   }
 
   .carousel-slide {
-    height: 360px;
+    height: 300px;
   }
 
   .recommendation-cards {
@@ -718,7 +718,7 @@
   /* Grid de 3 columnas para servicios en pantallas grandes */
   .servicios-horizontal-list {
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 28px;
   }
 
   .servicio-card-imagen-horizontal {
@@ -729,11 +729,11 @@
 @media (min-width: 1280px) {
   /* Limitar tamaño máximo del carrusel */
   .experiencia-carousel-container {
-    max-width: 1000px;
+    max-width: 800px;
   }
 
   .carousel-slide {
-    height: 380px;
+    height: 320px;
   }
 
   .servicios-grid {
@@ -743,7 +743,7 @@
   /* Mantener 3 columnas en servicios para mejor visualización */
   .servicios-horizontal-list {
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 32px;
   }
 
   .servicio-card-imagen-horizontal {

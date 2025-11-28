@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Card, Button, Modal, message, Form, Input, Select, Upload, Row, Col, Spin, Empty, Popconfirm, Carousel, Table, Tag
+  Card, Button, Modal, message, Form, Input, Select, Upload, Row, Col, Spin, Empty, Popconfirm, Carousel, Table, Tag, TimePicker
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, LeftOutlined, RightOutlined, EnvironmentOutlined, PictureOutlined
 } from '@ant-design/icons';
 import * as servicioService from '../../service/servicioService';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import dayjs from 'dayjs';
 
 import './GestionDeServicios.css';
 
@@ -79,7 +80,11 @@ function GestionDeServicios() {
       nombre: record.nombre,
       descripcion: record.descripcion,
       categoria: record.categoria,
-      rangoPrecios: record.rangoPrecios,
+      costo: record.costo,
+      diaInicio: record.diaInicio,
+      diaFin: record.diaFin,
+      horaInicio: record.horaInicio ? dayjs(record.horaInicio, 'hh:mm A') : null,
+      horaFin: record.horaFin ? dayjs(record.horaFin, 'hh:mm A') : null,
     });
     setModalVisible(true);
   };
@@ -164,7 +169,9 @@ function GestionDeServicios() {
         ...values,
         ubicacion: `${selectedPosition.lat.toFixed(4)}, ${selectedPosition.lng.toFixed(4)}`,
         latitud: selectedPosition.lat,
-        longitud: selectedPosition.lng
+        longitud: selectedPosition.lng,
+        horaInicio: values.horaInicio ? values.horaInicio.format('hh:mm A') : null,
+        horaFin: values.horaFin ? values.horaFin.format('hh:mm A') : null,
       };
 
       const fotos = [];
@@ -432,6 +439,84 @@ function GestionDeServicios() {
               size="large"
             />
           </Form.Item>
+
+          <div style={{ marginBottom: 24 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: '#1a1a1a' }}>
+              Horario de Atención
+            </h3>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="Día de inicio"
+                  name="diaInicio"
+                  rules={[{ required: true, message: 'Selecciona el día de inicio' }]}
+                >
+                  <Select placeholder="Selecciona día" size="large">
+                    <Select.Option value="Lunes">Lunes</Select.Option>
+                    <Select.Option value="Martes">Martes</Select.Option>
+                    <Select.Option value="Miércoles">Miércoles</Select.Option>
+                    <Select.Option value="Jueves">Jueves</Select.Option>
+                    <Select.Option value="Viernes">Viernes</Select.Option>
+                    <Select.Option value="Sábado">Sábado</Select.Option>
+                    <Select.Option value="Domingo">Domingo</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Día de fin"
+                  name="diaFin"
+                  rules={[{ required: true, message: 'Selecciona el día de fin' }]}
+                >
+                  <Select placeholder="Selecciona día" size="large">
+                    <Select.Option value="Lunes">Lunes</Select.Option>
+                    <Select.Option value="Martes">Martes</Select.Option>
+                    <Select.Option value="Miércoles">Miércoles</Select.Option>
+                    <Select.Option value="Jueves">Jueves</Select.Option>
+                    <Select.Option value="Viernes">Viernes</Select.Option>
+                    <Select.Option value="Sábado">Sábado</Select.Option>
+                    <Select.Option value="Domingo">Domingo</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="Hora de apertura"
+                  name="horaInicio"
+                  rules={[{ required: true, message: 'Selecciona la hora de apertura' }]}
+                >
+                  <TimePicker
+                    format="hh:mm A"
+                    use12Hours
+                    placeholder="Selecciona hora"
+                    size="large"
+                    style={{ width: '100%' }}
+                    minuteStep={15}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Hora de cierre"
+                  name="horaFin"
+                  rules={[{ required: true, message: 'Selecciona la hora de cierre' }]}
+                >
+                  <TimePicker
+                    format="hh:mm A"
+                    use12Hours
+                    placeholder="Selecciona hora"
+                    size="large"
+                    style={{ width: '100%' }}
+                    minuteStep={15}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
 
           <Form.Item label="Ubicación en el Mapa">
             <p style={{ marginBottom: 12, color: '#666', fontSize: 14 }}>

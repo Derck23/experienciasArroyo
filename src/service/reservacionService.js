@@ -10,13 +10,15 @@ export const crearReservacion = async (reservaData) => {
 
         // Asegurar que los datos sean del tipo correcto
         const datosValidados = {
-            servicioId: parseInt(reservaData.servicioId),
+            servicioId: String(reservaData.servicioId), // Firebase ID es string
             nombreServicio: String(reservaData.nombreServicio || '').trim(),
             fechaReserva: String(reservaData.fechaReserva),
             horaReserva: String(reservaData.horaReserva),
             numeroPersonas: parseInt(reservaData.numeroPersonas),
             comentarios: String(reservaData.comentarios || '').trim()
         };
+
+        console.log('📤 Enviando reservación al backend:', datosValidados);
 
         const response = await api.post('/reservaciones', datosValidados);
         return response.data;

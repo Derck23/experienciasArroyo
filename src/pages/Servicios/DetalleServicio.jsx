@@ -18,6 +18,7 @@ import { obtenerServicios } from '../../service/servicioService';
 import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import './DetalleServicio.css';
 import ReservaModal from '../../components/ReservaModal/ReservaModal';
+import MensajeExito from '../../components/MensajeExito/MensajeExito';
 
 const DetalleServicio = () => {
     const { id } = useParams();
@@ -27,6 +28,7 @@ const DetalleServicio = () => {
     const [error, setError] = useState(null);
     const [esFavorito, setEsFavorito] = useState(false);
     const [modalAbierto, setModalAbierto] = useState(false);
+    const [mostrarMensajeExito, setMostrarMensajeExito] = useState(false);
 
     useEffect(() => {
         cargarServicio();
@@ -34,7 +36,7 @@ const DetalleServicio = () => {
     }, [id]);
 
     const handleReservaExitosa = () => {
-        message.success('¡Reservación creada con éxito! Revisa "Mis Reservaciones"');
+        setMostrarMensajeExito(true);
     };
     const verificarFavorito = async () => {
         try {
@@ -383,9 +385,19 @@ const DetalleServicio = () => {
                     </div>
                 )}
 
+                {/* Mensaje de éxito */}
+                {mostrarMensajeExito && (
+                    <MensajeExito
+                        mensaje="✅ Reservación creada con éxito"
+                        submensaje='Puedes ver el estado de tu reservación en la sección "Mis Reservaciones"'
+                        onClose={() => setMostrarMensajeExito(false)}
+                        duracion={2500}
+                    />
+                )}
+
                 {/* RENDERIZAR EL MODAL */}
             {modalAbierto && (
-                <ReservaModal 
+                <ReservaModal
                     servicio={{
                         ...servicio,
                         tipo: 'servicio'
