@@ -283,7 +283,7 @@ const DetalleAtraccion = () => {
 
                     {/* Botones de acción */}
                     <div className="action-buttons">
-                        <Button
+                        {/*<Button
                             type="primary"
                             size="large"
                             icon={<CalendarOutlined />}
@@ -292,7 +292,7 @@ const DetalleAtraccion = () => {
                             className="btn-principal"
                         >
                             Hacer Reservación
-                        </Button>
+                        </Button>*/ }
                         <Button
                             type="default"
                             size="large"
