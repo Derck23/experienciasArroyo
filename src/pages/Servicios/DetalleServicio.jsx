@@ -386,7 +386,10 @@ const DetalleServicio = () => {
                 {/* RENDERIZAR EL MODAL */}
             {modalAbierto && (
                 <ReservaModal 
-                    servicio={servicio}
+                    servicio={{
+                        ...servicio,
+                        tipo: 'servicio'
+                    }}
                     onClose={() => setModalAbierto(false)}
                     onSuccess={handleReservaExitosa}
                 />

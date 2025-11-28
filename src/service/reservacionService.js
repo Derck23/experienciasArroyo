@@ -3,11 +3,32 @@ import api from './api';
 // Crear una nueva reservación
 export const crearReservacion = async (reservaData) => {
     try {
-        // reservaData debe incluir: servicioId, nombreServicio, fechaReserva, horaReserva, etc.
-        const response = await api.post('/reservaciones', reservaData);
+        // Validar que los datos requeridos estén presentes
+        if (!reservaData.servicioId || !reservaData.fechaReserva || !reservaData.horaReserva || !reservaData.numeroPersonas) {
+            throw { message: 'Faltan datos requeridos para crear la reservación' };
+        }
+
+        // Asegurar que los datos sean del tipo correcto
+        const datosValidados = {
+            servicioId: parseInt(reservaData.servicioId),
+            nombreServicio: String(reservaData.nombreServicio || '').trim(),
+            fechaReserva: String(reservaData.fechaReserva),
+            horaReserva: String(reservaData.horaReserva),
+            numeroPersonas: parseInt(reservaData.numeroPersonas),
+            comentarios: String(reservaData.comentarios || '').trim()
+        };
+
+        const response = await api.post('/reservaciones', datosValidados);
         return response.data;
     } catch (error) {
-        throw error.response?.data || { message: 'Error al crear la reservación' };
+        // Manejar diferentes tipos de errores
+        if (error.response?.data?.message) {
+            throw { message: error.response.data.message };
+        } else if (error.message) {
+            throw { message: error.message };
+        } else {
+            throw { message: 'Error al crear la reservación. Por favor, intenta de nuevo.' };
+        }
     }
 };
 

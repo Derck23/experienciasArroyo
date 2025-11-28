@@ -13,6 +13,7 @@ import {
 } from '@ant-design/icons';
 import { obtenerEventos } from '../../service/eventoService';
 import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
+import ReservaModal from '../../components/ReservaModal/ReservaModal';
 import './DetalleEvento.css';
 
 const DetalleEvento = () => {
@@ -22,11 +23,16 @@ const DetalleEvento = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [esFavorito, setEsFavorito] = useState(false);
+    const [modalAbierto, setModalAbierto] = useState(false);
 
     useEffect(() => {
         cargarEvento();
         verificarFavorito();
     }, [id]);
+
+    const handleReservaExitosa = () => {
+        message.success('¡Reservación creada con éxito! Revisa "Mis Reservaciones"');
+    };
 
     const verificarFavorito = async () => {
         try {
@@ -279,24 +285,41 @@ const DetalleEvento = () => {
                         <Button
                             type="primary"
                             size="large"
-                            icon={<EnvironmentOutlined />}
-                            onClick={abrirMapa}
+                            icon={<CalendarOutlined />}
+                            onClick={() => setModalAbierto(true)}
                             block
                             className="btn-principal"
                         >
-                            Cómo Llegar
+                            Hacer Reservación
                         </Button>
                         <Button
                             type="default"
                             size="large"
+                            icon={<EnvironmentOutlined />}
+                            onClick={abrirMapa}
                             block
                             className="btn-secundario"
                         >
-                            Comprar Boletos
+                            Cómo Llegar
                         </Button>
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Reservación */}
+            {modalAbierto && (
+                <ReservaModal 
+                    servicio={{
+                        id: evento.id,
+                        nombre: evento.nombre,
+                        tipo: 'evento',
+                        fechaEvento: evento.fecha,
+                        horaEvento: evento.hora
+                    }}
+                    onClose={() => setModalAbierto(false)}
+                    onSuccess={handleReservaExitosa}
+                />
+            )}
         </div>
     );
 };

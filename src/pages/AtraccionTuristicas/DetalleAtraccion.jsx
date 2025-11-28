@@ -10,9 +10,10 @@ import {
     ShareAltOutlined,
     ClockCircleOutlined,
     DollarOutlined,
-    StarOutlined
+    CalendarOutlined
 } from '@ant-design/icons';
 import { obtenerAtracciones } from '../../service/atraccionService';
+import ReservaModal from '../../components/ReservaModal/ReservaModal';
 import './DetalleAtraccion.css';
 
 const DetalleAtraccion = () => {
@@ -22,11 +23,16 @@ const DetalleAtraccion = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [esFavorito, setEsFavorito] = useState(false);
+    const [modalAbierto, setModalAbierto] = useState(false);
 
     useEffect(() => {
         cargarAtraccion();
         verificarFavorito();
     }, [id]);
+
+    const handleReservaExitosa = () => {
+        message.success('¡Reservación creada con éxito! Revisa "Mis Reservaciones"');
+    };
 
     const verificarFavorito = async () => {
         try {
@@ -280,25 +286,39 @@ const DetalleAtraccion = () => {
                         <Button
                             type="primary"
                             size="large"
-                            icon={<EnvironmentOutlined />}
-                            onClick={abrirMapa}
+                            icon={<CalendarOutlined />}
+                            onClick={() => setModalAbierto(true)}
                             block
                             className="btn-principal"
                         >
-                            Cómo Llegar
+                            Hacer Reservación
                         </Button>
                         <Button
                             type="default"
                             size="large"
+                            icon={<EnvironmentOutlined />}
+                            onClick={abrirMapa}
                             block
                             className="btn-secundario"
-                            icon={<StarOutlined />}
                         >
-                            Guardar
+                            Cómo Llegar
                         </Button>
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Reservación */}
+            {modalAbierto && (
+                <ReservaModal 
+                    servicio={{
+                        id: atraccion.id,
+                        nombre: atraccion.nombre,
+                        tipo: 'atraccion'
+                    }}
+                    onClose={() => setModalAbierto(false)}
+                    onSuccess={handleReservaExitosa}
+                />
+            )}
         </div>
     );
 };
