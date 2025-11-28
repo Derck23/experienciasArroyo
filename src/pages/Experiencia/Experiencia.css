@@ -607,8 +607,16 @@
     padding: 0 24px;
   }
 
+  /* Carrusel más pequeño y centrado en web */
+  .experiencia-carousel-container {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 32px;
+  }
+
   .carousel-slide {
-    height: 400px;
+    height: 320px;
   }
 
   .greeting-text {
@@ -641,11 +649,62 @@
   .servicios-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* Tarjetas horizontales en grid para web */
+  .servicios-horizontal-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .servicio-card-horizontal {
+    flex-direction: column;
+  }
+
+  .servicio-card-imagen-horizontal {
+    width: 100%;
+    height: 160px;
+    margin: 0;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .servicio-card-info-horizontal {
+    padding: 16px;
+  }
+
+  .servicio-nombre-horizontal {
+    font-size: 16px;
+  }
+
+  /* Categorías más grandes en web */
+  .categories-grid-compact {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .category-btn-compact {
+    padding: 24px 16px;
+  }
+
+  .category-icon-compact {
+    font-size: 40px;
+  }
+
+  .category-label-compact {
+    font-size: 14px;
+  }
 }
 
 @media (min-width: 1024px) {
+  /* Carrusel aún más controlado en pantallas grandes */
+  .experiencia-carousel-container {
+    max-width: 900px;
+  }
+
   .carousel-slide {
-    height: 480px;
+    height: 360px;
   }
 
   .recommendation-cards {
@@ -655,15 +714,44 @@
   .servicios-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  /* Grid de 3 columnas para servicios en pantallas grandes */
+  .servicios-horizontal-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .servicio-card-imagen-horizontal {
+    height: 180px;
+  }
 }
 
 @media (min-width: 1280px) {
+  /* Limitar tamaño máximo del carrusel */
+  .experiencia-carousel-container {
+    max-width: 1000px;
+  }
+
   .carousel-slide {
-    height: 500px;
+    height: 380px;
   }
 
   .servicios-grid {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Mantener 3 columnas en servicios para mejor visualización */
+  .servicios-horizontal-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .servicio-card-imagen-horizontal {
+    height: 200px;
+  }
+
+  .servicio-card-info-horizontal {
+    padding: 20px;
   }
 }
 

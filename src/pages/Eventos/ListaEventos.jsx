@@ -215,6 +215,16 @@ const ListaEventos = () => {
     const aplicarFiltros = () => {
         let resultado = [...eventos];
 
+        // Filtrar eventos con fecha pasada (no mostrar eventos que ya pasaron)
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); // Resetear a medianoche
+        resultado = resultado.filter(evento => {
+            if (!evento.fecha) return true; // Mantener eventos sin fecha
+            const fechaEvento = new Date(evento.fecha);
+            fechaEvento.setHours(0, 0, 0, 0);
+            return fechaEvento >= hoy; // Solo mostrar eventos de hoy en adelante
+        });
+
         // Filtro por búsqueda
         if (searchTerm) {
             resultado = resultado.filter(evento =>
