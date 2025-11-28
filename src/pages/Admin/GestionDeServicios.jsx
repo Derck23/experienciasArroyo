@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Card, Button, Modal, message, Form, Input, Select, Upload, Row, Col, Spin, Empty, Popconfirm, Carousel
+  Card, Button, Modal, message, Form, Input, Select, Upload, Row, Col, Spin, Empty, Popconfirm, Carousel, Table, Tag
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, LeftOutlined, RightOutlined, EnvironmentOutlined
+  PlusOutlined, EditOutlined, DeleteOutlined, LeftOutlined, RightOutlined, EnvironmentOutlined, PictureOutlined
 } from '@ant-design/icons';
 import * as servicioService from '../../service/servicioService';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
@@ -222,6 +222,108 @@ function GestionDeServicios() {
     return icons[categoria] || '📍';
   };
 
+  const columns = [
+    {
+      title: 'Imagen',
+      dataIndex: 'fotos',
+      key: 'imagen',
+      width: 100,
+      render: (fotos) => {
+        const primeraFoto = fotos && fotos.length > 0 ? fotos[0] : null;
+        return primeraFoto ? (
+          <img
+            src={primeraFoto}
+            alt="Servicio"
+            style={{
+              width: '60px',
+              height: '60px',
+              objectFit: 'cover',
+              borderRadius: '8px'
+            }}
+          />
+        ) : (
+          <div style={{
+            width: '60px',
+            height: '60px',
+            background: '#f0f0f0',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <PictureOutlined style={{ fontSize: '24px', color: '#bbb' }} />
+          </div>
+        );
+      }
+    },
+    {
+      title: 'Nombre',
+      dataIndex: 'nombre',
+      key: 'nombre',
+      ellipsis: true
+    },
+    {
+      title: 'Descripción',
+      dataIndex: 'descripcion',
+      key: 'descripcion',
+      ellipsis: true,
+      render: (descripcion) => (
+        <span style={{ color: '#666' }}>
+          {descripcion && descripcion.length > 60 ? descripcion.substring(0, 60) + '...' : descripcion}
+        </span>
+      )
+    },
+    {
+      title: 'Categoría',
+      dataIndex: 'categoria',
+      key: 'categoria',
+      render: (categoria) => (
+        <span>
+          {getCategoriaIcon(categoria)} {getCategoriaLabel(categoria)}
+        </span>
+      )
+    },
+    {
+      title: 'Costo',
+      dataIndex: 'costo',
+      key: 'costo',
+      render: (costo) => (
+        <span style={{ fontWeight: '500' }}>
+          {costo ? `$ ${costo} MXN` : 'No especificado'}
+        </span>
+      )
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      render: (_, servicio) => (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(servicio)}
+          />
+          <Button
+            icon={<EnvironmentOutlined />}
+            size="small"
+            onClick={() => window.open(`https://www.google.com/maps?q=${servicio.latitud},${servicio.longitud}`, '_blank')}
+          />
+          <Popconfirm
+            title="Eliminar servicio"
+            description={`¿Estás seguro de eliminar ${servicio.nombre}?`}
+            onConfirm={() => handleDelete(servicio)}
+            okText="Sí"
+            cancelText="No"
+            okButtonProps={{ danger: true }}
+          >
+            <Button danger icon={<DeleteOutlined />} size="small" />
+          </Popconfirm>
+        </div>
+      )
+    }
+  ];
+
   return (
     <div className="servicios-container">
       <div className="servicios-card">
@@ -238,95 +340,14 @@ function GestionDeServicios() {
           </div>
         </div>
 
-        <div className="servicios-body">
-          {loading ? (
-            <div className="empty-state">
-              <Spin size="large" />
-            </div>
-          ) : servicios.length === 0 ? (
-            <Empty description="No hay servicios registrados" className="empty-state" />
-          ) : (
-            <Row gutter={[24, 24]}>
-              {servicios.map((servicio) => (
-                <Col xs={24} sm={12} lg={8} xl={6} key={servicio.id}>
-                  <Card
-                    hoverable
-                    className="servicio-card"
-                    cover={
-                      <div className="servicio-cover">
-                        {servicio.fotos && servicio.fotos.length > 0 ? (
-                          servicio.fotos.length === 1 ? (
-                            <img alt={servicio.nombre} src={servicio.fotos[0]} className="servicio-image" />
-                          ) : (
-                            <Carousel
-                              autoplay
-                              autoplaySpeed={3000}
-                              arrows
-                              prevArrow={<LeftOutlined />}
-                              nextArrow={<RightOutlined />}
-                              className="servicio-carousel"
-                            >
-                              {servicio.fotos.map((img, idx) => (
-                                <div key={idx} className="carousel-slide">
-                                  <img alt={`${servicio.nombre} ${idx + 1}`} src={img} className="servicio-image" />
-                                </div>
-                              ))}
-                            </Carousel>
-                          )
-                        ) : (
-                          <div className="servicio-placeholder">
-                            <PlusOutlined className="placeholder-icon" />
-                          </div>
-                        )}
-                        <div className="servicio-categoria-badge">
-                          {getCategoriaIcon(servicio.categoria)} {getCategoriaLabel(servicio.categoria)}
-                        </div>
-                      </div>
-                    }
-                    actions={[
-                      <EditOutlined key="edit" onClick={() => handleEdit(servicio)} className="action-edit" />,
-                      <a
-                        key="map"
-                        href={`https://www.google.com/maps?q=${servicio.latitud},${servicio.longitud}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#2D5016' }}
-                      >
-                        <EnvironmentOutlined />
-                      </a>,
-                      <Popconfirm
-                        key="delete"
-                        title="Eliminar servicio"
-                        description={`¿Estás seguro de eliminar ${servicio.nombre}?`}
-                        onConfirm={() => handleDelete(servicio)}
-                        okText="Sí"
-                        cancelText="No"
-                        okButtonProps={{ danger: true }}
-                      >
-                        <DeleteOutlined className="action-delete" />
-                      </Popconfirm>
-                    ]}
-                  >
-                    <Meta
-                      title={<div className="servicio-title-text">{servicio.nombre}</div>}
-                      description={
-                        <div className="servicio-desc">
-                          <p className="desc-text">{servicio.descripcion}</p>
-                          <div className="servicio-meta">
-                            <span className="meta-precio">{servicio.rangoPrecios || '$$'}</span>
-                            {servicio.fotos && servicio.fotos.length > 1 && (
-                              <span className="meta-photos">📸 {servicio.fotos.length}</span>
-                            )}
-                          </div>
-                        </div>
-                      }
-                    />
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          )}
-        </div>
+        <Table
+          columns={columns}
+          dataSource={servicios}
+          loading={loading}
+          rowKey="id"
+          pagination={{ pageSize: 10 }}
+          locale={{ emptyText: 'No hay servicios registrados' }}
+        />
       </div>
 
       <Modal
@@ -368,16 +389,17 @@ function GestionDeServicios() {
           </Form.Item>
 
           <Form.Item
-            label="Rango de precios"
-            name="rangoPrecios"
-            rules={[{ required: true, message: 'Por favor ingresa el rango de precios' }]}
+            label="Costo"
+            name="costo"
+            rules={[{ required: true, message: 'Por favor ingresa el costo' }]}
           >
-            <Select placeholder="Selecciona el rango de precios" size="large">
-              <Select.Option value="$">$ - Económico</Select.Option>
-              <Select.Option value="$$">$$ - Moderado</Select.Option>
-              <Select.Option value="$$$">$$$ - Costoso</Select.Option>
-              <Select.Option value="$$$$">$$$$ - Muy Costoso</Select.Option>
-            </Select>
+            <Input
+              placeholder="0"
+              prefix="$"
+              suffix="MXN"
+              type="number"
+              size="large"
+            />
           </Form.Item>
 
           <Form.Item label="Ubicación en el Mapa">
@@ -429,16 +451,16 @@ function GestionDeServicios() {
             </div>
           )}
 
-          <Form.Item label="Imágenes del servicio" extra="Hasta 5 imágenes PNG/JPG (máx. 5MB cada una)">
+          <Form.Item label="Imagen del servicio" extra="1 imagen máxima • Formatos: JPG, PNG • Máx. 5MB">
             <Upload
               listType="picture-card"
               fileList={imageFiles}
-              maxCount={5}
+              maxCount={1}
               accept=".png,.jpg,.jpeg,image/png,image/jpeg"
               beforeUpload={uploadBefore}
               onChange={handleImageChange}
             >
-              {imageFiles.length < 5 && (
+              {imageFiles.length < 1 && (
                 <div className="upload-box">
                   <PlusOutlined />
                   <div className="upload-text">Subir imagen</div>

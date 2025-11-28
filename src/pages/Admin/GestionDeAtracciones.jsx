@@ -7,6 +7,7 @@ import {
   DollarOutlined, WarningOutlined, ThunderboltOutlined, CheckCircleOutlined, CloseCircleOutlined,
   PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined
 } from '@ant-design/icons';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 import {
   crearAtraccion, obtenerAtracciones, actualizarAtraccion,
@@ -21,9 +22,18 @@ const { TextArea } = Input;
 const { Option } = Select;
 const { Title, Text } = Typography;
 
+const GOOGLE_MAPS_APIKEY = 'AIzaSyD6vEAeGtBjMT1zQUlFnuvJV9YORgXSFGk';
+
+const mapContainerStyle = { width: '100%', height: '400px' };
+
+const defaultCenter = {
+  lat: 21.1877,
+  lng: -99.6783
+};
+
 const GestionDeAtracciones = () => {
   const [formData, setFormData] = useState({
-    nombre: '', categoria: '', descripcion: '', latitud: '', longitud: '',
+    nombre: '', descripcion: '', latitud: '', longitud: '',
     videoUrl: '', informacionCultural: '', horarios: '', costoEntrada: '',
     restricciones: '', nivelDificultad: '', servicios: ''
   });
@@ -35,6 +45,11 @@ const GestionDeAtracciones = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [atraccionEditando, setAtraccionEditando] = useState(null);
+  const [selectedPosition, setSelectedPosition] = useState(null);
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_APIKEY
+  });
 
   useEffect(() => {
     cargarAtracciones();
@@ -59,9 +74,16 @@ const GestionDeAtracciones = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleMapClick = (e) => {
+    setSelectedPosition({
+      lat: e.latLng.lat(),
+      lng: e.latLng.lng()
+    });
+  };
+
   const resetForm = () => {
     setFormData({
-      nombre: '', categoria: '', descripcion: '', latitud: '', longitud: '',
+      nombre: '', descripcion: '', latitud: '', longitud: '',
       videoUrl: '', informacionCultural: '', horarios: '', costoEntrada: '',
       restricciones: '', nivelDificultad: '', servicios: ''
     });
@@ -69,13 +91,18 @@ const GestionDeAtracciones = () => {
     setAudioFile([]);
     setModoEdicion(false);
     setAtraccionEditando(null);
+    setSelectedPosition(null);
   };
 
   const validarFormulario = () => {
-    const camposRequeridos = ['nombre', 'categoria', 'descripcion', 'latitud', 'longitud'];
+    const camposRequeridos = ['nombre', 'descripcion'];
     const camposFaltantes = camposRequeridos.filter(campo => !formData[campo]);
     if (camposFaltantes.length > 0) {
       message.error(`Por favor completa los campos: ${camposFaltantes.join(', ')}`);
+      return false;
+    }
+    if (!selectedPosition) {
+      message.error('Por favor selecciona una ubicación en el mapa');
       return false;
     }
     return true;
@@ -86,7 +113,7 @@ const GestionDeAtracciones = () => {
 
     setLoading(true);
     try {
-      // Procesar imágenes -> mantener las ya existentes (tienen url) y convertir nuevas
+      // Procesar imágenes -> mantener las ya existentes (tienen url) y convertir nuevas (SOLO 1 IMAGEN)
       const fotosBase64 = [];
       for (const file of fileList) {
         if (file.url) {
@@ -113,7 +140,14 @@ const GestionDeAtracciones = () => {
         }
       }
 
-      const dataToSubmit = { ...formData, estado, fotos: fotosBase64, audioUrl: audioBase64 };
+      const dataToSubmit = {
+        ...formData,
+        estado,
+        fotos: fotosBase64,
+        audioUrl: audioBase64,
+        latitud: selectedPosition.lat,
+        longitud: selectedPosition.lng
+      };
 
       if (modoEdicion && atraccionEditando) {
         await actualizarAtraccion(atraccionEditando, dataToSubmit);
@@ -143,8 +177,18 @@ const GestionDeAtracciones = () => {
       nivelDificultad: atraccion.nivelDificultad || '', servicios: atraccion.servicios || ''
     });
 
+    // Cargar posición en el mapa
+    if (atraccion.latitud && atraccion.longitud) {
+      setSelectedPosition({
+        lat: parseFloat(atraccion.latitud),
+        lng: parseFloat(atraccion.longitud)
+      });
+    }
+
+    // Cargar solo la primera imagen (limitado a 1)
     if (atraccion.fotos && Array.isArray(atraccion.fotos) && atraccion.fotos.length > 0) {
       const existingFiles = atraccion.fotos
+        .slice(0, 1) // Solo tomar la primera imagen
         .filter(f => f)
         .map((foto, index) => ({
           uid: `existing-${index}-${Date.now()}`,
@@ -219,13 +263,13 @@ const GestionDeAtracciones = () => {
         status: 'done',
         originFileObj: file
       };
-      setFileList(prev => [...prev, newFile]);
+      setFileList([newFile]); // Solo una imagen
       return false; // prevent auto upload
     },
     fileList,
     listType: "picture-card",
-    multiple: true,
-    maxCount: 10,
+    multiple: false,
+    maxCount: 1,
   };
 
   const audioUploadProps = {
@@ -254,13 +298,54 @@ const GestionDeAtracciones = () => {
 
   const columns = [
     {
-      title: 'Nombre', dataIndex: 'nombre', key: 'nombre', ellipsis: true, responsive: ['xs', 'sm', 'md', 'lg']
+      title: 'Imagen',
+      dataIndex: 'fotos',
+      key: 'imagen',
+      width: 100,
+      render: (fotos) => {
+        const primeraFoto = fotos && fotos.length > 0 ? fotos[0] : null;
+        return primeraFoto ? (
+          <img
+            src={primeraFoto}
+            alt="Atracción"
+            style={{
+              width: '60px',
+              height: '60px',
+              objectFit: 'cover',
+              borderRadius: '8px'
+            }}
+          />
+        ) : (
+          <div style={{
+            width: '60px',
+            height: '60px',
+            background: '#f0f0f0',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <PictureOutlined style={{ fontSize: '24px', color: '#bbb' }} />
+          </div>
+        );
+      }
     },
     {
-      title: 'Categoría', dataIndex: 'categoria', key: 'categoria', render: (categoria) => {
-        const emoji = { 'cascada': '🌊', 'mirador': '🏔️', 'cueva': '🕳️', 'observatorio': '🔭', 'sitio-historico': '🏛️' };
-        return `${emoji[categoria] || ''} ${categoria}`;
-      }
+      title: 'Nombre',
+      dataIndex: 'nombre',
+      key: 'nombre',
+      ellipsis: true
+    },
+    {
+      title: 'Descripción',
+      dataIndex: 'descripcion',
+      key: 'descripcion',
+      ellipsis: true,
+      render: (descripcion) => (
+        <span style={{ color: '#666' }}>
+          {descripcion && descripcion.length > 60 ? descripcion.substring(0, 60) + '...' : descripcion}
+        </span>
+      )
     },
     {
       title: 'Dificultad', dataIndex: 'nivelDificultad', key: 'nivelDificultad', render: (nivel) => {
@@ -329,26 +414,10 @@ const GestionDeAtracciones = () => {
           {/* Información Básica */}
           <section className="form-section">
             <Title level={4} className="section-title"><span className="accent" /> Información Básica</Title>
-            <Row gutter={[24, 16]}>
-              <Col xs={24} md={12}>
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                  <Text strong className="field-label">Nombre de la Atracción *</Text>
-                  <Input name="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej. Cascada El Salto" size="large" />
-                </Space>
-              </Col>
-              <Col xs={24} md={12}>
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                  <Text strong className="field-label">Categoría *</Text>
-                  <Select name="categoria" value={formData.categoria || undefined} onChange={(value) => handleInputChange({ target: { name: 'categoria', value } })} placeholder="Selecciona una categoría" size="large">
-                    <Option value="cascada">🌊 Cascada</Option>
-                    <Option value="mirador">🏔️ Mirador</Option>
-                    <Option value="cueva">🕳️ Cueva</Option>
-                    <Option value="observatorio">🔭 Observatorio</Option>
-                    <Option value="sitio-historico">🏛️ Sitio Histórico</Option>
-                  </Select>
-                </Space>
-              </Col>
-            </Row>
+            <Space direction="vertical" size={8} style={{ width: '100%' }}>
+              <Text strong className="field-label">Nombre de la Atracción *</Text>
+              <Input name="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej. Cascada El Salto" size="large" />
+            </Space>
           </section>
 
           <section className="form-section">
@@ -362,26 +431,52 @@ const GestionDeAtracciones = () => {
           <section className="form-section">
             <Title level={4} className="section-title"><span className="accent" /> Ubicación</Title>
 
-            <div className="map-preview">
-              <div
-                className="map-image"
-                style={{
-                  backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmn2mN4V2KEsKZtoQ09LWXn-ZgIJeWxkTLrR4G1kZuGADDFHFM1wxDc9-iD6XeOI-Z9Li3B5zAWSoSE_6EN8fHhxpIYgCMWFxJFXtR9MdO3P-9J-Sir3B3w-GYm7BOoBaPCQO7MxYJHtF8KCebLv-BMvUAORwSIm4GXDELC7u95WbD-yqah11EvCsul0l5_nFL0PY6iStWK18rcnYHRLtyZTwexsdPCpGTnjm22w1VbV_yqhaz-QVIHiW4Bcs3Hf2AcclFOZh44A7H")'
-                }}
-              />
-              <div className="map-badge"><EnvironmentOutlined /> <Text strong>Vista previa del mapa</Text></div>
-            </div>
+            {isLoaded ? (
+              <>
+                <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #e5e7eb', marginBottom: 16 }}>
+                  <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={selectedPosition || defaultCenter}
+                    zoom={15}
+                    onClick={handleMapClick}
+                  >
+                    {selectedPosition && (
+                      <Marker
+                        position={selectedPosition}
+                        draggable={true}
+                        onDragEnd={(e) => {
+                          setSelectedPosition({
+                            lat: e.latLng.lat(),
+                            lng: e.latLng.lng()
+                          });
+                        }}
+                      />
+                    )}
+                  </GoogleMap>
+                </div>
 
-            <Row gutter={[24, 16]}>
-              <Col xs={24} md={12}>
-                <Text strong className="field-label">📍 Latitud</Text>
-                <Input name="latitud" value={formData.latitud} onChange={handleInputChange} placeholder="Ej. 20.8833" size="large" />
-              </Col>
-              <Col xs={24} md={12}>
-                <Text strong className="field-label">📍 Longitud</Text>
-                <Input name="longitud" value={formData.longitud} onChange={handleInputChange} placeholder="Ej. -99.6667" size="large" />
-              </Col>
-            </Row>
+                {selectedPosition && (
+                  <div style={{
+                    padding: '12px 16px',
+                    background: '#f0f9ff',
+                    borderRadius: 8,
+                    marginBottom: 16,
+                    border: '1px solid #bae6fd'
+                  }}>
+                    <strong style={{ color: '#1e40af' }}>Ubicación seleccionada:</strong>
+                    <div style={{ color: '#475569', marginTop: 4 }}>
+                      Lat: {selectedPosition.lat.toFixed(6)}, Lng: {selectedPosition.lng.toFixed(6)}
+                    </div>
+                  </div>
+                )}
+
+                <Text type="secondary" style={{ fontSize: '13px' }}>
+                  <EnvironmentOutlined /> Haz clic en el mapa para seleccionar la ubicación de la atracción
+                </Text>
+              </>
+            ) : (
+              <Spin tip="Cargando mapa..." />
+            )}
           </section>
 
           <Divider />
@@ -395,8 +490,8 @@ const GestionDeAtracciones = () => {
                 <div className="upload-header">
                   <div className="upload-icon"><PictureOutlined /></div>
                   <div>
-                    <Text strong className="upload-title">Galería de Fotos</Text>
-                    <Text className="upload-sub">Máximo 10 fotos • Formatos: JPG, PNG, WebP</Text>
+                    <Text strong className="upload-title">Imagen de la Atracción</Text>
+                    <Text className="upload-sub">1 imagen máxima • Formatos: JPG, PNG, WebP • Máx. 5MB</Text>
                   </div>
                 </div>
 
@@ -405,25 +500,6 @@ const GestionDeAtracciones = () => {
                     <PlusOutlined />
                     <div>Subir</div>
                   </div>
-                </Upload>
-              </div>
-
-              <div>
-                <div className="small-label"><VideoCameraOutlined /> <Text strong>Enlace de Video (Opcional)</Text></div>
-                <Input name="videoUrl" value={formData.videoUrl} onChange={handleInputChange} placeholder="https://youtube.com/..." prefix={<VideoCameraOutlined />} />
-              </div>
-
-              <div className="upload-panel">
-                <div className="upload-header">
-                  <div className="upload-icon"><AudioOutlined /></div>
-                  <div>
-                    <Text strong className="upload-title">Audioguía</Text>
-                    <Text className="upload-sub">Archivo de audio MP3</Text>
-                  </div>
-                </div>
-
-                <Upload {...audioUploadProps}>
-                  <Button className="upload-audio-btn" icon={<AudioOutlined />}>Seleccionar Archivo de Audio</Button>
                 </Upload>
               </div>
             </Space>
@@ -450,7 +526,15 @@ const GestionDeAtracciones = () => {
               </Col>
               <Col xs={24} md={12}>
                 <div className="small-label"><DollarOutlined /> <Text strong>Costo de Entrada</Text></div>
-                <Input name="costoEntrada" value={formData.costoEntrada} onChange={handleInputChange} placeholder="Ej. $50 MXN" />
+                <Input
+                  name="costoEntrada"
+                  value={formData.costoEntrada}
+                  onChange={handleInputChange}
+                  placeholder="0"
+                  prefix="$"
+                  suffix="MXN"
+                  type="number"
+                />
               </Col>
               <Col xs={24} md={12}>
                 <div className="small-label"><WarningOutlined /> <Text strong>Restricciones</Text></div>

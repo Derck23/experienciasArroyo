@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
-  Table, Button, Modal, message, Space, Form, Input, Select, Switch
+  Table, Button, Modal, message, Space, Form, Input, Select, Switch, Tabs, notification
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined
+  PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, CheckCircleOutlined
 } from '@ant-design/icons';
 import userService from '../../service/userService';
+import { getCurrentUser } from '../../utils/auth';
 import './GestionDeUsuarios.css';
 
 function GestionDeUsuarios() {
@@ -14,6 +15,12 @@ function GestionDeUsuarios() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [modalEliminar, setModalEliminar] = useState({ visible: false, usuario: null });
+  const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [mensajeExito, setMensajeExito] = useState({ visible: false, texto: '' });
+  const [mensajeError, setMensajeError] = useState({ visible: false, texto: '' });
+  const [modalLimpiarInactivos, setModalLimpiarInactivos] = useState(false);
+  const [passwordLimpiar, setPasswordLimpiar] = useState('');
   const [form] = Form.useForm();
 
   const fetchUsers = async () => {
@@ -50,33 +57,146 @@ function GestionDeUsuarios() {
     setModalVisible(true);
   };
 
-  const handleDelete = (record) => {
-    Modal.confirm({
-      title: 'Desactivar usuario',
-      content: `¿Desactivar a ${record.firstName} ${record.lastName}?`,
-      onOk: async () => {
-        try {
-          await userService.deleteUser(record.id);
-          message.success('Usuario desactivado');
-          fetchUsers();
-        } catch (err) {
-          console.error(err);
-          message.error('Error desactivando usuario');
-        }
-      }
-    });
+  const mostrarModalCambiarEstado = (usuario) => {
+    setModalEliminar({ visible: true, usuario });
   };
 
-  // local filtering for search input (name, email, phone)
+  const confirmarCambiarEstado = async () => {
+    const usuario = modalEliminar.usuario;
+    const nuevoEstado = !usuario.isActive;
+    const accion = nuevoEstado ? 'activar' : 'desactivar';
+
+    // Cerrar el modal primero
+    setModalEliminar({ visible: false, usuario: null });
+
+    try {
+      console.log(`Intentando ${accion} usuario con ID:`, usuario.id);
+
+      if (nuevoEstado) {
+        // Activar usuario - actualizar con isActive: true
+        await userService.updateUser(usuario.id, { isActive: true });
+        console.log('Usuario activado correctamente');
+      } else {
+        // Desactivar usuario (NO eliminar, solo marcar como inactivo)
+        await userService.updateUser(usuario.id, { isActive: false });
+        console.log('Usuario desactivado correctamente');
+      }
+
+      await fetchUsers();
+
+      // Mostrar mensaje de éxito
+      const mensaje = nuevoEstado ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente';
+      setMensajeExito({ visible: true, texto: mensaje });
+
+      // Ocultar después de 3 segundos
+      setTimeout(() => {
+        setMensajeExito({ visible: false, texto: '' });
+      }, 3000);
+
+    } catch (err) {
+      console.error('Error completo:', err);
+      console.error('Error response:', err.response);
+      const errorMsg = err.response?.data?.message || err.message || 'Error desconocido';
+      alert(`❌ Error al ${accion} usuario: ${errorMsg}`);
+    }
+  };
+
+  const cancelarCambiarEstado = () => {
+    setModalEliminar({ visible: false, usuario: null });
+  };
+
+  const limpiarInactivos = async () => {
+    try {
+      // Validar que haya contraseña
+      if (!passwordLimpiar) {
+        setMensajeError({ visible: true, texto: 'Por favor ingresa tu contraseña' });
+        setTimeout(() => {
+          setMensajeError({ visible: false, texto: '' });
+        }, 3000);
+        return;
+      }
+
+      // Validar contraseña con el backend
+      try {
+        const validacion = await userService.verifyPassword(passwordLimpiar);
+
+        if (!validacion.success) {
+          setMensajeError({ visible: true, texto: 'Contraseña incorrecta' });
+          setTimeout(() => {
+            setMensajeError({ visible: false, texto: '' });
+          }, 3000);
+          return;
+        }
+      } catch (verifyErr) {
+        console.error('Error validando contraseña:', verifyErr);
+        setMensajeError({ visible: true, texto: 'Contraseña incorrecta' });
+        setTimeout(() => {
+          setMensajeError({ visible: false, texto: '' });
+        }, 3000);
+        return;
+      }
+
+      // Cerrar modal
+      setModalLimpiarInactivos(false);
+      setPasswordLimpiar('');
+
+      // Eliminar usuarios inactivos
+      const usuariosInactivos = users.filter(u => !u.isActive);
+
+      for (const usuario of usuariosInactivos) {
+        await userService.deleteUser(usuario.id);
+      }
+
+      await fetchUsers();
+
+      setMensajeExito({ visible: true, texto: `${usuariosInactivos.length} usuarios inactivos eliminados correctamente` });
+      setTimeout(() => {
+        setMensajeExito({ visible: false, texto: '' });
+      }, 3000);
+
+    } catch (err) {
+      console.error('Error al limpiar inactivos:', err);
+      setMensajeError({ visible: true, texto: 'Error al eliminar usuarios inactivos' });
+      setTimeout(() => {
+        setMensajeError({ visible: false, texto: '' });
+      }, 3000);
+    }
+  };
+
+  // local filtering for search input (name, email, phone) and status
   const filteredUsers = useMemo(() => {
-    if (!searchTerm) return users;
-    const q = searchTerm.toLowerCase().trim();
-    return users.filter(u =>
-      `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) ||
-      (u.email || '').toLowerCase().includes(q) ||
-      (u.phone || '').toLowerCase().includes(q)
-    );
-  }, [users, searchTerm]);
+    let resultado = users;
+
+    // Filtro por estado
+    if (filtroEstado === 'todos') {
+      // En "Todos" excluir administradores
+      resultado = resultado.filter(u => u.role !== 'admin');
+    } else if (filtroEstado === 'activos') {
+      resultado = resultado.filter(u => u.isActive === true && u.role !== 'admin');
+    } else if (filtroEstado === 'inactivos') {
+      resultado = resultado.filter(u => u.isActive === false && u.role !== 'admin');
+    } else if (filtroEstado === 'admins') {
+      resultado = resultado.filter(u => u.role === 'admin');
+    }
+
+    // Filtro por búsqueda
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase().trim();
+      resultado = resultado.filter(u =>
+        `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q) ||
+        (u.phone || '').toLowerCase().includes(q)
+      );
+    }
+
+    // Ordenar: activos primero, inactivos al final
+    resultado.sort((a, b) => {
+      if (a.isActive === b.isActive) return 0;
+      return a.isActive ? -1 : 1;
+    });
+
+    return resultado;
+  }, [users, searchTerm, filtroEstado]);
 
   const columns = [
     {
@@ -102,7 +222,11 @@ function GestionDeUsuarios() {
       render: (_, record) => (
         <Space wrap>
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} size="small">Editar</Button>
-          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)} size="small">Desactivar</Button>
+          {record.isActive ? (
+            <Button danger icon={<DeleteOutlined />} onClick={() => mostrarModalCambiarEstado(record)} size="small">Desactivar</Button>
+          ) : (
+            <Button type="primary" onClick={() => mostrarModalCambiarEstado(record)} size="small" style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>Activar</Button>
+          )}
         </Space>
       ),
       responsive: ['xs', 'sm']
@@ -111,6 +235,56 @@ function GestionDeUsuarios() {
 
   return (
     <div className="usuarios-container">
+      {/* Mensaje de éxito flotante */}
+      {mensajeExito.visible && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'white',
+          color: '#333',
+          padding: '16px 24px',
+          borderRadius: '8px',
+          border: '2px solid #52c41a',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+          fontSize: '16px',
+          fontWeight: '500',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <CheckCircleOutlined style={{ fontSize: '20px', color: '#52c41a' }} />
+          {mensajeExito.texto}
+        </div>
+      )}
+
+      {/* Mensaje de error flotante */}
+      {mensajeError.visible && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'white',
+          color: '#333',
+          padding: '16px 24px',
+          borderRadius: '8px',
+          border: '2px solid #ff4d4f',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+          fontSize: '16px',
+          fontWeight: '500',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <span style={{ fontSize: '20px', color: '#ff4d4f' }}>✕</span>
+          {mensajeError.texto}
+        </div>
+      )}
+
       <div className="usuarios-header">
         <div className="usuarios-title">
           <h1 className="usuarios-h1">Gestión de Usuarios</h1>
@@ -141,6 +315,43 @@ function GestionDeUsuarios() {
         </div>
       </div>
 
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <Tabs
+          activeKey={filtroEstado}
+          onChange={setFiltroEstado}
+          items={[
+            {
+              key: 'todos',
+              label: `Todos (${users.filter(u => u.role !== 'admin').length})`,
+            },
+            {
+              key: 'activos',
+              label: `Activos (${users.filter(u => u.isActive && u.role !== 'admin').length})`,
+            },
+            {
+              key: 'inactivos',
+              label: `Inactivos (${users.filter(u => !u.isActive && u.role !== 'admin').length})`,
+            },
+            {
+              key: 'admins',
+              label: `Admins (${users.filter(u => u.role === 'admin').length})`,
+            },
+          ]}
+          style={{ marginBottom: '20px', flex: 1 }}
+        />
+
+        {filtroEstado === 'inactivos' && users.filter(u => !u.isActive).length > 0 && (
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => setModalLimpiarInactivos(true)}
+            style={{ marginBottom: '20px' }}
+          >
+            Limpiar Inactivos
+          </Button>
+        )}
+      </div>
+
       <div className="usuarios-table-wrap">
         <Table
           dataSource={filteredUsers}
@@ -161,7 +372,7 @@ function GestionDeUsuarios() {
         open={modalVisible}
         footer={null}
         onCancel={() => { setModalVisible(false); form.resetFields(); }}
-        destroyOnClose
+        destroyOnHidden
         className="usuarios-modal"
         width={720}
         title={<div className="modal-title">{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</div>}
@@ -228,6 +439,63 @@ function GestionDeUsuarios() {
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Modal de confirmación de cambio de estado */}
+      <Modal
+        title={modalEliminar.usuario?.isActive ? "¿Desactivar usuario?" : "¿Activar usuario?"}
+        open={modalEliminar.visible}
+        onOk={confirmarCambiarEstado}
+        onCancel={cancelarCambiarEstado}
+        centered
+        okText={modalEliminar.usuario?.isActive ? "Sí, desactivar" : "Sí, activar"}
+        cancelText="Cancelar"
+        okButtonProps={{
+          danger: modalEliminar.usuario?.isActive,
+          style: modalEliminar.usuario?.isActive ? {
+            backgroundColor: '#ff4d4f',
+            borderColor: '#ff4d4f'
+          } : {
+            backgroundColor: '#52c41a',
+            borderColor: '#52c41a'
+          }
+        }}
+      >
+        {modalEliminar.usuario && (
+          <p>
+            ¿Estás seguro que deseas {modalEliminar.usuario.isActive ? 'desactivar' : 'activar'} a <strong>{modalEliminar.usuario.firstName} {modalEliminar.usuario.lastName}</strong>?
+          </p>
+        )}
+      </Modal>
+
+      {/* Modal de limpiar usuarios inactivos */}
+      <Modal
+        title="⚠️ Limpiar Usuarios Inactivos"
+        open={modalLimpiarInactivos}
+        onOk={limpiarInactivos}
+        onCancel={() => {
+          setModalLimpiarInactivos(false);
+          setPasswordLimpiar('');
+        }}
+        centered
+        okText="Eliminar Todos"
+        cancelText="Cancelar"
+        okButtonProps={{
+          danger: true,
+        }}
+      >
+        <p style={{ marginBottom: '16px', color: '#ff4d4f', fontWeight: '500' }}>
+          Esta acción eliminará permanentemente TODOS los usuarios inactivos ({users.filter(u => !u.isActive).length} usuarios).
+        </p>
+        <p style={{ marginBottom: '16px' }}>
+          Por favor, ingresa tu contraseña para confirmar:
+        </p>
+        <Input.Password
+          placeholder="Contraseña del administrador"
+          value={passwordLimpiar}
+          onChange={(e) => setPasswordLimpiar(e.target.value)}
+          size="large"
+        />
       </Modal>
     </div>
   );

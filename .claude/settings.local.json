@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Backend-proy-integradora/**)",
+      "Bash(git restore:*)",
+      "Bash(cat:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

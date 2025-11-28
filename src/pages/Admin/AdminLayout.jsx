@@ -150,10 +150,6 @@ function AdminLayout() {
           </div>
 
           <div className="admin-header__right">
-            <button className="icon-button" aria-label="Notificaciones">
-              <BellOutlined />
-            </button>
-
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
               <div className="user-dropdown" role="button" tabIndex={0}>
                 <Avatar size={40} className="user-avatar" icon={<UserOutlined />} />
