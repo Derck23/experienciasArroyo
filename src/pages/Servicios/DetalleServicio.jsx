@@ -295,6 +295,18 @@ const DetalleServicio = () => {
                                 </span>
                             </div>
                         )}
+                        {servicio.cantidadBoletos && (
+                            <div className="info-box-clean">
+                                <span className="icon-green" style={{ fontSize: '20px' }}>🎫</span>
+                                <span className="info-label-clean">Boletos disponibles</span>
+                                <span className="info-value-clean" style={{
+                                    color: servicio.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a',
+                                    fontWeight: '600'
+                                }}>
+                                    {servicio.cantidadBoletos} {servicio.cantidadBoletos < 20 && '⚠️'}
+                                </span>
+                            </div>
+                        )}
                         {servicio.email && (
                             <div className="info-box-clean clickable" onClick={() => window.open(`mailto:${servicio.email}`)}>
                                 <MailOutlined className="icon-green" />
@@ -314,8 +326,11 @@ const DetalleServicio = () => {
                             className="btn-reservar-full"
                             block
                             onClick={() => setModalAbierto(true)}
+                            disabled={servicio.cantidadBoletos !== undefined && servicio.cantidadBoletos <= 0}
                         >
-                            Reservar Ahora
+                            {servicio.cantidadBoletos !== undefined && servicio.cantidadBoletos <= 0 
+                                ? 'Sin Boletos Disponibles' 
+                                : 'Reservar Ahora'}
                         </Button>
 
                         {/* Botones Secundarios */}

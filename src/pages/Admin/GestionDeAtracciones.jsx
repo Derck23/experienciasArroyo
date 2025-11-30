@@ -37,7 +37,8 @@ const GestionDeAtracciones = () => {
     nombre: '', descripcion: '',
     videoUrl: '', informacionCultural: '', horarios: '', costoEntrada: '',
     restricciones: '', nivelDificultad: '', servicios: '',
-    diaInicio: '', diaFin: '', horaInicio: null, horaFin: null
+    diaInicio: '', diaFin: '', horaInicio: null, horaFin: null,
+    cantidadBoletos: ''
   });
 
   const [fileList, setFileList] = useState([]);
@@ -295,7 +296,8 @@ const GestionDeAtracciones = () => {
       nivelDificultad: atraccion.nivelDificultad || '', servicios: atraccion.servicios || '',
       diaInicio: atraccion.diaInicio || '', diaFin: atraccion.diaFin || '',
       horaInicio: atraccion.horaInicio ? dayjs(atraccion.horaInicio, 'hh:mm A') : null,
-      horaFin: atraccion.horaFin ? dayjs(atraccion.horaFin, 'hh:mm A') : null
+      horaFin: atraccion.horaFin ? dayjs(atraccion.horaFin, 'hh:mm A') : null,
+      cantidadBoletos: atraccion.cantidadBoletos || ''
     });
 
     // Cargar posición en el mapa
@@ -473,6 +475,20 @@ const GestionDeAtracciones = () => {
         const config = { 'facil': { color: 'green', text: 'Fácil' }, 'moderado': { color: 'orange', text: 'Moderado' }, 'dificil': { color: 'red', text: 'Difícil' } };
         return <Tag color={config[nivel]?.color}>{config[nivel]?.text || nivel}</Tag>;
       }
+    },
+    {
+      title: 'Boletos',
+      dataIndex: 'cantidadBoletos',
+      key: 'cantidadBoletos',
+      width: 120,
+      render: (cantidad) => (
+        <span style={{ 
+          fontWeight: '600',
+          color: cantidad < 20 ? '#ff4d4f' : cantidad ? '#52c41a' : '#999'
+        }}>
+          {cantidad ? `🎫 ${cantidad}` : '-'}
+        </span>
+      )
     },
     {
       title: 'Estado', dataIndex: 'estado', key: 'estado', render: (estado, record) => (
@@ -782,6 +798,21 @@ const GestionDeAtracciones = () => {
                     ⚠️ El costo no puede exceder $10,000 MXN
                   </Text>
                 )}
+              </Col>
+              <Col xs={24} md={12}>
+                <div className="small-label"><Text strong>🎫 Cantidad de Boletos Disponibles</Text></div>
+                <Input
+                  name="cantidadBoletos"
+                  value={formData.cantidadBoletos}
+                  onChange={handleInputChange}
+                  placeholder="Ej. 100"
+                  type="number"
+                  min="0"
+                  status={formData.cantidadBoletos && (isNaN(parseInt(formData.cantidadBoletos)) || parseInt(formData.cantidadBoletos) < 0) ? 'error' : ''}
+                />
+                <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                  Número de boletos disponibles para esta atracción
+                </Text>
               </Col>
               <Col xs={24} md={12}>
                 <div className="small-label"><WarningOutlined /> <Text strong>Restricciones</Text></div>

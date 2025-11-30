@@ -81,6 +81,7 @@ function GestionDeServicios() {
       descripcion: record.descripcion,
       categoria: record.categoria,
       costo: record.costo,
+      cantidadBoletos: record.cantidadBoletos,
       diaInicio: record.diaInicio,
       diaFin: record.diaFin,
       horaInicio: record.horaInicio ? dayjs(record.horaInicio, 'hh:mm A') : null,
@@ -308,6 +309,20 @@ function GestionDeServicios() {
       )
     },
     {
+      title: 'Boletos',
+      dataIndex: 'cantidadBoletos',
+      key: 'cantidadBoletos',
+      width: 120,
+      render: (cantidad) => (
+        <span style={{ 
+          fontWeight: '600',
+          color: cantidad < 20 ? '#ff4d4f' : cantidad ? '#52c41a' : '#999'
+        }}>
+          {cantidad ? `🎫 ${cantidad}` : '-'}
+        </span>
+      )
+    },
+    {
       title: 'Acciones',
       key: 'acciones',
       render: (_, servicio) => (
@@ -437,6 +452,31 @@ function GestionDeServicios() {
               suffix="MXN"
               type="number"
               size="large"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Cantidad de Boletos Disponibles"
+            name="cantidadBoletos"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  const num = parseInt(value);
+                  if (isNaN(num) || num < 0) {
+                    return Promise.reject('La cantidad debe ser un número mayor o igual a 0');
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
+          >
+            <Input
+              placeholder="Ej. 100"
+              prefix="🎫"
+              type="number"
+              size="large"
+              min="0"
             />
           </Form.Item>
 

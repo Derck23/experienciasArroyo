@@ -87,6 +87,12 @@ const ServicioCard = ({ servicio, esFavorito, onToggleFavorito }) => {
                 <span>{servicio.ubicacion || 'Arroyo Seco, Querétaro'}</span>
             </div>
 
+            {servicio.cantidadBoletos && (
+                <div className="servicio-info" style={{ color: servicio.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a', fontWeight: '500' }}>
+                    🎫 <span>{servicio.cantidadBoletos} boletos disponibles</span>
+                </div>
+            )}
+
             <div className="servicio-footer">
                 <span className={`servicio-precio ${(!servicio.costo && !servicio.rangoPrecios) || servicio.costo === 0 || servicio.costo === 'Gratuito' ? 'gratis' : ''}`}>
                     {formatearPrecio(servicio.costo || servicio.rangoPrecios || '$$')}

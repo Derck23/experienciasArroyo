@@ -940,6 +940,12 @@ const ListaEventos = () => {
                                         })()}</span>
                                     </div>
 
+                                    {evento.cantidadBoletos && (
+                                        <div className="evento-info" style={{ color: evento.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a', fontWeight: '500' }}>
+                                            🎫 <span>{evento.cantidadBoletos} boletos disponibles</span>
+                                        </div>
+                                    )}
+
                                     <div className="evento-footer">
                                         <span className={`evento-precio ${!evento.precio || evento.precio === 0 ? 'gratis' : ''}`}>
                                             {formatearPrecio(evento.precio)}

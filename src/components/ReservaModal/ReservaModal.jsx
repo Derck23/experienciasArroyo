@@ -31,7 +31,7 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
     const [formData, setFormData] = useState({
         fechaReserva: fechaInicialEvento,
         horaReserva: horaInicialEvento,
-        numeroPersonas: 1,
+        cantidadBoletos: 1,
         comentarios: ''
     });
     const [loading, setLoading] = useState(false);
@@ -202,8 +202,8 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
             return;
         }
         
-        // Validación especial para número de personas
-        if (name === 'numeroPersonas') {
+        // Validación especial para cantidad de boletos
+        if (name === 'cantidadBoletos') {
             const num = parseInt(value);
             if (!isNaN(num) && num >= 1 && num <= 20) {
                 setFormData({ ...formData, [name]: num });
@@ -218,17 +218,25 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
     };
 
     const validarFormulario = () => {
-        const { fechaReserva, horaReserva, numeroPersonas } = formData;
+        const { fechaReserva, horaReserva, cantidadBoletos } = formData;
 
         // Validar que todos los campos requeridos estén llenos
-        if (!fechaReserva || !horaReserva || !numeroPersonas) {
+        if (!fechaReserva || !horaReserva || !cantidadBoletos) {
             setError('Todos los campos son obligatorios');
             return false;
         }
 
-        // Validar número de personas
-        if (numeroPersonas < 1 || numeroPersonas > 20) {
-            setError('El número de personas debe ser entre 1 y 20');
+        // Validar cantidad de boletos disponibles
+        const boletosDisponibles = servicio.cantidadBoletos || 0;
+        if (boletosDisponibles > 0 && cantidadBoletos > boletosDisponibles) {
+            setError(`Solo hay ${boletosDisponibles} boletos disponibles`);
+            return false;
+        }
+
+        // Validar cantidad de boletos (mínimo 1, máximo disponible o 20)
+        const maxBoletos = boletosDisponibles > 0 ? Math.min(boletosDisponibles, 20) : 20;
+        if (cantidadBoletos < 1 || cantidadBoletos > maxBoletos) {
+            setError(`La cantidad de boletos debe ser entre 1 y ${maxBoletos}`);
             return false;
         }
 
@@ -275,7 +283,7 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
                 tipoServicio: servicio.tipo || 'servicio', // Puede ser: 'servicio', 'atraccion', 'evento'
                 fechaReserva: formData.fechaReserva,
                 horaReserva: formData.horaReserva,
-                numeroPersonas: parseInt(formData.numeroPersonas),
+                cantidadBoletos: parseInt(formData.cantidadBoletos),
                 comentarios: formData.comentarios.trim().substring(0, 500) // Limitar a 500 caracteres
             };
 
@@ -294,9 +302,9 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
             // Mostrar mensaje desde este componente
             setMensajeExito(true);
 
-            // Redirigir a servicios después de 2.5 segundos
+            // Redirigir a Mis Reservaciones después de 2.5 segundos
             setTimeout(() => {
-                navigate('/experiencia/servicios');
+                navigate('/experiencia/mis-reservaciones');
             }, 2500);
 
         } catch (err) {
@@ -487,11 +495,21 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
                         </small>
                     </div>
 
-                    {/* Número de Personas */}
+                    {/* Cantidad de Boletos */}
                     <div className="form-group">
                         <label className="form-label">
                             <TeamOutlined className="label-icon" />
-                            Número de Personas (1-20)
+                            Cantidad de Boletos
+                            {servicio.cantidadBoletos > 0 && (
+                                <span style={{ 
+                                    marginLeft: '8px', 
+                                    fontSize: '12px', 
+                                    color: servicio.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a',
+                                    fontWeight: '600'
+                                }}>
+                                    ({servicio.cantidadBoletos} disponibles)
+                                </span>
+                            )}
                         </label>
                         <div className="personas-selector">
                             <button
@@ -499,36 +517,42 @@ const ReservaModal = ({ servicio, onClose, onSuccess }) => {
                                 className="personas-btn"
                                 onClick={() => setFormData({
                                     ...formData,
-                                    numeroPersonas: Math.max(1, formData.numeroPersonas - 1)
+                                    cantidadBoletos: Math.max(1, formData.cantidadBoletos - 1)
                                 })}
-                                disabled={formData.numeroPersonas <= 1 || loading}
+                                disabled={formData.cantidadBoletos <= 1 || loading}
                             >
                                 -
                             </button>
                             <input 
                                 type="number" 
-                                name="numeroPersonas"
+                                name="cantidadBoletos"
                                 className="form-input personas-input"
                                 min="1"
-                                max="20"
-                                value={formData.numeroPersonas} 
+                                max={servicio.cantidadBoletos > 0 ? Math.min(servicio.cantidadBoletos, 20) : 20}
+                                value={formData.cantidadBoletos} 
                                 required 
                                 onChange={handleChange}
                             />
                             <button
                                 type="button"
                                 className="personas-btn"
-                                onClick={() => setFormData({
-                                    ...formData,
-                                    numeroPersonas: Math.min(20, formData.numeroPersonas + 1)
-                                })}
-                                disabled={formData.numeroPersonas >= 20 || loading}
+                                onClick={() => {
+                                    const maxBoletos = servicio.cantidadBoletos > 0 ? Math.min(servicio.cantidadBoletos, 20) : 20;
+                                    setFormData({
+                                        ...formData,
+                                        cantidadBoletos: Math.min(maxBoletos, formData.cantidadBoletos + 1)
+                                    });
+                                }}
+                                disabled={formData.cantidadBoletos >= (servicio.cantidadBoletos > 0 ? Math.min(servicio.cantidadBoletos, 20) : 20) || loading}
                             >
                                 +
                             </button>
                         </div>
                         <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                            Mínimo 1 persona, máximo 20 personas
+                            {servicio.cantidadBoletos > 0 
+                                ? `Mínimo 1, máximo ${Math.min(servicio.cantidadBoletos, 20)} boletos`
+                                : 'Mínimo 1, máximo 20 boletos'
+                            }
                         </small>
                     </div>
 

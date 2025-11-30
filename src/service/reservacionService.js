@@ -4,7 +4,7 @@ import api from './api';
 export const crearReservacion = async (reservaData) => {
     try {
         // Validar que los datos requeridos estén presentes
-        if (!reservaData.servicioId || !reservaData.fechaReserva || !reservaData.horaReserva || !reservaData.numeroPersonas) {
+        if (!reservaData.servicioId || !reservaData.fechaReserva || !reservaData.horaReserva || !reservaData.cantidadBoletos) {
             throw { message: 'Faltan datos requeridos para crear la reservación' };
         }
 
@@ -12,9 +12,10 @@ export const crearReservacion = async (reservaData) => {
         const datosValidados = {
             servicioId: String(reservaData.servicioId), // Firebase ID es string
             nombreServicio: String(reservaData.nombreServicio || '').trim(),
+            tipoServicio: String(reservaData.tipoServicio || 'servicio'),
             fechaReserva: String(reservaData.fechaReserva),
             horaReserva: String(reservaData.horaReserva),
-            numeroPersonas: parseInt(reservaData.numeroPersonas),
+            cantidadBoletos: parseInt(reservaData.cantidadBoletos),
             comentarios: String(reservaData.comentarios || '').trim()
         };
 

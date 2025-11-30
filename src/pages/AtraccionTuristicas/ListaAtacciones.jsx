@@ -60,7 +60,8 @@ const ListaAtacciones = () => {
                     imagen: (atraccion.fotos && atraccion.fotos.length > 0) 
                         ? atraccion.fotos[0] 
                         : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e0e0e0' width='400' height='300'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='20' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E%F0%9F%8F%9E%EF%B8%8F Sin imagen%3C/text%3E%3C/svg%3E",
-                    costo: atraccion.costoEntrada || 'Gratuito'
+                    costo: atraccion.costoEntrada || 'Gratuito',
+                    cantidadBoletos: atraccion.cantidadBoletos
                 }));
 
                 console.log('Atracciones mapeadas:', mappedAtracciones);
@@ -429,6 +430,12 @@ const ListaAtacciones = () => {
                                         <AppstoreOutlined />
                                         <span>{atraccion.dificultad}</span>
                                     </div>
+
+                                    {atraccion.cantidadBoletos && (
+                                        <div className="atraccion-info" style={{ color: atraccion.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a' }}>
+                                            🎫 <span>{atraccion.cantidadBoletos} boletos disponibles</span>
+                                        </div>
+                                    )}
 
                                     <div className="atraccion-footer">
                                         <span className={`atraccion-precio ${!atraccion.costo || atraccion.costo === 0 || atraccion.costo === 'Gratuito' ? 'gratis' : ''}`}>

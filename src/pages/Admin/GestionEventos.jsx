@@ -126,6 +126,7 @@ const GestionEventos = () => {
       hora: ev.hora ? dayjs(ev.hora, 'HH:mm') : null,
       categoria: ev.categoria,
       precio: typeof ev.precio === 'string' ? Number(ev.precio) : ev.precio,
+      cantidadBoletos: ev.cantidadBoletos,
       destacado: !!ev.destacado,
       estado: ev.estado || 'activo',
     });
@@ -165,6 +166,7 @@ const GestionEventos = () => {
       ubicacion: ubicacionFinal,
       categoria: vals.categoria || '',
       precio: typeof vals.precio === 'number' ? vals.precio : Number(vals.precio || 0),
+      cantidadBoletos: typeof vals.cantidadBoletos === 'number' ? vals.cantidadBoletos : Number(vals.cantidadBoletos || 0),
       fotos: fotos,
       imagen: fotos[0] || '',
       destacado: !!vals.destacado,
@@ -270,6 +272,21 @@ const GestionEventos = () => {
     },
     { title: 'Categoría', dataIndex: 'categoria', key: 'categoria', render: (c) => c || '-', responsive: ['md'] },
     { title: 'Precio', dataIndex: 'precio', key: 'precio', render: (p) => formatearPrecio(p), responsive: ['lg'] },
+    {
+      title: 'Boletos',
+      dataIndex: 'cantidadBoletos',
+      key: 'cantidadBoletos',
+      width: 120,
+      render: (cantidad) => (
+        <span style={{ 
+          fontWeight: '600',
+          color: cantidad < 20 ? '#ff4d4f' : cantidad ? '#52c41a' : '#999'
+        }}>
+          {cantidad ? `🎫 ${cantidad}` : '-'}
+        </span>
+      ),
+      responsive: ['lg']
+    },
     {
       title: 'Estado', dataIndex: 'estado', key: 'estado',
       render: (e) => (e === 'activo' || e === 'activa' ? <Tag color="green">Activo</Tag> : <Tag>Inactivo</Tag>)
@@ -459,6 +476,30 @@ const GestionEventos = () => {
             ]}
           >
             <TextArea rows={3} placeholder="Descripción del evento" maxLength={1000} showCount />
+          </Form.Item>
+
+          <Form.Item
+            name="cantidadBoletos"
+            label="Cantidad de Boletos Disponibles"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  const num = parseInt(value);
+                  if (isNaN(num) || num < 0) {
+                    return Promise.reject('La cantidad debe ser un número mayor o igual a 0');
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
+          >
+            <InputNumber
+              placeholder="Ej. 150"
+              prefix="🎫"
+              style={{ width: '100%' }}
+              min={0}
+            />
           </Form.Item>
 
           <Space style={{ width: '100%' }} direction={isMobile ? 'vertical' : 'horizontal'} size="middle">

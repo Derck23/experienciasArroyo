@@ -180,9 +180,9 @@ const MisReservaciones = () => {
                                                 <TeamOutlined />
                                             </div>
                                             <div className="detalle-text">
-                                                <span className="detalle-label">Personas</span>
+                                                <span className="detalle-label">🎫 Boletos</span>
                                                 <span className="detalle-valor">
-                                                    {reserva.numeroPersonas} {reserva.numeroPersonas === 1 ? 'persona' : 'personas'}
+                                                    {reserva.cantidadBoletos || reserva.numeroPersonas || 0} {(reserva.cantidadBoletos || reserva.numeroPersonas) === 1 ? 'boleto' : 'boletos'}
                                                 </span>
                                             </div>
                                         </div>

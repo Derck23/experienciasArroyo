@@ -48,7 +48,7 @@ const AdminReservaciones = () => {
         doc.setFontSize(11);
         doc.text(`Fecha de reporte: ${new Date().toLocaleDateString()}`, 14, 30);
 
-        const tableColumn = ["Cliente", "Servicio", "Fecha", "Hora", "Personas", "Estado", "Comentarios"];
+        const tableColumn = ["Cliente", "Servicio", "Fecha", "Hora", "Boletos", "Estado", "Comentarios"];
         const tableRows = [];
 
         datosFiltrados.forEach(ticket => {
@@ -57,7 +57,7 @@ const AdminReservaciones = () => {
                 ticket.nombreServicio,
                 ticket.fechaReserva,
                 ticket.horaReserva,
-                ticket.numeroPersonas,
+                ticket.cantidadBoletos || ticket.numeroPersonas || 0,
                 ticket.estado.toUpperCase(),
                 ticket.comentarios || '-'
             ];
@@ -114,11 +114,16 @@ const AdminReservaciones = () => {
             width: 100,
         },
         {
-            title: 'Pax',
-            dataIndex: 'numeroPersonas',
-            key: 'numeroPersonas',
+            title: '🎫 Boletos',
+            dataIndex: 'cantidadBoletos',
+            key: 'cantidadBoletos',
             align: 'center',
-            width: 80,
+            width: 100,
+            render: (cantidad, record) => (
+                <span style={{ fontWeight: '600', color: '#1890ff' }}>
+                    {cantidad || record.numeroPersonas || 0}
+                </span>
+            )
         },
         {
             title: 'Estado',

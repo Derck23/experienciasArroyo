@@ -239,6 +239,23 @@ const DetalleEvento = () => {
                             </div>
                         </div>
 
+                        {evento.cantidadBoletos && (
+                            <div className="info-item">
+                                <div className="info-icon" style={{ fontSize: '20px' }}>
+                                    🎫
+                                </div>
+                                <div className="info-text">
+                                    <span className="info-label">Boletos disponibles</span>
+                                    <span className="info-value" style={{ 
+                                        color: evento.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a',
+                                        fontWeight: '600'
+                                    }}>
+                                        {evento.cantidadBoletos} {evento.cantidadBoletos < 20 && '⚠️'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="info-item">
                             <div className="info-icon">
                                 <EnvironmentOutlined />
@@ -282,16 +299,19 @@ const DetalleEvento = () => {
 
                     {/* Botones de acción */}
                     <div className="action-buttons">
-                       {/* <Button
+                        <Button
                             type="primary"
                             size="large"
                             icon={<CalendarOutlined />}
                             onClick={() => setModalAbierto(true)}
                             block
                             className="btn-principal"
+                            disabled={evento.cantidadBoletos !== undefined && evento.cantidadBoletos <= 0}
                         >
-                            Hacer Reservación
-                        </Button>*/ }
+                            {evento.cantidadBoletos !== undefined && evento.cantidadBoletos <= 0 
+                                ? 'Sin Boletos Disponibles' 
+                                : 'Hacer Reservación'}
+                        </Button>
                         <Button
                             type="default"
                             size="large"
@@ -314,7 +334,8 @@ const DetalleEvento = () => {
                         nombre: evento.nombre,
                         tipo: 'evento',
                         fechaEvento: evento.fecha,
-                        horaEvento: evento.hora
+                        horaEvento: evento.hora,
+                        cantidadBoletos: evento.cantidadBoletos
                     }}
                     onClose={() => setModalAbierto(false)}
                     onSuccess={handleReservaExitosa}

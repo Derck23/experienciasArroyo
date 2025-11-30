@@ -101,15 +101,39 @@ const DetalleAtraccion = () => {
 
     const abrirMapa = () => {
         try {
-            const ubicacion = JSON.parse(atraccion.ubicacion || '{}');
-            if (ubicacion.lat && ubicacion.lng) {
-                window.open(
-                    `https://www.google.com/maps?q=${ubicacion.lat},${ubicacion.lng}`,
-                    '_blank'
-                );
+            // Verificar si existen latitud y longitud directamente
+            if (atraccion.latitud && atraccion.longitud) {
+                const lat = parseFloat(atraccion.latitud);
+                const lng = parseFloat(atraccion.longitud);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    window.open(
+                        `https://www.google.com/maps?q=${lat},${lng}`,
+                        '_blank'
+                    );
+                    return;
+                }
             }
+            
+            // Fallback: intentar parsear ubicacion como JSON
+            try {
+                const ubicacion = JSON.parse(atraccion.ubicacion || '{}');
+                if (ubicacion.lat && ubicacion.lng) {
+                    window.open(
+                        `https://www.google.com/maps?q=${ubicacion.lat},${ubicacion.lng}`,
+                        '_blank'
+                    );
+                    return;
+                }
+            } catch (parseError) {
+                console.log('No se pudo parsear ubicacion como JSON');
+            }
+            
+            // Si no hay coordenadas válidas
+            message.warning('No hay coordenadas de ubicación disponibles');
         } catch (error) {
             console.error('Error al abrir mapa:', error);
+            message.error('Error al abrir el mapa');
         }
     };
 
@@ -263,6 +287,23 @@ const DetalleAtraccion = () => {
                                 </div>
                             </div>
                         )}
+
+                        {atraccion.cantidadBoletos && (
+                            <div className="info-item">
+                                <div className="info-icon" style={{ fontSize: '20px' }}>
+                                    🎫
+                                </div>
+                                <div className="info-text">
+                                    <span className="info-label">Boletos disponibles</span>
+                                    <span className="info-value" style={{ 
+                                        color: atraccion.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a',
+                                        fontWeight: '600'
+                                    }}>
+                                        {atraccion.cantidadBoletos} {atraccion.cantidadBoletos < 20 && '⚠️'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Recomendaciones */}
@@ -283,16 +324,19 @@ const DetalleAtraccion = () => {
 
                     {/* Botones de acción */}
                     <div className="action-buttons">
-                        {/*<Button
+                        <Button
                             type="primary"
                             size="large"
                             icon={<CalendarOutlined />}
                             onClick={() => setModalAbierto(true)}
                             block
                             className="btn-principal"
+                            disabled={atraccion.cantidadBoletos !== undefined && atraccion.cantidadBoletos <= 0}
                         >
-                            Hacer Reservación
-                        </Button>*/ }
+                            {atraccion.cantidadBoletos !== undefined && atraccion.cantidadBoletos <= 0 
+                                ? 'Sin Boletos Disponibles' 
+                                : 'Hacer Reservación'}
+                        </Button>
                         <Button
                             type="default"
                             size="large"
@@ -313,7 +357,12 @@ const DetalleAtraccion = () => {
                     servicio={{
                         id: atraccion.id,
                         nombre: atraccion.nombre,
-                        tipo: 'atraccion'
+                        tipo: 'atraccion',
+                        cantidadBoletos: atraccion.cantidadBoletos,
+                        diaInicio: atraccion.diaInicio,
+                        diaFin: atraccion.diaFin,
+                        horaInicio: atraccion.horaInicio,
+                        horaFin: atraccion.horaFin
                     }}
                     onClose={() => setModalAbierto(false)}
                     onSuccess={handleReservaExitosa}
