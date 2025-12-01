@@ -38,7 +38,8 @@ const GestionDeAtracciones = () => {
     videoUrl: '', informacionCultural: '', horarios: '', costoEntrada: '',
     restricciones: '', nivelDificultad: '', servicios: '',
     diaInicio: '', diaFin: '', horaInicio: null, horaFin: null,
-    cantidadBoletos: ''
+    cantidadBoletos: '',
+    restriccionEdad: '', permitirAlimentos: ''
   });
 
   const [fileList, setFileList] = useState([]);
@@ -89,7 +90,9 @@ const GestionDeAtracciones = () => {
       nombre: '', descripcion: '',
       videoUrl: '', informacionCultural: '', horarios: '', costoEntrada: '',
       restricciones: '', nivelDificultad: '', servicios: '',
-      diaInicio: '', diaFin: '', horaInicio: null, horaFin: null
+      diaInicio: '', diaFin: '', horaInicio: null, horaFin: null,
+      cantidadBoletos: '',
+      restriccionEdad: '', permitirAlimentos: ''
     });
     setFileList([]);
     setAudioFile([]);
@@ -297,7 +300,9 @@ const GestionDeAtracciones = () => {
       diaInicio: atraccion.diaInicio || '', diaFin: atraccion.diaFin || '',
       horaInicio: atraccion.horaInicio ? dayjs(atraccion.horaInicio, 'hh:mm A') : null,
       horaFin: atraccion.horaFin ? dayjs(atraccion.horaFin, 'hh:mm A') : null,
-      cantidadBoletos: atraccion.cantidadBoletos || ''
+      cantidadBoletos: atraccion.cantidadBoletos || '',
+      restriccionEdad: atraccion.restriccionEdad || '',
+      permitirAlimentos: atraccion.permitirAlimentos || ''
     });
 
     // Cargar posición en el mapa
@@ -474,6 +479,34 @@ const GestionDeAtracciones = () => {
       title: 'Dificultad', dataIndex: 'nivelDificultad', key: 'nivelDificultad', render: (nivel) => {
         const config = { 'facil': { color: 'green', text: 'Fácil' }, 'moderado': { color: 'orange', text: 'Moderado' }, 'dificil': { color: 'red', text: 'Difícil' } };
         return <Tag color={config[nivel]?.color}>{config[nivel]?.text || nivel}</Tag>;
+      }
+    },
+    {
+      title: 'Edad',
+      dataIndex: 'restriccionEdad',
+      key: 'restriccionEdad',
+      width: 200,
+      render: (restriccion) => {
+        const config = {
+          'todo_publico': { color: 'green', text: '🌍 Todo Público' },
+          'mayores_18': { color: 'orange', text: '18+' },
+          'menores_acompanados': { color: 'blue', text: 'Menores acompañados' }
+        };
+        return restriccion ? <Tag color={config[restriccion]?.color}>{config[restriccion]?.text}</Tag> : <span>-</span>;
+      }
+    },
+    {
+      title: 'Alimentos',
+      dataIndex: 'permitirAlimentos',
+      key: 'permitirAlimentos',
+      width: 190,
+      render: (alimentos) => {
+        const config = {
+          'permitido': { color: 'green', text: '✅ Permitido Alimentos' },
+          'prohibido': { color: 'red', text: '❌ Prohibido Alimentos' },
+          'solo_bebidas': { color: 'cyan', text: '🥤 Solo bebidas' }
+        };
+        return alimentos ? <Tag color={config[alimentos]?.color}>{config[alimentos]?.text}</Tag> : <span>-</span>;
       }
     },
     {
@@ -824,6 +857,32 @@ const GestionDeAtracciones = () => {
                   <Option value="facil">✅ Fácil</Option>
                   <Option value="moderado">⚠️ Moderado</Option>
                   <Option value="dificil">🔥 Difícil</Option>
+                </Select>
+              </Col>
+              <Col xs={24} md={12}>
+                <div className="small-label"><Text strong>👥 Restricción de Edad</Text></div>
+                <Select 
+                  name="restriccionEdad" 
+                  value={formData.restriccionEdad || undefined} 
+                  onChange={(value) => handleInputChange({ target: { name: 'restriccionEdad', value } })} 
+                  placeholder="Selecciona acceso"
+                >
+                  <Option value="todo_publico">🌍 Todo Público</Option>
+                  <Option value="mayores_18">18+</Option>
+                  <Option value="menores_acompanados">Menores acompañados</Option>
+                </Select>
+              </Col>
+              <Col xs={24} md={12}>
+                <div className="small-label"><Text strong>🍔 Alimentos</Text></div>
+                <Select 
+                  name="permitirAlimentos" 
+                  value={formData.permitirAlimentos || undefined} 
+                  onChange={(value) => handleInputChange({ target: { name: 'permitirAlimentos', value } })} 
+                  placeholder="Selecciona opción"
+                >
+                  <Option value="permitido">✅ Permitido Alimentos</Option>
+                  <Option value="prohibido">❌ Prohibido Alimentos</Option>
+                  <Option value="solo_bebidas">🥤 Solo bebidas</Option>
                 </Select>
               </Col>
             </Row>

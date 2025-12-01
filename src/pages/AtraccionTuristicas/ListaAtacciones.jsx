@@ -53,9 +53,10 @@ const ListaAtacciones = () => {
                 const mappedAtracciones = atraccionesActivas.map(atraccion => ({
                     id: atraccion.id,
                     nombre: atraccion.nombre,
-                    categoria: atraccion.categoria || 'Sin categoría',
                     dificultad: atraccion.nivelDificultad || 'No especificada',
                     distancia: atraccion.distancia || 'N/A',
+                    restriccionEdad: atraccion.restriccionEdad || '',
+                    permitirAlimentos: atraccion.permitirAlimentos || '',
                     // Priorizar imagen Base64, luego imagen por defecto SVG
                     imagen: (atraccion.fotos && atraccion.fotos.length > 0) 
                         ? atraccion.fotos[0] 
@@ -424,11 +425,23 @@ const ListaAtacciones = () => {
                                     }
                                 >
                                     <h3 className="atraccion-nombre">{atraccion.nombre}</h3>
-                                    <Tag color="green" style={{ marginBottom: '8px' }}>{atraccion.categoria}</Tag>
 
                                     <div className="atraccion-info">
                                         <AppstoreOutlined />
                                         <span>{atraccion.dificultad}</span>
+                                    </div>
+
+                                    <div style={{ marginTop: '8px', marginBottom: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                        {atraccion.restriccionEdad && (
+                                            <Tag color={atraccion.restriccionEdad === 'todo_publico' ? 'green' : atraccion.restriccionEdad === 'mayores_18' ? 'orange' : 'blue'} style={{ fontSize: '12px' }}>
+                                                {atraccion.restriccionEdad === 'todo_publico' ? '🌍 Todo Público' : atraccion.restriccionEdad === 'mayores_18' ? '18+' : 'Menores acompañados'}
+                                            </Tag>
+                                        )}
+                                        {atraccion.permitirAlimentos && (
+                                            <Tag color={atraccion.permitirAlimentos === 'permitido' ? 'green' : atraccion.permitirAlimentos === 'prohibido' ? 'red' : 'cyan'} style={{ fontSize: '12px' }}>
+                                                {atraccion.permitirAlimentos === 'permitido' ? '✅ Permitido Alimentos' : atraccion.permitirAlimentos === 'prohibido' ? '❌ Prohibido Alimentos' : '🥤 Solo bebidas'}
+                                            </Tag>
+                                        )}
                                     </div>
 
                                     {atraccion.cantidadBoletos && (

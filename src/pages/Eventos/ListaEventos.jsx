@@ -8,7 +8,6 @@ import {
     HeartFilled,
     AppstoreOutlined,
     UnorderedListOutlined,
-    EnvironmentFilled,
     FilterOutlined
 } from '@ant-design/icons';
 import { obtenerEventos } from '../../service/eventoService';
@@ -801,13 +800,6 @@ const ListaEventos = () => {
                             >
                                 Calendario
                             </Button>
-                            <Button
-                                type={vistaActual === 'mapa' ? 'primary' : 'default'}
-                                icon={<EnvironmentFilled />}
-                                onClick={() => setVistaActual('mapa')}
-                            >
-                                Mapa
-                            </Button>
                         </div>
                     </div>
 
@@ -835,13 +827,6 @@ const ListaEventos = () => {
                                 onClick={() => setVistaActual('calendario')}
                             >
                                 Calendario
-                            </Button>
-                            <Button
-                                type={vistaActual === 'mapa' ? 'primary' : 'default'}
-                                icon={<EnvironmentFilled />}
-                                onClick={() => setVistaActual('mapa')}
-                            >
-                                Mapa
                             </Button>
                         </div>
 

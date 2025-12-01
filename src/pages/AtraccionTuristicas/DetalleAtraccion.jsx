@@ -230,6 +230,16 @@ const DetalleAtraccion = () => {
                                 {atraccion.nivelDificultad}
                             </Tag>
                         )}
+                        {atraccion.restriccionEdad && (
+                            <Tag color={atraccion.restriccionEdad === 'todo_publico' ? 'green' : atraccion.restriccionEdad === 'mayores_18' ? 'orange' : 'blue'} className="categoria-tag">
+                                {atraccion.restriccionEdad === 'todo_publico' ? '🌍 Todo Público' : atraccion.restriccionEdad === 'mayores_18' ? '18+' : 'Menores acompañados'}
+                            </Tag>
+                        )}
+                        {atraccion.permitirAlimentos && (
+                            <Tag color={atraccion.permitirAlimentos === 'permitido' ? 'green' : atraccion.permitirAlimentos === 'prohibido' ? 'red' : 'cyan'} className="categoria-tag">
+                                {atraccion.permitirAlimentos === 'permitido' ? '✅ Permitido Alimentos' : atraccion.permitirAlimentos === 'prohibido' ? '❌ Prohibido Alimentos' : '🥤 Solo bebidas'}
+                            </Tag>
+                        )}
                     </div>
 
                     <p className="detalle-descripcion">{atraccion.descripcion}</p>
