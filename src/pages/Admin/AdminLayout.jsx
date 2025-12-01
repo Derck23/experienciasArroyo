@@ -107,7 +107,6 @@ function AdminLayout() {
         onBreakpoint={(broken) => setCollapsed(broken)}
         width={240}
         collapsedWidth={80}
-        style={isMobile ? { position: 'fixed', left: 0, top: 0, height: '100vh', zIndex: 1200, boxShadow: mobileSiderVisible ? '2px 0 8px rgba(0,0,0,0.18)' : 'none', display: mobileSiderVisible ? 'block' : 'none' } : {}}
       >
         <div className={`brand ${collapsed ? 'brand--collapsed' : ''}`}>
           <div className="brand__logo">

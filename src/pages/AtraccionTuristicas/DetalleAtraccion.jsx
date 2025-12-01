@@ -147,6 +147,22 @@ const DetalleAtraccion = () => {
         return colores[dificultad] || 'default';
     };
 
+    const getDificultadDescripcion = (dificultad) => {
+        if (!dificultad) return '';
+        
+        const dificultadLower = dificultad.toLowerCase().trim();
+        
+        if (dificultadLower === 'facil' || dificultadLower === 'fácil') {
+            return '✓ Todas las edades';
+        } else if (dificultadLower === 'moderado' || dificultadLower === 'moderada') {
+            return '⚠️ Revise la descripción detallada';
+        } else if (dificultadLower === 'dificil' || dificultadLower === 'difícil' || dificultadLower === 'muy dificil' || dificultadLower === 'muy difícil') {
+            return '⚠️ Mayores de edad con experiencia. Revise la descripción detallada';
+        }
+        
+        return '';
+    };
+
     if (loading) {
         return (
             <div className="detalle-container">
@@ -241,6 +257,24 @@ const DetalleAtraccion = () => {
                             </Tag>
                         )}
                     </div>
+
+                    {atraccion.nivelDificultad && getDificultadDescripcion(atraccion.nivelDificultad) && (
+                        <div className="dificultad-info" style={{
+                            padding: '12px 16px',
+                            marginBottom: '16px',
+                            backgroundColor: atraccion.nivelDificultad.toLowerCase().includes('facil') ? '#f6ffed' : 
+                                           atraccion.nivelDificultad.toLowerCase().includes('moderad') ? '#fff7e6' : '#fff1f0',
+                            border: atraccion.nivelDificultad.toLowerCase().includes('facil') ? '1px solid #b7eb8f' : 
+                                  atraccion.nivelDificultad.toLowerCase().includes('moderad') ? '1px solid #ffd591' : '1px solid #ffa39e',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            color: atraccion.nivelDificultad.toLowerCase().includes('facil') ? '#52c41a' : 
+                                 atraccion.nivelDificultad.toLowerCase().includes('moderad') ? '#fa8c16' : '#f5222d'
+                        }}>
+                            {getDificultadDescripcion(atraccion.nivelDificultad)}
+                        </div>
+                    )}
 
                     <p className="detalle-descripcion">{atraccion.descripcion}</p>
 
