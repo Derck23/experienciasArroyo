@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, message, Spin, Modal, Checkbox } from 'antd';
 import { UserOutlined, MailOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import './EliminacionCuenta.css';
+import deletionRequestService from '../../service/deletionRequestService';
+import { getCurrentUser } from '../../utils/auth';
 
 const { TextArea } = Input;
 
@@ -11,54 +13,95 @@ const EliminacionCuenta = () => {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [accepted, setAccepted] = useState(false);
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+  const [pendingValues, setPendingValues] = useState(null);
+  const currentUser = getCurrentUser();
 
-  const handleSubmit = async (values) => {
+  // Pre-llenar el formulario con datos del usuario si está autenticado
+  useEffect(() => {
+    if (currentUser) {
+      form.setFieldsValue({
+        fullName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim(),
+        email: currentUser.email || ''
+      });
+    }
+  }, [currentUser, form]);
+
+  const handleSubmit = (values) => {
+    console.log('🎯 handleSubmit llamado con valores:', values);
+    
     if (!accepted) {
       message.warning('Debes aceptar que comprendes las consecuencias de eliminar tu cuenta');
       return;
     }
 
-    Modal.confirm({
-      title: '¿Estás seguro de que deseas eliminar tu cuenta?',
-      icon: <ExclamationCircleOutlined />,
-      content: 'Esta acción es irreversible. Una vez confirmada, procesaremos tu solicitud en un plazo de 30 días.',
-      okText: 'Sí, eliminar mi cuenta',
-      okType: 'danger',
-      cancelText: 'Cancelar',
-      onOk: async () => {
-        setLoading(true);
-        try {
-          // Aquí iría la llamada a la API para procesar la solicitud de eliminación
-          // await accountDeletionService.requestDeletion(values);
-          
-          // Simulación de envío
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          message.success('Solicitud de eliminación de cuenta enviada correctamente');
-          form.resetFields();
-          setAccepted(false);
-          
-          // Mostrar mensaje de confirmación
-          Modal.success({
-            title: 'Solicitud Recibida',
-            content: (
-              <div>
-                <p>Hemos recibido tu solicitud de eliminación de cuenta.</p>
-                <p>Recibirás un correo electrónico de confirmación en las próximas 24 horas.</p>
-                <p>Tu cuenta y datos asociados serán eliminados en un plazo máximo de 30 días.</p>
-              </div>
-            ),
-            onOk: () => navigate('/'),
-          });
-          
-        } catch (error) {
-          console.error('Error al solicitar eliminación:', error);
-          message.error('Error al procesar tu solicitud. Por favor, inténtalo de nuevo.');
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+    setPendingValues(values);
+    setIsConfirmModalVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsConfirmModalVisible(false);
+    const values = pendingValues;
+    
+    if (!values) return;
+
+    setLoading(true);
+    try {
+      console.log('🚀 Iniciando solicitud de eliminación para:', values.email);
+      
+      // Enviar solicitud de eliminación al backend (sin autenticación)
+      const requestData = {
+        fullName: values.fullName,
+        email: values.email,
+        reason: values.reason || 'No especificado',
+      };
+
+      console.log('📦 Datos a enviar:', requestData);
+      
+      const response = await deletionRequestService.createDeletionRequest(requestData);
+      console.log('✅ Solicitud creada exitosamente:', response);
+      
+      message.success('Solicitud de eliminación de cuenta enviada correctamente');
+      form.resetFields();
+      setAccepted(false);
+      setPendingValues(null);
+      
+      // Mostrar mensaje de confirmación
+      Modal.success({
+        title: 'Solicitud Recibida',
+        content: (
+          <div>
+            <p>Hemos recibido tu solicitud de eliminación de cuenta.</p>
+            <p>Recibirás un correo electrónico de confirmación a <strong>{values.email}</strong> en las próximas 24 horas.</p>
+            <p>Un administrador revisará tu solicitud y se procesará en un plazo máximo de 30 días.</p>
+            <p style={{ marginTop: '15px', fontSize: '12px', color: '#666' }}>
+              Si no recibes el correo, verifica tu bandeja de spam o contacta con soporte.
+            </p>
+          </div>
+        ),
+        onOk: () => navigate('/'),
+      });
+      
+    } catch (error) {
+      console.error('❌ Error completo al solicitar eliminación:', error);
+      console.error('❌ Respuesta del servidor:', error.response);
+      
+      let errorMsg = 'Error al procesar tu solicitud. Por favor, inténtalo de nuevo.';
+      
+      if (error.response) {
+        // El servidor respondió con un error
+        errorMsg = error.response.data?.message || 
+                  error.response.data?.error || 
+                  `Error del servidor: ${error.response.status}`;
+      } else if (error.request) {
+        // La petición se hizo pero no hubo respuesta
+        errorMsg = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+      }
+      
+      message.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -214,7 +257,10 @@ const EliminacionCuenta = () => {
               <Form.Item>
                 <Checkbox
                   checked={accepted}
-                  onChange={(e) => setAccepted(e.target.checked)}
+                  onChange={(e) => {
+                    console.log('✅ Checkbox cambiado a:', e.target.checked);
+                    setAccepted(e.target.checked);
+                  }}
                 >
                   <span style={{ fontSize: '14px' }}>
                     Comprendo que esta acción es irreversible y que mis datos serán eliminados 
@@ -234,6 +280,7 @@ const EliminacionCuenta = () => {
                   icon={<DeleteOutlined />}
                   disabled={!accepted || loading}
                   className="deletion-submit-button"
+                  onClick={() => console.log('🖱️ Botón clickeado - accepted:', accepted, 'loading:', loading)}
                 >
                   Solicitar Eliminación de Cuenta
                 </Button>
@@ -242,8 +289,7 @@ const EliminacionCuenta = () => {
               <div className="deletion-alternative">
                 <p>¿Tienes dudas o problemas?</p>
                 <p>
-                  Puedes <a href="/login">iniciar sesión</a> para gestionar tu cuenta o{' '}
-                  <a href="mailto:soporte@experienciasarroyo.com">contactar con soporte</a>.
+                  Puedes <a href="mailto:soporte@experienciasarroyo.com">contactar con soporte</a>.
                 </p>
               </div>
             </Form>
@@ -273,6 +319,22 @@ const EliminacionCuenta = () => {
           </p>
         </div>
       </div>
+
+      <Modal
+        title="¿Estás seguro de que deseas eliminar tu cuenta?"
+        open={isConfirmModalVisible}
+        onOk={handleConfirmDelete}
+        onCancel={() => setIsConfirmModalVisible(false)}
+        okText="Sí, solicitar eliminación"
+        okType="danger"
+        cancelText="Cancelar"
+        confirmLoading={loading}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+          <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: '22px', marginTop: '4px' }} />
+          <p>Esta acción iniciará el proceso de eliminación. Un administrador revisará tu solicitud en un plazo de 30 días.</p>
+        </div>
+      </Modal>
     </div>
   );
 };

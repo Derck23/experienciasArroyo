@@ -13,7 +13,8 @@ import {
   EnvironmentOutlined,
   CalendarOutlined,
   CustomerServiceOutlined,
-  ScheduleOutlined
+  ScheduleOutlined,
+  UserDeleteOutlined
 } from '@ant-design/icons';
 import { logout, getCurrentUser } from '../../utils/auth';
 import imagenLogin from '../../assets/imagenLogin.jpg';
@@ -87,6 +88,12 @@ function AdminLayout() {
       icon: <ScheduleOutlined />,
       label: 'Reservaciones',
       onClick: () => navigate('/admin/reservaciones'),
+    },
+    {
+      key: '/admin/solicitudes-eliminacion',
+      icon: <UserDeleteOutlined />,
+      label: 'Solicitudes de Eliminación',
+      onClick: () => navigate('/admin/solicitudes-eliminacion'),
     },
   ];
 

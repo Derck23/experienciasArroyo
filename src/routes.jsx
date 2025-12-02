@@ -29,6 +29,8 @@ import TerminosCondiciones from "./pages/Legal/TerminosCondiciones";
 import EliminacionCuenta from "./pages/Legal/EliminacionCuenta";
 import Favoritos from "./pages/Experiencia/Favoritos";
 import MisReservaciones from "./pages/Reservaciones/MisReservaciones";
+import GestionSolicitudesEliminacion from "./pages/Admin/GestionSolicitudesEliminacion";
+import TestApiConnection from "./pages/Admin/TestApiConnection";
 
 function AppRoutes() {
   return (
@@ -41,6 +43,7 @@ function AppRoutes() {
         <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
         <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
         <Route path="/eliminacion-cuenta" element={<EliminacionCuenta />} />
+        <Route path="/test-api" element={<TestApiConnection />} />
 
         {/* Rutas de usuario con MainLayout */}
         <Route
@@ -93,6 +96,7 @@ function AppRoutes() {
           <Route path="attractions" element={<GestionDeAtracciones />} />
           <Route path="eventos" element={<GestionEventos />} />
           <Route path="reservaciones" element={<AdminReservaciones />} />
+          <Route path="solicitudes-eliminacion" element={<GestionSolicitudesEliminacion />} />
         </Route>
       </Routes>
     </Router>

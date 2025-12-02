@@ -34,8 +34,7 @@ const AvisoPrivacidad = () => {
             <li>Correo electrónico</li>
             <li>Número de teléfono</li>
             <li>Información de perfil y preferencias</li>
-            <li>Datos de navegación y uso de la aplicación</li>
-            <li>Ubicación geográfica (con su consentimiento)</li>
+            <li>Uso de la aplicación</li>
           </ul>
         </section>
 
