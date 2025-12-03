@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Tabs, Card, Empty, Spin, Button, Tag, message } from 'antd';
+import { Tabs, Card, Empty, Spin, Button, Tag, message, Modal } from 'antd';
 import {
   HeartFilled,
   EnvironmentOutlined,
   ClockCircleOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { obtenerFavoritos, eliminarFavorito } from '../../service/favoritosService';
 import './Favoritos.css';
@@ -22,6 +23,12 @@ const Favoritos = () => {
   });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('restaurantes');
+  const [modalEliminar, setModalEliminar] = useState({
+    visible: false,
+    favoritoId: null,
+    tipo: null,
+    nombre: ''
+  });
 
   useEffect(() => {
     cargarFavoritos();
@@ -49,20 +56,46 @@ const Favoritos = () => {
     }
   };
 
-  const handleEliminarFavorito = async (favoritoId, tipo) => {
+  const mostrarModalEliminar = (favoritoId, tipo, nombreItem) => {
+    setModalEliminar({
+      visible: true,
+      favoritoId,
+      tipo,
+      nombre: nombreItem
+    });
+  };
+
+  const confirmarEliminar = async () => {
     try {
-      await eliminarFavorito(favoritoId);
+      await eliminarFavorito(modalEliminar.favoritoId);
       message.success('Eliminado de favoritos');
-      
+
       // Actualizar el estado local
       setFavoritos(prev => ({
         ...prev,
-        [tipo + 's']: prev[tipo + 's'].filter(f => f.id !== favoritoId)
+        [modalEliminar.tipo + 's']: prev[modalEliminar.tipo + 's'].filter(f => f.id !== modalEliminar.favoritoId)
       }));
+
+      // Cerrar modal
+      setModalEliminar({
+        visible: false,
+        favoritoId: null,
+        tipo: null,
+        nombre: ''
+      });
     } catch (error) {
       console.error('Error al eliminar favorito:', error);
       message.error('No se pudo eliminar de favoritos');
     }
+  };
+
+  const cancelarEliminar = () => {
+    setModalEliminar({
+      visible: false,
+      favoritoId: null,
+      tipo: null,
+      nombre: ''
+    });
   };
 
   const handleVerDetalle = (tipo, itemId) => {
@@ -97,7 +130,7 @@ const Favoritos = () => {
               className="delete-favorito-btn"
               onClick={(e) => {
                 e.stopPropagation();
-                handleEliminarFavorito(id, tipo);
+                mostrarModalEliminar(id, tipo, item.nombre || item.name);
               }}
             />
           </div>
@@ -128,10 +161,6 @@ const Favoritos = () => {
               </div>
             )}
           </div>
-          
-          <Button type="primary" ghost block className="ver-detalle-btn">
-            Ver Detalles
-          </Button>
         </div>
       </Card>
     );
@@ -182,7 +211,7 @@ const Favoritos = () => {
         <div className="header-icon">
           <HeartFilled style={{ color: '#ff4d4f', fontSize: '32px' }} />
         </div>
-        <h1 className="favoritos-titulo">Mis Favoritos</h1>
+        <h1 className="favoritos-titulo-principal">Mis Favoritos</h1>
         <p className="favoritos-subtitulo">
           Tus lugares y experiencias guardadas
         </p>
@@ -215,13 +244,33 @@ const Favoritos = () => {
           {renderTabContent('eventos')}
         </TabPane>
         
-        <TabPane 
-          tab={`Servicios (${favoritos.servicios.length})`} 
+        <TabPane
+          tab={`Servicios (${favoritos.servicios.length})`}
           key="servicios"
         >
           {renderTabContent('servicios')}
         </TabPane>
       </Tabs>
+
+      {/* Modal de confirmación para eliminar */}
+      <Modal
+        title="¿Eliminar de favoritos?"
+        open={modalEliminar.visible}
+        onOk={confirmarEliminar}
+        onCancel={cancelarEliminar}
+        centered
+        okText="Sí, eliminar"
+        cancelText="Cancelar"
+        okButtonProps={{
+          danger: true,
+          style: {
+            backgroundColor: '#ff4d4f',
+            borderColor: '#ff4d4f'
+          }
+        }}
+      >
+        <p>¿Estás seguro que deseas eliminar <strong>"{modalEliminar.nombre}"</strong> de tus favoritos?</p>
+      </Modal>
     </div>
   );
 };

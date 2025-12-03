@@ -11,6 +11,7 @@ import GestionDePlatillos from "./pages/Admin/GestionDePlatillos";
 import GestionDeAtracciones from "./pages/Admin/GestionDeAtracciones";
 import GestionDeServicios from "./pages/Admin/GestionDeServicios";
 import AdminLayout from "./pages/Admin/AdminLayout";
+import AdminReservaciones from "./pages/Admin/AdminReservaciones";
 import MainLayout from "./components/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ListaAtacciones from "./pages/AtraccionTuristicas/ListaAtacciones";
@@ -27,6 +28,9 @@ import AvisoPrivacidad from "./pages/Legal/AvisoPrivacidad";
 import TerminosCondiciones from "./pages/Legal/TerminosCondiciones";
 import EliminacionCuenta from "./pages/Legal/EliminacionCuenta";
 import Favoritos from "./pages/Experiencia/Favoritos";
+import MisReservaciones from "./pages/Reservaciones/MisReservaciones";
+import GestionSolicitudesEliminacion from "./pages/Admin/GestionSolicitudesEliminacion";
+import TestApiConnection from "./pages/Admin/TestApiConnection";
 
 function AppRoutes() {
   return (
@@ -39,6 +43,7 @@ function AppRoutes() {
         <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
         <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
         <Route path="/eliminacion-cuenta" element={<EliminacionCuenta />} />
+        <Route path="/test-api" element={<TestApiConnection />} />
 
         {/* Rutas de usuario con MainLayout */}
         <Route
@@ -61,6 +66,7 @@ function AppRoutes() {
           <Route path="servicios" element={<Servicios />} />
           <Route path="servicios/:id" element={<DetalleServicio />} />
           <Route path="favoritos" element={<Favoritos />} />
+          <Route path="mis-reservaciones" element={<MisReservaciones />} />
         </Route>
 
         {/* Ruta de mapa standalone (si la necesitas sin layout) */}
@@ -89,6 +95,8 @@ function AppRoutes() {
           <Route path="dishes" element={<GestionDePlatillos />} />
           <Route path="attractions" element={<GestionDeAtracciones />} />
           <Route path="eventos" element={<GestionEventos />} />
+          <Route path="reservaciones" element={<AdminReservaciones />} />
+          <Route path="solicitudes-eliminacion" element={<GestionSolicitudesEliminacion />} />
         </Route>
       </Routes>
     </Router>

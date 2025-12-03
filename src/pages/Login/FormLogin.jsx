@@ -1,15 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { login } from '../../service/authService';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, message, Spin } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Input, Button, message, Spin, Alert } from 'antd';
+import { UserOutlined, LockOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import ModalRecuperarPassword from './ModalRecuperarPassword';
 
 function FormLogin() {
   const [loading, setLoading] = useState(false);
   const [modalRecuperarVisible, setModalRecuperarVisible] = useState(false);
+  const [showInactivityAlert, setShowInactivityAlert] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState({ visible: false, texto: '' });
+  const [mensajeError, setMensajeError] = useState({ visible: false, texto: '' });
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
+  // Verificar si se cerró sesión por inactividad
+  useEffect(() => {
+    const logoutReason = sessionStorage.getItem('logoutReason');
+    if (logoutReason === 'inactivity') {
+      setShowInactivityAlert(true);
+      sessionStorage.removeItem('logoutReason');
+
+      // Ocultar alerta después de 8 segundos
+      setTimeout(() => {
+        setShowInactivityAlert(false);
+      }, 8000);
+    }
+  }, []);
 
   const handleSubmit = async (values) => {
     setLoading(true);
@@ -25,7 +42,7 @@ function FormLogin() {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
 
-        message.success('¡Inicio de sesión exitoso!');
+        setMensajeExito({ visible: true, texto: '¡Inicio de sesión exitoso!' });
 
         // Redirigir según el nivel de usuario
         const userLevel = user.userLevel || 'user';
@@ -36,9 +53,10 @@ function FormLogin() {
           } else {
             navigate('/experiencia', { replace: true });
           }
-        }, 100);
+        }, 800);
       } else {
-        message.error('Error: No se recibió el token de autenticación');
+        setMensajeError({ visible: true, texto: 'Error: No se recibió el token de autenticación' });
+        setTimeout(() => setMensajeError({ visible: false, texto: '' }), 3000);
       }
 
     } catch (error) {
@@ -54,7 +72,8 @@ function FormLogin() {
         errorMessage = 'Error de conexión. Verifica tu internet.';
       }
 
-      message.error(errorMessage);
+      setMensajeError({ visible: true, texto: errorMessage });
+      setTimeout(() => setMensajeError({ visible: false, texto: '' }), 3000);
     } finally {
       setLoading(false);
     }
@@ -62,12 +81,79 @@ function FormLogin() {
 
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
-    message.error('Por favor completa todos los campos requeridos.');
+    setMensajeError({ visible: true, texto: 'Por favor completa todos los campos requeridos.' });
+    setTimeout(() => setMensajeError({ visible: false, texto: '' }), 3000);
   };
 
   return (
     <div>
+      {/* Mensaje de éxito personalizado */}
+      {mensajeExito.visible && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'white',
+          color: '#333',
+          padding: '16px 24px',
+          borderRadius: '8px',
+          border: '2px solid #52c41a',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+          fontSize: '16px',
+          fontWeight: '500',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <CheckCircleOutlined style={{ fontSize: '20px', color: '#52c41a' }} />
+          {mensajeExito.texto}
+        </div>
+      )}
+
+      {/* Mensaje de error personalizado */}
+      {mensajeError.visible && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'white',
+          color: '#333',
+          padding: '16px 24px',
+          borderRadius: '8px',
+          border: '2px solid #ff4d4f',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+          fontSize: '16px',
+          fontWeight: '500',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <CloseCircleOutlined style={{ fontSize: '20px', color: '#ff4d4f' }} />
+          {mensajeError.texto}
+        </div>
+      )}
+
       <Spin spinning={loading} tip="Iniciando sesión...">
+        {/* Alerta de sesión cerrada por inactividad */}
+        {showInactivityAlert && (
+          <Alert
+            message="Sesión cerrada por inactividad"
+            description="Tu sesión se cerró automáticamente debido to un período prolongado de inactividad. Por favor, inicia sesión nuevamente."
+            type="warning"
+            showIcon
+            closable
+            onClose={() => setShowInactivityAlert(false)}
+            style={{
+              marginBottom: '20px',
+              borderRadius: '8px'
+            }}
+          />
+        )}
+
         <div style={{
           textAlign: 'center',
           marginBottom: '25px'

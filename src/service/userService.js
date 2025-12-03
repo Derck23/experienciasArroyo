@@ -25,10 +25,16 @@ export const deleteUser = async (id) => {
   return resp.data;
 };
 
+export const verifyPassword = async (password) => {
+  const resp = await api.post('/users/verify-password', { password });
+  return resp.data;
+};
+
 export default {
   listUsers,
   getUser,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  verifyPassword
 };

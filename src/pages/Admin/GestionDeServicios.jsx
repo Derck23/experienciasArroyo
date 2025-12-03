@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Card, Button, Modal, message, Form, Input, Select, Upload, Row, Col, Spin, Empty, Popconfirm, Carousel
+  Card, Button, Modal, message, Form, Input, Select, Upload, Row, Col, Spin, Empty, Popconfirm, Carousel, Table, Tag, TimePicker
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, LeftOutlined, RightOutlined, EnvironmentOutlined
+  PlusOutlined, EditOutlined, DeleteOutlined, LeftOutlined, RightOutlined, EnvironmentOutlined, PictureOutlined
 } from '@ant-design/icons';
 import * as servicioService from '../../service/servicioService';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import dayjs from 'dayjs';
 
 import './GestionDeServicios.css';
 
@@ -79,7 +80,12 @@ function GestionDeServicios() {
       nombre: record.nombre,
       descripcion: record.descripcion,
       categoria: record.categoria,
-      rangoPrecios: record.rangoPrecios,
+      costo: record.costo,
+      cantidadBoletos: record.cantidadBoletos,
+      diaInicio: record.diaInicio,
+      diaFin: record.diaFin,
+      horaInicio: record.horaInicio ? dayjs(record.horaInicio, 'hh:mm A') : null,
+      horaFin: record.horaFin ? dayjs(record.horaFin, 'hh:mm A') : null,
     });
     setModalVisible(true);
   };
@@ -147,8 +153,15 @@ function GestionDeServicios() {
   };
 
   const handleSubmit = async (values) => {
+    // Validar ubicación en el mapa
     if (!selectedPosition) {
       message.error('Por favor selecciona una ubicación en el mapa');
+      return;
+    }
+
+    // Validar que haya al menos una imagen
+    if (imageFiles.length === 0) {
+      message.error('Por favor agrega al menos una imagen del servicio');
       return;
     }
 
@@ -157,7 +170,9 @@ function GestionDeServicios() {
         ...values,
         ubicacion: `${selectedPosition.lat.toFixed(4)}, ${selectedPosition.lng.toFixed(4)}`,
         latitud: selectedPosition.lat,
-        longitud: selectedPosition.lng
+        longitud: selectedPosition.lng,
+        horaInicio: values.horaInicio ? values.horaInicio.format('hh:mm A') : null,
+        horaFin: values.horaFin ? values.horaFin.format('hh:mm A') : null,
       };
 
       const fotos = [];
@@ -174,10 +189,10 @@ function GestionDeServicios() {
 
       if (editingServicio) {
         await servicioService.actualizarServicio(editingServicio.id, data);
-        message.success('Servicio actualizado');
+        message.success('Servicio actualizado exitosamente');
       } else {
         await servicioService.crearServicio(data);
-        message.success('Servicio creado');
+        message.success('Servicio creado exitosamente');
       }
 
       setModalVisible(false);
@@ -186,7 +201,7 @@ function GestionDeServicios() {
       fetchServicios();
     } catch (err) {
       console.error(err);
-      message.error('Error al guardar servicio');
+      message.error(err?.message || 'Error al guardar servicio');
     }
   };
 
@@ -222,6 +237,122 @@ function GestionDeServicios() {
     return icons[categoria] || '📍';
   };
 
+  const columns = [
+    {
+      title: 'Imagen',
+      dataIndex: 'fotos',
+      key: 'imagen',
+      width: 100,
+      render: (fotos) => {
+        const primeraFoto = fotos && fotos.length > 0 ? fotos[0] : null;
+        return primeraFoto ? (
+          <img
+            src={primeraFoto}
+            alt="Servicio"
+            style={{
+              width: '60px',
+              height: '60px',
+              objectFit: 'cover',
+              borderRadius: '8px'
+            }}
+          />
+        ) : (
+          <div style={{
+            width: '60px',
+            height: '60px',
+            background: '#f0f0f0',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <PictureOutlined style={{ fontSize: '24px', color: '#bbb' }} />
+          </div>
+        );
+      }
+    },
+    {
+      title: 'Nombre',
+      dataIndex: 'nombre',
+      key: 'nombre',
+      ellipsis: true
+    },
+    {
+      title: 'Descripción',
+      dataIndex: 'descripcion',
+      key: 'descripcion',
+      ellipsis: true,
+      render: (descripcion) => (
+        <span style={{ color: '#666' }}>
+          {descripcion && descripcion.length > 60 ? descripcion.substring(0, 60) + '...' : descripcion}
+        </span>
+      )
+    },
+    {
+      title: 'Categoría',
+      dataIndex: 'categoria',
+      key: 'categoria',
+      render: (categoria) => (
+        <span>
+          {getCategoriaIcon(categoria)} {getCategoriaLabel(categoria)}
+        </span>
+      )
+    },
+    {
+      title: 'Costo',
+      dataIndex: 'costo',
+      key: 'costo',
+      render: (costo) => (
+        <span style={{ fontWeight: '500' }}>
+          {costo ? `$ ${costo} MXN` : 'No especificado'}
+        </span>
+      )
+    },
+    {
+      title: 'Boletos',
+      dataIndex: 'cantidadBoletos',
+      key: 'cantidadBoletos',
+      width: 120,
+      render: (cantidad) => (
+        <span style={{ 
+          fontWeight: '600',
+          color: cantidad < 20 ? '#ff4d4f' : cantidad ? '#52c41a' : '#999'
+        }}>
+          {cantidad ? `🎫 ${cantidad}` : '-'}
+        </span>
+      )
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      render: (_, servicio) => (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(servicio)}
+          />
+          <Button
+            icon={<EnvironmentOutlined />}
+            size="small"
+            onClick={() => window.open(`https://www.google.com/maps?q=${servicio.latitud},${servicio.longitud}`, '_blank')}
+          />
+          <Popconfirm
+            title="Eliminar servicio"
+            description={`¿Estás seguro de eliminar ${servicio.nombre}?`}
+            onConfirm={() => handleDelete(servicio)}
+            okText="Sí"
+            cancelText="No"
+            okButtonProps={{ danger: true }}
+          >
+            <Button danger icon={<DeleteOutlined />} size="small" />
+          </Popconfirm>
+        </div>
+      )
+    }
+  ];
+
   return (
     <div className="servicios-container">
       <div className="servicios-card">
@@ -238,95 +369,14 @@ function GestionDeServicios() {
           </div>
         </div>
 
-        <div className="servicios-body">
-          {loading ? (
-            <div className="empty-state">
-              <Spin size="large" />
-            </div>
-          ) : servicios.length === 0 ? (
-            <Empty description="No hay servicios registrados" className="empty-state" />
-          ) : (
-            <Row gutter={[24, 24]}>
-              {servicios.map((servicio) => (
-                <Col xs={24} sm={12} lg={8} xl={6} key={servicio.id}>
-                  <Card
-                    hoverable
-                    className="servicio-card"
-                    cover={
-                      <div className="servicio-cover">
-                        {servicio.fotos && servicio.fotos.length > 0 ? (
-                          servicio.fotos.length === 1 ? (
-                            <img alt={servicio.nombre} src={servicio.fotos[0]} className="servicio-image" />
-                          ) : (
-                            <Carousel
-                              autoplay
-                              autoplaySpeed={3000}
-                              arrows
-                              prevArrow={<LeftOutlined />}
-                              nextArrow={<RightOutlined />}
-                              className="servicio-carousel"
-                            >
-                              {servicio.fotos.map((img, idx) => (
-                                <div key={idx} className="carousel-slide">
-                                  <img alt={`${servicio.nombre} ${idx + 1}`} src={img} className="servicio-image" />
-                                </div>
-                              ))}
-                            </Carousel>
-                          )
-                        ) : (
-                          <div className="servicio-placeholder">
-                            <PlusOutlined className="placeholder-icon" />
-                          </div>
-                        )}
-                        <div className="servicio-categoria-badge">
-                          {getCategoriaIcon(servicio.categoria)} {getCategoriaLabel(servicio.categoria)}
-                        </div>
-                      </div>
-                    }
-                    actions={[
-                      <EditOutlined key="edit" onClick={() => handleEdit(servicio)} className="action-edit" />,
-                      <a
-                        key="map"
-                        href={`https://www.google.com/maps?q=${servicio.latitud},${servicio.longitud}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#2D5016' }}
-                      >
-                        <EnvironmentOutlined />
-                      </a>,
-                      <Popconfirm
-                        key="delete"
-                        title="Eliminar servicio"
-                        description={`¿Estás seguro de eliminar ${servicio.nombre}?`}
-                        onConfirm={() => handleDelete(servicio)}
-                        okText="Sí"
-                        cancelText="No"
-                        okButtonProps={{ danger: true }}
-                      >
-                        <DeleteOutlined className="action-delete" />
-                      </Popconfirm>
-                    ]}
-                  >
-                    <Meta
-                      title={<div className="servicio-title-text">{servicio.nombre}</div>}
-                      description={
-                        <div className="servicio-desc">
-                          <p className="desc-text">{servicio.descripcion}</p>
-                          <div className="servicio-meta">
-                            <span className="meta-precio">{servicio.rangoPrecios || '$$'}</span>
-                            {servicio.fotos && servicio.fotos.length > 1 && (
-                              <span className="meta-photos">📸 {servicio.fotos.length}</span>
-                            )}
-                          </div>
-                        </div>
-                      }
-                    />
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          )}
-        </div>
+        <Table
+          columns={columns}
+          dataSource={servicios}
+          loading={loading}
+          rowKey="id"
+          pagination={{ pageSize: 10 }}
+          locale={{ emptyText: 'No hay servicios registrados' }}
+        />
       </div>
 
       <Modal
@@ -342,17 +392,26 @@ function GestionDeServicios() {
           <Form.Item
             label="Nombre del servicio"
             name="nombre"
-            rules={[{ required: true, message: 'Por favor ingresa el nombre' }]}
+            rules={[
+              { required: true, message: 'Por favor ingresa el nombre' },
+              { min: 3, message: 'El nombre debe tener al menos 3 caracteres' },
+              { max: 100, message: 'El nombre no puede exceder 100 caracteres' },
+              { whitespace: true, message: 'El nombre no puede estar vacío' }
+            ]}
           >
-            <Input placeholder="Ej: Tour a la Cascada El Chuvejé" size="large" />
+            <Input placeholder="Ej: Tour a la Cascada El Chuvejé" size="large" maxLength={100} showCount />
           </Form.Item>
 
           <Form.Item
             label="Descripción"
             name="descripcion"
-            rules={[{ required: true, message: 'Por favor ingresa la descripción' }]}
+            rules={[
+              { required: true, message: 'Por favor ingresa la descripción' },
+              { min: 10, message: 'La descripción debe tener al menos 10 caracteres' },
+              { max: 1000, message: 'La descripción no puede exceder 1000 caracteres' }
+            ]}
           >
-            <TextArea rows={4} placeholder="Describe el servicio..." size="large" />
+            <TextArea rows={4} placeholder="Describe el servicio..." size="large" maxLength={1000} showCount />
           </Form.Item>
 
           <Form.Item
@@ -368,17 +427,136 @@ function GestionDeServicios() {
           </Form.Item>
 
           <Form.Item
-            label="Rango de precios"
-            name="rangoPrecios"
-            rules={[{ required: true, message: 'Por favor ingresa el rango de precios' }]}
+            label="Costo"
+            name="costo"
+            rules={[
+              { required: true, message: 'Por favor ingresa el costo' },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  const num = parseFloat(value);
+                  if (isNaN(num) || num < 0) {
+                    return Promise.reject('El costo debe ser un número mayor o igual a 0');
+                  }
+                  if (num > 50000) {
+                    return Promise.reject('El costo no puede exceder $50,000 MXN');
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
           >
-            <Select placeholder="Selecciona el rango de precios" size="large">
-              <Select.Option value="$">$ - Económico</Select.Option>
-              <Select.Option value="$$">$$ - Moderado</Select.Option>
-              <Select.Option value="$$$">$$$ - Costoso</Select.Option>
-              <Select.Option value="$$$$">$$$$ - Muy Costoso</Select.Option>
-            </Select>
+            <Input
+              placeholder="0"
+              prefix="$"
+              suffix="MXN"
+              type="number"
+              size="large"
+            />
           </Form.Item>
+
+          <Form.Item
+            label="Cantidad de Boletos Disponibles"
+            name="cantidadBoletos"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  const num = parseInt(value);
+                  if (isNaN(num) || num < 0) {
+                    return Promise.reject('La cantidad debe ser un número mayor o igual a 0');
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
+          >
+            <Input
+              placeholder="Ej. 100"
+              prefix="🎫"
+              type="number"
+              size="large"
+              min="0"
+            />
+          </Form.Item>
+
+          <div style={{ marginBottom: 24 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: '#1a1a1a' }}>
+              Horario de Atención
+            </h3>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="Día de inicio"
+                  name="diaInicio"
+                  rules={[{ required: true, message: 'Selecciona el día de inicio' }]}
+                >
+                  <Select placeholder="Selecciona día" size="large">
+                    <Select.Option value="Lunes">Lunes</Select.Option>
+                    <Select.Option value="Martes">Martes</Select.Option>
+                    <Select.Option value="Miércoles">Miércoles</Select.Option>
+                    <Select.Option value="Jueves">Jueves</Select.Option>
+                    <Select.Option value="Viernes">Viernes</Select.Option>
+                    <Select.Option value="Sábado">Sábado</Select.Option>
+                    <Select.Option value="Domingo">Domingo</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Día de fin"
+                  name="diaFin"
+                  rules={[{ required: true, message: 'Selecciona el día de fin' }]}
+                >
+                  <Select placeholder="Selecciona día" size="large">
+                    <Select.Option value="Lunes">Lunes</Select.Option>
+                    <Select.Option value="Martes">Martes</Select.Option>
+                    <Select.Option value="Miércoles">Miércoles</Select.Option>
+                    <Select.Option value="Jueves">Jueves</Select.Option>
+                    <Select.Option value="Viernes">Viernes</Select.Option>
+                    <Select.Option value="Sábado">Sábado</Select.Option>
+                    <Select.Option value="Domingo">Domingo</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="Hora de apertura"
+                  name="horaInicio"
+                  rules={[{ required: true, message: 'Selecciona la hora de apertura' }]}
+                >
+                  <TimePicker
+                    format="hh:mm A"
+                    use12Hours
+                    placeholder="Selecciona hora"
+                    size="large"
+                    style={{ width: '100%' }}
+                    minuteStep={15}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Hora de cierre"
+                  name="horaFin"
+                  rules={[{ required: true, message: 'Selecciona la hora de cierre' }]}
+                >
+                  <TimePicker
+                    format="hh:mm A"
+                    use12Hours
+                    placeholder="Selecciona hora"
+                    size="large"
+                    style={{ width: '100%' }}
+                    minuteStep={15}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
 
           <Form.Item label="Ubicación en el Mapa">
             <p style={{ marginBottom: 12, color: '#666', fontSize: 14 }}>
@@ -429,16 +607,16 @@ function GestionDeServicios() {
             </div>
           )}
 
-          <Form.Item label="Imágenes del servicio" extra="Hasta 5 imágenes PNG/JPG (máx. 5MB cada una)">
+          <Form.Item label="Imagen del servicio" extra="1 imagen máxima • Formatos: JPG, PNG • Máx. 5MB">
             <Upload
               listType="picture-card"
               fileList={imageFiles}
-              maxCount={5}
+              maxCount={1}
               accept=".png,.jpg,.jpeg,image/png,image/jpeg"
               beforeUpload={uploadBefore}
               onChange={handleImageChange}
             >
-              {imageFiles.length < 5 && (
+              {imageFiles.length < 1 && (
                 <div className="upload-box">
                   <PlusOutlined />
                   <div className="upload-text">Subir imagen</div>

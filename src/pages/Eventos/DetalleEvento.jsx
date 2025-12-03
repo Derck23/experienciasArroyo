@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Tag, Spin, Carousel } from 'antd';
+import { Button, Tag, Spin, Carousel, message } from 'antd';
 import {
     ArrowLeftOutlined,
     CalendarOutlined,
@@ -13,6 +13,7 @@ import {
 } from '@ant-design/icons';
 import { obtenerEventos } from '../../service/eventoService';
 import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
+import ReservaModal from '../../components/ReservaModal/ReservaModal';
 import './DetalleEvento.css';
 
 const DetalleEvento = () => {
@@ -22,16 +23,22 @@ const DetalleEvento = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [esFavorito, setEsFavorito] = useState(false);
+    const [modalAbierto, setModalAbierto] = useState(false);
 
     useEffect(() => {
         cargarEvento();
         verificarFavorito();
     }, [id]);
 
+    const handleReservaExitosa = () => {
+        message.success('¡Reservación creada con éxito! Revisa "Mis Reservaciones"');
+    };
+
     const verificarFavorito = async () => {
         try {
             const favs = await obtenerFavoritos();
-            const isFav = favs.some(f => f.tipo === 'evento' && f.itemId === Number.parseInt(id, 10));
+            // Usamos '==' para comparar string con number sin problemas
+            const isFav = favs.some(f => f.tipo === 'evento' && f.itemId == id);
             setEsFavorito(isFav);
         } catch (error) {
             console.log('No se pudo verificar favorito:', error);
@@ -232,6 +239,23 @@ const DetalleEvento = () => {
                             </div>
                         </div>
 
+                        {evento.cantidadBoletos && (
+                            <div className="info-item">
+                                <div className="info-icon" style={{ fontSize: '20px' }}>
+                                    🎫
+                                </div>
+                                <div className="info-text">
+                                    <span className="info-label">Boletos disponibles</span>
+                                    <span className="info-value" style={{ 
+                                        color: evento.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a',
+                                        fontWeight: '600'
+                                    }}>
+                                        {evento.cantidadBoletos} {evento.cantidadBoletos < 20 && '⚠️'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="info-item">
                             <div className="info-icon">
                                 <EnvironmentOutlined />
@@ -278,24 +302,45 @@ const DetalleEvento = () => {
                         <Button
                             type="primary"
                             size="large"
-                            icon={<EnvironmentOutlined />}
-                            onClick={abrirMapa}
+                            icon={<CalendarOutlined />}
+                            onClick={() => setModalAbierto(true)}
                             block
                             className="btn-principal"
+                            disabled={evento.cantidadBoletos !== undefined && evento.cantidadBoletos <= 0}
                         >
-                            Cómo Llegar
+                            {evento.cantidadBoletos !== undefined && evento.cantidadBoletos <= 0 
+                                ? 'Sin Boletos Disponibles' 
+                                : 'Hacer Reservación'}
                         </Button>
                         <Button
                             type="default"
                             size="large"
+                            icon={<EnvironmentOutlined />}
+                            onClick={abrirMapa}
                             block
                             className="btn-secundario"
                         >
-                            Comprar Boletos
+                            Cómo Llegar
                         </Button>
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Reservación */}
+            {modalAbierto && (
+                <ReservaModal 
+                    servicio={{
+                        id: evento.id,
+                        nombre: evento.nombre,
+                        tipo: 'evento',
+                        fechaEvento: evento.fecha,
+                        horaEvento: evento.hora,
+                        cantidadBoletos: evento.cantidadBoletos
+                    }}
+                    onClose={() => setModalAbierto(false)}
+                    onSuccess={handleReservaExitosa}
+                />
+            )}
         </div>
     );
 };

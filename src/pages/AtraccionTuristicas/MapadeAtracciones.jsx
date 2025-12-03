@@ -3,6 +3,9 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { obtenerAtracciones } from '../../service/atraccionService';
+import { obtenerEventos } from '../../service/eventoService';
+import { obtenerServicios } from '../../service/servicioService';
+import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import './MapadeAtracciones.css';
 
 // Fix para iconos de Leaflet en React
@@ -32,60 +35,198 @@ const MapadeAtracciones = () => {
     const [locations, setLocations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [filterType, setFilterType] = useState('todos'); // 'todos', 'atracciones', 'eventos', 'servicios'
+    const [favoritos, setFavoritos] = useState([]);
 
     // Coordenadas de Arroyo Seco, Querétaro
     const arroyoSecoCenter = [21.5523, -99.6739];
 
-    // Cargar atracciones desde la API
+    // Cargar favoritos al montar
     useEffect(() => {
-        const fetchAtracciones = async () => {
+        const favs = localStorage.getItem('favoritos_mapa');
+        if (favs) {
+            setFavoritos(JSON.parse(favs));
+        }
+    }, []);
+
+    // Guardar favoritos en localStorage y llamar a API
+    const toggleFavorito = async (location) => {
+        try {
+            // Determinar el tipo de favorito
+            let tipo = 'atraccion';
+            if (location.type === 'evento') tipo = 'evento';
+            if (location.type === 'servicio') tipo = 'servicio';
+
+            if (favoritos.includes(location.id)) {
+                // Eliminar de favoritos
+                await eliminarFavorito(location.id);
+                setFavoritos(prev => {
+                    const updated = prev.filter(id => id !== location.id);
+                    localStorage.setItem('favoritos_mapa', JSON.stringify(updated));
+                    return updated;
+                });
+            } else {
+                // Agregar a favoritos
+                await agregarFavorito(tipo, location.id);
+                setFavoritos(prev => {
+                    const updated = [...prev, location.id];
+                    localStorage.setItem('favoritos_mapa', JSON.stringify(updated));
+                    return updated;
+                });
+            }
+        } catch (error) {
+            console.error('Error al manejar favorito:', error);
+        }
+    };
+
+    const abrirMapa = (coordinates) => {
+        if (coordinates && coordinates[0] && coordinates[1]) {
+            window.open(
+                `https://www.google.com/maps?q=${coordinates[0]},${coordinates[1]}`,
+                '_blank'
+            );
+        }
+    };
+
+    // Cargar atracciones, eventos y alojamientos desde la API
+    useEffect(() => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                const data = await obtenerAtracciones();
                 
-                console.log('Atracciones recibidas:', data);
+                const [atraccionesData, eventosData, serviciosData] = await Promise.all([
+                    obtenerAtracciones(),
+                    obtenerEventos(),
+                    obtenerServicios()
+                ]);
+
+                console.log('Datos recibidos:', { atraccionesData, eventosData, serviciosData });
                 
-                const atraccionesActivas = data.filter(atraccion => 
-                    atraccion.estado === 'activo' || atraccion.estado === 'activa'
-                );
-                
-                console.log('Atracciones activas:', atraccionesActivas);
-                
-                const mappedLocations = atraccionesActivas.map(atraccion => ({
+                // Procesar atracciones
+                const atraccionesActivos = (atraccionesData || []).filter(a => 
+                    a.estado === 'activo' || a.estado === 'activa'
+                ).map(atraccion => ({
                     id: atraccion.id,
                     name: atraccion.nombre,
-                    icon: getIconByType(atraccion.categoria),
+                    icon: '📍',
                     coordinates: [
                         parseFloat(atraccion.latitud) || arroyoSecoCenter[0],
                         parseFloat(atraccion.longitud) || arroyoSecoCenter[1]
                     ],
-                    type: atraccion.categoria,
-                    color: getColorByType(atraccion.categoria),
-                    description: atraccion.descripcion || 'Sin descripción disponible',
-                    horario: atraccion.horarios || "Consultar horario",
-                    // Priorizar imagen Base64, luego URL, finalmente imagen por defecto
+                    type: 'atraccion',
+                    color: '#3b82f6',
+                    description: atraccion.descripcion || 'Sin descripción',
+                    horario: atraccion.horarios || 'Consultar horario',
                     imagen: (atraccion.fotos && atraccion.fotos.length > 0) 
                         ? atraccion.fotos[0] 
                         : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23ddd' width='400' height='300'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3ESin imagen%3C/text%3E%3C/svg%3E",
-                    audioUrl: atraccion.audioUrl || null,
-                    videoUrl: atraccion.videoUrl || null,
-                    costo: atraccion.costoEntrada || 'Gratuito',
-                    servicios: atraccion.servicios || '',
-                    restricciones: atraccion.restricciones || '',
-                    informacionCultural: atraccion.informacionCultural || ''
+                    costo: atraccion.costoEntrada || 'Gratuito'
                 }));
 
-                console.log('Locations mapeadas:', mappedLocations);
-                setLocations(mappedLocations);
+                // Procesar eventos
+                const eventosActivos = (eventosData || []).filter(e => 
+                    e.estado === 'activo' || e.estado === 'activa'
+                ).map(evento => {
+                    let lat = arroyoSecoCenter[0];
+                    let lng = arroyoSecoCenter[1];
+                    try {
+                        const ubicacion = JSON.parse(evento.ubicacion || '{}');
+                        if (ubicacion.lat && ubicacion.lng) {
+                            lat = ubicacion.lat;
+                            lng = ubicacion.lng;
+                        }
+                    } catch (e) {
+                        console.log('Error al parsear ubicación del evento');
+                    }
+                    return {
+                        id: evento.id,
+                        name: evento.nombre,
+                        icon: '🎉',
+                        coordinates: [lat, lng],
+                        type: 'evento',
+                        color: '#f59e0b',
+                        description: evento.descripcion || 'Sin descripción',
+                        horario: evento.fecha ? `${evento.fecha} ${evento.hora || ''}` : 'Consultar fecha',
+                        imagen: (evento.fotos && evento.fotos.length > 0) || evento.imagen
+                            ? evento.fotos?.[0] || evento.imagen
+                            : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23ddd' width='400' height='300'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E🎉 Evento%3C/text%3E%3C/svg%3E",
+                        costo: evento.precio || 'Gratuito'
+                    };
+                });
+
+                // Procesar restaurantes (servicios) — tolerante a distintas estructuras de respuesta
+                const serviciosArray = serviciosData?.data || serviciosData || [];
+                const serviciosActivos = (serviciosArray || []).map(restaurante => {
+                    // Determinar lat/lng desde distintos campos posibles
+                    let lat = arroyoSecoCenter[0];
+                    let lng = arroyoSecoCenter[1];
+
+                    if (restaurante.latitud != null && restaurante.longitud != null) {
+                        lat = parseFloat(restaurante.latitud) || lat;
+                        lng = parseFloat(restaurante.longitud) || lng;
+                    } else if (restaurante.lat != null && restaurante.lng != null) {
+                        lat = parseFloat(restaurante.lat) || lat;
+                        lng = parseFloat(restaurante.lng) || lng;
+                    } else if (restaurante.location && (restaurante.location.lat || restaurante.location.lng)) {
+                        lat = parseFloat(restaurante.location.lat) || lat;
+                        lng = parseFloat(restaurante.location.lng) || lng;
+                    } else if (restaurante.ubicacion) {
+                        try {
+                            // Soportar: JSON string '{"lat":...,"lng":...}' y también formato 'lat,lng'
+                            if (typeof restaurante.ubicacion === 'string' && restaurante.ubicacion.includes(',')) {
+                                const parts = restaurante.ubicacion.split(',').map(p => p.trim());
+                                if (parts.length >= 2) {
+                                    lat = parseFloat(parts[0]) || lat;
+                                    lng = parseFloat(parts[1]) || lng;
+                                }
+                            } else {
+                                const u = typeof restaurante.ubicacion === 'string' ? JSON.parse(restaurante.ubicacion) : restaurante.ubicacion;
+                                if (u && (u.lat || u.lng)) {
+                                    lat = parseFloat(u.lat) || lat;
+                                    lng = parseFloat(u.lng) || lng;
+                                }
+                            }
+                        } catch (e) {
+                            // noop
+                        }
+                    } else if (Array.isArray(restaurante.coordinates) && restaurante.coordinates.length >= 2) {
+                        lat = parseFloat(restaurante.coordinates[0]) || lat;
+                        lng = parseFloat(restaurante.coordinates[1]) || lng;
+                    } else if (restaurante.geometry && Array.isArray(restaurante.geometry.coordinates)) {
+                        // GeoJSON: [lng, lat]
+                        const coords = restaurante.geometry.coordinates;
+                        lng = parseFloat(coords[0]) || lng;
+                        lat = parseFloat(coords[1]) || lat;
+                    }
+
+                    return {
+                        id: restaurante.id || restaurante._id || `${restaurante.nombre || 'servicio'}-${Math.random().toString(36).slice(2,8)}`,
+                        name: restaurante.nombre || restaurante.title || 'Servicio',
+                        icon: '🏨',
+                        coordinates: [lat, lng],
+                        type: 'servicio',
+                        color: '#10b981',
+                        description: restaurante.descripcion || restaurante.description || 'Sin descripción',
+                        horario: restaurante.horarios || restaurante.horario || 'Consultar horario',
+                        imagen: (restaurante.fotos && restaurante.fotos.length > 0)
+                            ? restaurante.fotos[0]
+                            : restaurante.imagen || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23ddd' width='400' height='300'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E🏨 Servicio%3C/text%3E%3C/svg%3E",
+                        costo: restaurante.precioPromedio || restaurante.price || 'Consultar'
+                    };
+                });
+
+                const allLocations = [...atraccionesActivos, ...eventosActivos, ...serviciosActivos];
+                console.log('Todas las ubicaciones:', allLocations);
+                setLocations(allLocations);
             } catch (err) {
-                console.error('Error al cargar atracciones:', err);
-                setError('No se pudieron cargar las atracciones');
+                console.error('Error al cargar datos:', err);
+                setError('No se pudieron cargar los datos');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchAtracciones();
+        fetchData();
     }, []);
 
     // Función para obtener icono según tipo
@@ -119,39 +260,6 @@ const MapadeAtracciones = () => {
         };
         return colores[tipo?.toLowerCase()] || '#6b7280';
     };
-
-    const stories = [
-        {
-            id: 1,
-            author: "Martín García",
-            role: "Guía Local",
-            roleIcon: "🚕",
-            emoji: "☀️🏖️",
-            avatar: "https://via.placeholder.com/40",
-            badge: { text: "Guía Local", color: "#17cf17" },
-            content: "¡Qué día tan increíble! Las aguas cristalinas de El Sauce son perfectas para escapar del calor. Descubrimos un pequeño sendero escondido que llevaba a una cascada secreta. ¡Una verdadera joya!"
-        },
-        {
-            id: 2,
-            author: "Sofía Torres",
-            role: "Visitante Verificado",
-            roleIcon: "✓",
-            emoji: "🛶",
-            avatar: "https://via.placeholder.com/40",
-            badge: { text: "Visitante Verificado", color: "#3b82f6" },
-            content: "Alquilamos una canoa y remamos río arriba. La tranquilidad del lugar es mágica. Vimos varias aves exóticas. Ideal para un picnic familiar junto al río."
-        },
-        {
-            id: 3,
-            author: "Juan Pérez",
-            role: "Explorador",
-            roleIcon: "👤",
-            emoji: "🥾",
-            avatar: "https://via.placeholder.com/40",
-            badge: { text: "Explorador", color: "#6b7280" },
-            content: "Los senderos están muy bien señalizados. Hice una caminata por la mañana y el aire puro es revitalizante. ¡No olvides tu cámara para las vistas panorámicas!"
-        }
-    ];
 
     const handleMarkerClick = (location) => {
         setSelectedLocation(location);
@@ -198,28 +306,120 @@ const MapadeAtracciones = () => {
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
                             
-                            {locations.map((location) => (
-                                <Marker
-                                    key={location.id}
-                                    position={location.coordinates}
-                                    icon={createCustomIcon(location.icon, location.color)}
-                                    eventHandlers={{
-                                        click: () => handleMarkerClick(location)
-                                    }}
-                                >
-                                    <Popup>
-                                        <div className="custom-popup">
-                                            <h3>{location.name}</h3>
-                                            <p>{location.description}</p>
-                                            <p className="popup-horario">⏰ {location.horario}</p>
-                                        </div>
-                                    </Popup>
-                                </Marker>
-                            ))}
+                            {locations
+                                .filter(location => {
+                                    // Filtrar por tipo
+                                    if (filterType === 'todos') {
+                                        return true;
+                                    } else if (filterType === 'atracciones') {
+                                        return location.type === 'atraccion';
+                                    } else if (filterType === 'eventos') {
+                                        return location.type === 'evento';
+                                    } else if (filterType === 'servicios') {
+                                        return location.type === 'servicio';
+                                    }
+                                    return true;
+                                })
+                                .filter(location => 
+                                    // Filtrar por búsqueda
+                                    !searchTerm || 
+                                    location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    (location.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .map((location) => (
+                                    <Marker
+                                        key={location.id}
+                                        position={location.coordinates}
+                                        icon={createCustomIcon(location.icon, location.color)}
+                                        eventHandlers={{
+                                            click: () => handleMarkerClick(location)
+                                        }}
+                                    >
+                                        <Popup>
+                                            <div className="custom-popup">
+                                                <h3>{location.name}</h3>
+                                                <p>{location.description}</p>
+                                                <p className="popup-horario">⏰ {location.horario}</p>
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                ))
+                            }
                         </MapContainer>
 
-                        {/* Búsqueda superpuesta */}
+                        {/* Filtros y Búsqueda superpuesta */}
                         <div className="search-overlay">
+                            <div style={{ marginBottom: '15px', pointerEvents: 'all' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '14px', color: '#1f2937' }}>
+                                    Filtrar por tipo:
+                                </label>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    <button
+                                        onClick={() => setFilterType('todos')}
+                                        style={{
+                                            padding: '8px 16px',
+                                            backgroundColor: filterType === 'todos' ? '#2563eb' : '#e5e7eb',
+                                            color: filterType === 'todos' ? 'white' : '#374151',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            fontWeight: filterType === 'todos' ? 'bold' : 'normal',
+                                            transition: 'all 0.3s',
+                                            pointerEvents: 'all'
+                                        }}
+                                    >
+                                        Todos
+                                    </button>
+                                    <button
+                                        onClick={() => setFilterType('atracciones')}
+                                        style={{
+                                            padding: '8px 16px',
+                                            backgroundColor: filterType === 'atracciones' ? '#3b82f6' : '#e5e7eb',
+                                            color: filterType === 'atracciones' ? 'white' : '#374151',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            fontWeight: filterType === 'atracciones' ? 'bold' : 'normal',
+                                            transition: 'all 0.3s',
+                                            pointerEvents: 'all'
+                                        }}
+                                    >
+                                        📍 Atracciones
+                                    </button>
+                                    <button
+                                        onClick={() => setFilterType('eventos')}
+                                        style={{
+                                            padding: '8px 16px',
+                                            backgroundColor: filterType === 'eventos' ? '#f59e0b' : '#e5e7eb',
+                                            color: filterType === 'eventos' ? 'white' : '#374151',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            fontWeight: filterType === 'eventos' ? 'bold' : 'normal',
+                                            transition: 'all 0.3s',
+                                            pointerEvents: 'all'
+                                        }}
+                                    >
+                                        🎉 Eventos
+                                    </button>
+                                    <button
+                                        onClick={() => setFilterType('servicios')}
+                                        style={{
+                                            padding: '8px 16px',
+                                            backgroundColor: filterType === 'servicios' ? '#10b981' : '#e5e7eb',
+                                            color: filterType === 'servicios' ? 'white' : '#374151',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            fontWeight: filterType === 'servicios' ? 'bold' : 'normal',
+                                            transition: 'all 0.3s',
+                                            pointerEvents: 'all'
+                                        }}
+                                    >
+                                        🏨 Servicios
+                                    </button>
+                                </div>
+                            </div>
                             <div className="search-main-container">
                                 <span className="search-icon-main">🔍</span>
                                 <input
@@ -276,16 +476,12 @@ const MapadeAtracciones = () => {
 
                         {/* Botones de Acción Flotantes */}
                         <div className="floating-actions">
-                            <button className="btn-floating-primary">
+                            <button 
+                                className="btn-floating-primary"
+                                onClick={() => selectedLocation && abrirMapa(selectedLocation.coordinates)}
+                            >
                                 <span className="btn-icon">🧭</span>
                                 <span>Explorar Mapa</span>
-                            </button>
-                            <button
-                                className="btn-floating-secondary"
-                                onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-                            >
-                                <span className="btn-icon">📋</span>
-                                <span>Ver Lista</span>
                             </button>
                         </div>
                     </div>
@@ -294,7 +490,7 @@ const MapadeAtracciones = () => {
                 {/* Sidebar */}
                 <aside className="mapa-sidebar">
                     <div className="sidebar-content">
-                        <h1 className="sidebar-title">
+                        <h1 className="sidebar-title" style={{ color: '#2D5016', fontWeight: 'normal' }}>
                             {selectedLocation ? selectedLocation.name : 'Arroyo Seco'}
                         </h1>
 
@@ -330,42 +526,23 @@ const MapadeAtracciones = () => {
 
                         {/* Botones de Acción */}
                         <div className="location-actions">
-                            <button className="btn-action-primary">
+                            <button 
+                                className="btn-action-primary"
+                                onClick={() => selectedLocation && abrirMapa(selectedLocation.coordinates)}
+                            >
                                 <span className="btn-icon">🧭</span>
                                 <span>Cómo llegar</span>
                             </button>
-                            <button className="btn-action-secondary">
-                                <span className="btn-icon">❤️</span>
+                            <button 
+                                className="btn-action-secondary"
+                                onClick={() => selectedLocation && toggleFavorito(selectedLocation)}
+                                style={{
+                                    background: selectedLocation && favoritos.includes(selectedLocation.id) ? '#ff4d4f' : '#f5f5f5',
+                                    color: selectedLocation && favoritos.includes(selectedLocation.id) ? 'white' : '#000'
+                                }}
+                            >
+                                <span className="btn-icon">{selectedLocation && favoritos.includes(selectedLocation.id) ? '❤️' : '🖤'}</span>
                                 <span>Favoritos</span>
-                            </button>
-                        </div>
-
-                        {/* Historias de Visitantes */}
-                        <div className="stories-section">
-                            <h3 className="section-title">Historias de Visitantes</h3>
-                            <div className="stories-list">
-                                {stories.map((story) => (
-                                    <div key={story.id} className="story-card">
-                                        <div className="story-header">
-                                            <div className="story-avatar">
-                                                <img src={story.avatar} alt={story.author} />
-                                            </div>
-                                            <div className="story-author-info">
-                                                <p className="story-author">{story.author}</p>
-                                                <div className="story-badge" style={{ color: story.badge.color }}>
-                                                    <span className="badge-icon">{story.roleIcon}</span>
-                                                    <span>{story.badge.text}</span>
-                                                </div>
-                                            </div>
-                                            <span className="story-emoji">{story.emoji}</span>
-                                        </div>
-                                        <p className="story-content">{story.content}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <button className="btn-add-story">
-                                <span className="btn-icon">💬</span>
-                                Añadir tu propia historia
                             </button>
                         </div>
                     </div>

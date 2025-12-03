@@ -44,14 +44,6 @@ const BottomNav = () => {
         <span className="bottom-nav-icon">💼</span>
         <span className="bottom-nav-label">Servicios</span>
       </Link>
-
-      <Link
-        to="/experiencia/favoritos"
-        className={`bottom-nav-item ${isActive('/experiencia/favoritos') ? 'active' : ''}`}
-      >
-        <span className="bottom-nav-icon">❤️</span>
-        <span className="bottom-nav-label">Favoritos</span>
-      </Link>
     </nav>
   );
 };

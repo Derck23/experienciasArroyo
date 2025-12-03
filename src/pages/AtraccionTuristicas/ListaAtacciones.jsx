@@ -11,15 +11,23 @@ import {
 } from '@ant-design/icons';
 import { obtenerAtracciones } from '../../service/atraccionService';
 import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
+import useBackButton from '../../hooks/useBackButton.jsx';
 import './ListaAtacciones.css';
 
 const { Option } = Select;
 
 const ListaAtacciones = () => {
     const navigate = useNavigate();
+
+    // Hook para manejar botón atrás del teléfono
+    useBackButton('/experiencia');
+
     const [searchText, setSearchText] = useState('');
+    const [searchTextTemp, setSearchTextTemp] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Todas');
+    const [selectedCategoryTemp, setSelectedCategoryTemp] = useState('Todas');
     const [selectedDifficulty, setSelectedDifficulty] = useState('Todas');
+    const [selectedDifficultyTemp, setSelectedDifficultyTemp] = useState('Todas');
     const [atracciones, setAtracciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -45,14 +53,16 @@ const ListaAtacciones = () => {
                 const mappedAtracciones = atraccionesActivas.map(atraccion => ({
                     id: atraccion.id,
                     nombre: atraccion.nombre,
-                    categoria: atraccion.categoria || 'Sin categoría',
                     dificultad: atraccion.nivelDificultad || 'No especificada',
                     distancia: atraccion.distancia || 'N/A',
+                    restriccionEdad: atraccion.restriccionEdad || '',
+                    permitirAlimentos: atraccion.permitirAlimentos || '',
                     // Priorizar imagen Base64, luego imagen por defecto SVG
                     imagen: (atraccion.fotos && atraccion.fotos.length > 0) 
                         ? atraccion.fotos[0] 
                         : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e0e0e0' width='400' height='300'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='20' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3E%F0%9F%8F%9E%EF%B8%8F Sin imagen%3C/text%3E%3C/svg%3E",
-                    costo: atraccion.costoEntrada || 'Gratuito'
+                    costo: atraccion.costoEntrada || 'Gratuito',
+                    cantidadBoletos: atraccion.cantidadBoletos
                 }));
 
                 console.log('Atracciones mapeadas:', mappedAtracciones);
@@ -99,10 +109,20 @@ const ListaAtacciones = () => {
         }
     };
 
+    const aplicarFiltros = () => {
+        setSearchText(searchTextTemp);
+        setSelectedCategory(selectedCategoryTemp);
+        setSelectedDifficulty(selectedDifficultyTemp);
+        setDrawerVisible(false);
+    };
+
     const limpiarFiltros = () => {
         setSearchText('');
+        setSearchTextTemp('');
         setSelectedCategory('Todas');
+        setSelectedCategoryTemp('Todas');
         setSelectedDifficulty('Todas');
+        setSelectedDifficultyTemp('Todas');
     };
 
     const contarFiltrosActivos = () => {
@@ -111,6 +131,18 @@ const ListaAtacciones = () => {
         if (selectedCategory !== 'Todas') count++;
         if (selectedDifficulty !== 'Todas') count++;
         return count;
+    };
+
+    const formatearPrecio = (precio) => {
+        if (!precio || precio === 0 || precio === '0' || precio === 'Gratuito' || precio === 'Gratis') {
+            return 'Gratis';
+        }
+        // Si es un número, formatear con MXN
+        const precioNum = parseFloat(precio);
+        if (!isNaN(precioNum)) {
+            return `$${precioNum.toLocaleString('es-MX')} MXN`;
+        }
+        return precio;
     };
 
     // Filtrar y ordenar
@@ -179,8 +211,8 @@ const ListaAtacciones = () => {
                             size="large"
                             placeholder="Buscar por palabra clave..."
                             prefix={<SearchOutlined />}
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            value={searchTextTemp}
+                            onChange={(e) => setSearchTextTemp(e.target.value)}
                             className="search-input"
                         />
                     </div>
@@ -189,8 +221,8 @@ const ListaAtacciones = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Categorías</h2>
                         <Radio.Group
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            value={selectedCategoryTemp}
+                            onChange={(e) => setSelectedCategoryTemp(e.target.value)}
                             className="radio-group"
                         >
                             {categorias.map(cat => (
@@ -203,8 +235,8 @@ const ListaAtacciones = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Dificultad</h2>
                         <Radio.Group
-                            value={selectedDifficulty}
-                            onChange={(e) => setSelectedDifficulty(e.target.value)}
+                            value={selectedDifficultyTemp}
+                            onChange={(e) => setSelectedDifficultyTemp(e.target.value)}
                             className="radio-group"
                         >
                             {dificultades.map(dif => (
@@ -219,6 +251,7 @@ const ListaAtacciones = () => {
                             type="primary"
                             block
                             size="large"
+                            onClick={aplicarFiltros}
                         >
                             Aplicar Filtros
                         </Button>
@@ -248,8 +281,8 @@ const ListaAtacciones = () => {
                             size="large"
                             placeholder="Buscar por palabra clave..."
                             prefix={<SearchOutlined />}
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            value={searchTextTemp}
+                            onChange={(e) => setSearchTextTemp(e.target.value)}
                             className="search-input"
                         />
                     </div>
@@ -258,8 +291,8 @@ const ListaAtacciones = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Categorías</h2>
                         <Radio.Group
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            value={selectedCategoryTemp}
+                            onChange={(e) => setSelectedCategoryTemp(e.target.value)}
                             className="radio-group"
                         >
                             {categorias.map(cat => (
@@ -272,8 +305,8 @@ const ListaAtacciones = () => {
                     <div className="filtro-section">
                         <h2 className="filtro-label">Dificultad</h2>
                         <Radio.Group
-                            value={selectedDifficulty}
-                            onChange={(e) => setSelectedDifficulty(e.target.value)}
+                            value={selectedDifficultyTemp}
+                            onChange={(e) => setSelectedDifficultyTemp(e.target.value)}
                             className="radio-group"
                         >
                             {dificultades.map(dif => (
@@ -288,6 +321,7 @@ const ListaAtacciones = () => {
                             type="primary"
                             block
                             size="large"
+                            onClick={aplicarFiltros}
                         >
                             Aplicar Filtros
                         </Button>
@@ -329,7 +363,7 @@ const ListaAtacciones = () => {
                     {/* Header */}
                     <div className="page-header">
                         <div>
-                            <h1 className="page-title">Atracciones Turísticas</h1>
+                            <h1 className="page-title" style={{ color: '#2D5016', fontWeight: 'normal' }}>Atracciones Turísticas</h1>
                             <p className="page-subtitle">Descubre lugares increíbles</p>
                         </div>
                     </div>
@@ -391,20 +425,37 @@ const ListaAtacciones = () => {
                                     }
                                 >
                                     <h3 className="atraccion-nombre">{atraccion.nombre}</h3>
-                                    <Tag color="green" style={{ marginBottom: '8px' }}>{atraccion.categoria}</Tag>
 
                                     <div className="atraccion-info">
                                         <AppstoreOutlined />
                                         <span>{atraccion.dificultad}</span>
                                     </div>
 
+                                    <div style={{ marginTop: '8px', marginBottom: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                        {atraccion.restriccionEdad && (
+                                            <Tag color={atraccion.restriccionEdad === 'todo_publico' ? 'green' : atraccion.restriccionEdad === 'mayores_18' ? 'orange' : 'blue'} style={{ fontSize: '12px' }}>
+                                                {atraccion.restriccionEdad === 'todo_publico' ? '🌍 Todo Público' : atraccion.restriccionEdad === 'mayores_18' ? '18+' : 'Menores acompañados'}
+                                            </Tag>
+                                        )}
+                                        {atraccion.permitirAlimentos && (
+                                            <Tag color={atraccion.permitirAlimentos === 'permitido' ? 'green' : atraccion.permitirAlimentos === 'prohibido' ? 'red' : 'cyan'} style={{ fontSize: '12px' }}>
+                                                {atraccion.permitirAlimentos === 'permitido' ? '✅ Permitido Alimentos' : atraccion.permitirAlimentos === 'prohibido' ? '❌ Prohibido Alimentos' : '🥤 Solo bebidas'}
+                                            </Tag>
+                                        )}
+                                    </div>
+
+                                    {atraccion.cantidadBoletos && (
+                                        <div className="atraccion-info" style={{ color: atraccion.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a' }}>
+                                            🎫 <span>{atraccion.cantidadBoletos} boletos disponibles</span>
+                                        </div>
+                                    )}
+
                                     <div className="atraccion-footer">
-                                        <span className="atraccion-precio">
-                                            {atraccion.costo === 'Gratuito' ? 'Gratis' : atraccion.costo}
+                                        <span className={`atraccion-precio ${!atraccion.costo || atraccion.costo === 0 || atraccion.costo === 'Gratuito' ? 'gratis' : ''}`}>
+                                            {formatearPrecio(atraccion.costo)}
                                         </span>
                                         <Button 
                                             type="primary" 
-                                            ghost
                                             onClick={() => navigate(`/experiencia/atracciones/${atraccion.id}`)}
                                         >
                                             Ver Detalles

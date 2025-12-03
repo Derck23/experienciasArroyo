@@ -8,12 +8,12 @@ import {
     HeartFilled,
     AppstoreOutlined,
     UnorderedListOutlined,
-    EnvironmentFilled,
     FilterOutlined
 } from '@ant-design/icons';
 import { obtenerEventos } from '../../service/eventoService';
 import { agregarFavorito, eliminarFavorito, obtenerFavoritos } from '../../service/favoritosService';
 import { useNavigate } from 'react-router-dom';
+import useBackButton from '../../hooks/useBackButton.jsx';
 import './ListaEventos.css';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyD6vEAeGtBjMT1zQUlFnuvJV9YORgXSFGk';
@@ -22,6 +22,9 @@ const { Option } = Select;
 
 const ListaEventos = () => {
     const navigate = useNavigate();
+
+    // Hook para manejar botón atrás del teléfono
+    useBackButton('/experiencia');
 
     // Estados
     const [eventos, setEventos] = useState([]);
@@ -210,6 +213,16 @@ const ListaEventos = () => {
 
     const aplicarFiltros = () => {
         let resultado = [...eventos];
+
+        // Filtrar eventos con fecha pasada (no mostrar eventos que ya pasaron)
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); // Resetear a medianoche
+        resultado = resultado.filter(evento => {
+            if (!evento.fecha) return true; // Mantener eventos sin fecha
+            const fechaEvento = new Date(evento.fecha);
+            fechaEvento.setHours(0, 0, 0, 0);
+            return fechaEvento >= hoy; // Solo mostrar eventos de hoy en adelante
+        });
 
         // Filtro por búsqueda
         if (searchTerm) {
@@ -787,20 +800,13 @@ const ListaEventos = () => {
                             >
                                 Calendario
                             </Button>
-                            <Button
-                                type={vistaActual === 'mapa' ? 'primary' : 'default'}
-                                icon={<EnvironmentFilled />}
-                                onClick={() => setVistaActual('mapa')}
-                            >
-                                Mapa
-                            </Button>
                         </div>
                     </div>
 
                     {/* Header */}
                     <div className="page-header">
                         <div>
-                            <h1 className="page-title">Próximos Eventos</h1>
+                            <h1 className="page-title" style={{ color: '#2D5016', fontWeight: 'normal' }}>Próximos Eventos</h1>
                             <p className="page-subtitle">Encuentra tu próxima aventura</p>
                         </div>
                     </div>
@@ -821,13 +827,6 @@ const ListaEventos = () => {
                                 onClick={() => setVistaActual('calendario')}
                             >
                                 Calendario
-                            </Button>
-                            <Button
-                                type={vistaActual === 'mapa' ? 'primary' : 'default'}
-                                icon={<EnvironmentFilled />}
-                                onClick={() => setVistaActual('mapa')}
-                            >
-                                Mapa
                             </Button>
                         </div>
 
@@ -926,13 +925,19 @@ const ListaEventos = () => {
                                         })()}</span>
                                     </div>
 
+                                    {evento.cantidadBoletos && (
+                                        <div className="evento-info" style={{ color: evento.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a', fontWeight: '500' }}>
+                                            🎫 <span>{evento.cantidadBoletos} boletos disponibles</span>
+                                        </div>
+                                    )}
+
                                     <div className="evento-footer">
                                         <span className={`evento-precio ${!evento.precio || evento.precio === 0 ? 'gratis' : ''}`}>
                                             {formatearPrecio(evento.precio)}
                                         </span>
                                         <Button 
                                             type="primary" 
-                                            ghost
+
                                             onClick={() => navigate(`/experiencia/eventos/${evento.id}`)}
                                         >
                                             Ver Detalles

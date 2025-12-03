@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { App as AntApp } from 'antd'
 import AppRoutes from './routes'
 import SplashScreen from './components/SplashScreen/SplashScreen'
 
@@ -22,10 +23,10 @@ function App() {
   };
 
   return (
-    <>
+    <AntApp>
       {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
       {!showSplash && <AppRoutes />}
-    </>
+    </AntApp>
   )
 }
 

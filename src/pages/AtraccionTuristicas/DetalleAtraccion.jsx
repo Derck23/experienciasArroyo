@@ -10,9 +10,10 @@ import {
     ShareAltOutlined,
     ClockCircleOutlined,
     DollarOutlined,
-    StarOutlined
+    CalendarOutlined
 } from '@ant-design/icons';
 import { obtenerAtracciones } from '../../service/atraccionService';
+import ReservaModal from '../../components/ReservaModal/ReservaModal';
 import './DetalleAtraccion.css';
 
 const DetalleAtraccion = () => {
@@ -22,16 +23,21 @@ const DetalleAtraccion = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [esFavorito, setEsFavorito] = useState(false);
+    const [modalAbierto, setModalAbierto] = useState(false);
 
     useEffect(() => {
         cargarAtraccion();
         verificarFavorito();
     }, [id]);
 
+    const handleReservaExitosa = () => {
+        message.success('¡Reservación creada con éxito! Revisa "Mis Reservaciones"');
+    };
+
     const verificarFavorito = async () => {
         try {
             const favs = await obtenerFavoritos();
-            const isFav = favs.some(f => f.tipo === 'atraccion' && f.itemId === Number.parseInt(id, 10));
+            const isFav = favs.some(f => f.tipo === 'atraccion' && f.itemId == id);
             setEsFavorito(isFav);
         } catch (error) {
             console.log('No se pudo verificar favorito:', error);
@@ -95,15 +101,39 @@ const DetalleAtraccion = () => {
 
     const abrirMapa = () => {
         try {
-            const ubicacion = JSON.parse(atraccion.ubicacion || '{}');
-            if (ubicacion.lat && ubicacion.lng) {
-                window.open(
-                    `https://www.google.com/maps?q=${ubicacion.lat},${ubicacion.lng}`,
-                    '_blank'
-                );
+            // Verificar si existen latitud y longitud directamente
+            if (atraccion.latitud && atraccion.longitud) {
+                const lat = parseFloat(atraccion.latitud);
+                const lng = parseFloat(atraccion.longitud);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    window.open(
+                        `https://www.google.com/maps?q=${lat},${lng}`,
+                        '_blank'
+                    );
+                    return;
+                }
             }
+            
+            // Fallback: intentar parsear ubicacion como JSON
+            try {
+                const ubicacion = JSON.parse(atraccion.ubicacion || '{}');
+                if (ubicacion.lat && ubicacion.lng) {
+                    window.open(
+                        `https://www.google.com/maps?q=${ubicacion.lat},${ubicacion.lng}`,
+                        '_blank'
+                    );
+                    return;
+                }
+            } catch (parseError) {
+                console.log('No se pudo parsear ubicacion como JSON');
+            }
+            
+            // Si no hay coordenadas válidas
+            message.warning('No hay coordenadas de ubicación disponibles');
         } catch (error) {
             console.error('Error al abrir mapa:', error);
+            message.error('Error al abrir el mapa');
         }
     };
 
@@ -115,6 +145,22 @@ const DetalleAtraccion = () => {
             'Muy difícil': 'volcano'
         };
         return colores[dificultad] || 'default';
+    };
+
+    const getDificultadDescripcion = (dificultad) => {
+        if (!dificultad) return '';
+        
+        const dificultadLower = dificultad.toLowerCase().trim();
+        
+        if (dificultadLower === 'facil' || dificultadLower === 'fácil') {
+            return '✓ Todas las edades';
+        } else if (dificultadLower === 'moderado' || dificultadLower === 'moderada') {
+            return '⚠️ Revise la descripción detallada';
+        } else if (dificultadLower === 'dificil' || dificultadLower === 'difícil' || dificultadLower === 'muy dificil' || dificultadLower === 'muy difícil') {
+            return '⚠️ Mayores de edad con experiencia. Revise la descripción detallada';
+        }
+        
+        return '';
     };
 
     if (loading) {
@@ -200,7 +246,35 @@ const DetalleAtraccion = () => {
                                 {atraccion.nivelDificultad}
                             </Tag>
                         )}
+                        {atraccion.restriccionEdad && (
+                            <Tag color={atraccion.restriccionEdad === 'todo_publico' ? 'green' : atraccion.restriccionEdad === 'mayores_18' ? 'orange' : 'blue'} className="categoria-tag">
+                                {atraccion.restriccionEdad === 'todo_publico' ? '🌍 Todo Público' : atraccion.restriccionEdad === 'mayores_18' ? '18+' : 'Menores acompañados'}
+                            </Tag>
+                        )}
+                        {atraccion.permitirAlimentos && (
+                            <Tag color={atraccion.permitirAlimentos === 'permitido' ? 'green' : atraccion.permitirAlimentos === 'prohibido' ? 'red' : 'cyan'} className="categoria-tag">
+                                {atraccion.permitirAlimentos === 'permitido' ? '✅ Permitido Alimentos' : atraccion.permitirAlimentos === 'prohibido' ? '❌ Prohibido Alimentos' : '🥤 Solo bebidas'}
+                            </Tag>
+                        )}
                     </div>
+
+                    {atraccion.nivelDificultad && getDificultadDescripcion(atraccion.nivelDificultad) && (
+                        <div className="dificultad-info" style={{
+                            padding: '12px 16px',
+                            marginBottom: '16px',
+                            backgroundColor: atraccion.nivelDificultad.toLowerCase().includes('facil') ? '#f6ffed' : 
+                                           atraccion.nivelDificultad.toLowerCase().includes('moderad') ? '#fff7e6' : '#fff1f0',
+                            border: atraccion.nivelDificultad.toLowerCase().includes('facil') ? '1px solid #b7eb8f' : 
+                                  atraccion.nivelDificultad.toLowerCase().includes('moderad') ? '1px solid #ffd591' : '1px solid #ffa39e',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            color: atraccion.nivelDificultad.toLowerCase().includes('facil') ? '#52c41a' : 
+                                 atraccion.nivelDificultad.toLowerCase().includes('moderad') ? '#fa8c16' : '#f5222d'
+                        }}>
+                            {getDificultadDescripcion(atraccion.nivelDificultad)}
+                        </div>
+                    )}
 
                     <p className="detalle-descripcion">{atraccion.descripcion}</p>
 
@@ -257,6 +331,23 @@ const DetalleAtraccion = () => {
                                 </div>
                             </div>
                         )}
+
+                        {atraccion.cantidadBoletos && (
+                            <div className="info-item">
+                                <div className="info-icon" style={{ fontSize: '20px' }}>
+                                    🎫
+                                </div>
+                                <div className="info-text">
+                                    <span className="info-label">Boletos disponibles</span>
+                                    <span className="info-value" style={{ 
+                                        color: atraccion.cantidadBoletos < 20 ? '#ff4d4f' : '#52c41a',
+                                        fontWeight: '600'
+                                    }}>
+                                        {atraccion.cantidadBoletos} {atraccion.cantidadBoletos < 20 && '⚠️'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Recomendaciones */}
@@ -280,25 +371,47 @@ const DetalleAtraccion = () => {
                         <Button
                             type="primary"
                             size="large"
-                            icon={<EnvironmentOutlined />}
-                            onClick={abrirMapa}
+                            icon={<CalendarOutlined />}
+                            onClick={() => setModalAbierto(true)}
                             block
                             className="btn-principal"
+                            disabled={atraccion.cantidadBoletos !== undefined && atraccion.cantidadBoletos <= 0}
                         >
-                            Cómo Llegar
+                            {atraccion.cantidadBoletos !== undefined && atraccion.cantidadBoletos <= 0 
+                                ? 'Sin Boletos Disponibles' 
+                                : 'Hacer Reservación'}
                         </Button>
                         <Button
                             type="default"
                             size="large"
+                            icon={<EnvironmentOutlined />}
+                            onClick={abrirMapa}
                             block
                             className="btn-secundario"
-                            icon={<StarOutlined />}
                         >
-                            Guardar
+                            Cómo Llegar
                         </Button>
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Reservación */}
+            {modalAbierto && (
+                <ReservaModal 
+                    servicio={{
+                        id: atraccion.id,
+                        nombre: atraccion.nombre,
+                        tipo: 'atraccion',
+                        cantidadBoletos: atraccion.cantidadBoletos,
+                        diaInicio: atraccion.diaInicio,
+                        diaFin: atraccion.diaFin,
+                        horaInicio: atraccion.horaInicio,
+                        horaFin: atraccion.horaFin
+                    }}
+                    onClose={() => setModalAbierto(false)}
+                    onSuccess={handleReservaExitosa}
+                />
+            )}
         </div>
     );
 };

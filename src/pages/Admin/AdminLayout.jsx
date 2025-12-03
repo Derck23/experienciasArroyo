@@ -12,7 +12,9 @@ import {
   AppstoreOutlined,
   EnvironmentOutlined,
   CalendarOutlined,
-  CustomerServiceOutlined
+  CustomerServiceOutlined,
+  ScheduleOutlined,
+  UserDeleteOutlined
 } from '@ant-design/icons';
 import { logout, getCurrentUser } from '../../utils/auth';
 import imagenLogin from '../../assets/imagenLogin.jpg';
@@ -81,6 +83,18 @@ function AdminLayout() {
       label: 'Eventos',
       onClick: () => navigate('/admin/eventos'),
     },
+    {
+      key: '/admin/reservaciones',
+      icon: <ScheduleOutlined />,
+      label: 'Reservaciones',
+      onClick: () => navigate('/admin/reservaciones'),
+    },
+    {
+      key: '/admin/solicitudes-eliminacion',
+      icon: <UserDeleteOutlined />,
+      label: 'Solicitudes de Eliminación',
+      onClick: () => navigate('/admin/solicitudes-eliminacion'),
+    },
   ];
 
   // NUEVO: Función para abrir/cerrar el menú en móvil
@@ -100,7 +114,6 @@ function AdminLayout() {
         onBreakpoint={(broken) => setCollapsed(broken)}
         width={240}
         collapsedWidth={80}
-        style={isMobile ? { position: 'fixed', left: 0, top: 0, height: '100vh', zIndex: 1200, boxShadow: mobileSiderVisible ? '2px 0 8px rgba(0,0,0,0.18)' : 'none', display: mobileSiderVisible ? 'block' : 'none' } : {}}
       >
         <div className={`brand ${collapsed ? 'brand--collapsed' : ''}`}>
           <div className="brand__logo">
@@ -143,10 +156,6 @@ function AdminLayout() {
           </div>
 
           <div className="admin-header__right">
-            <button className="icon-button" aria-label="Notificaciones">
-              <BellOutlined />
-            </button>
-
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
               <div className="user-dropdown" role="button" tabIndex={0}>
                 <Avatar size={40} className="user-avatar" icon={<UserOutlined />} />

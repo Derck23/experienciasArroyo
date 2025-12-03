@@ -149,7 +149,7 @@
 .sidebar-title {
   font-size: 18px;
   font-weight: 700;
-  color: #2e7d32;
+  color: #1a1a1a;
   margin: 0;
 }
 
@@ -275,13 +275,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
 }
 
 .servicios-content {
   background: white;
   padding: 0;
-  width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -311,7 +309,7 @@
 .page-title {
   font-size: 20px;
   font-weight: 700;
-  color: #2e7d32;
+  color: #1a1a1a;
   margin: 0 0 4px 0;
 }
 
@@ -351,26 +349,26 @@
 
 /* Grid de servicios */
 .servicios-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 10px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 10px;
 }
 
 @media (min-width: 640px) {
-    .servicios-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-        padding: 16px;
-    }
+  .servicios-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 16px;
+  }
 }
 
 @media (min-width: 1024px) {
-    .servicios-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 24px;
-        padding: 0;
-    }
+  .servicios-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 0;
+  }
 }
 
 .empty-state {

@@ -126,6 +126,7 @@ const GestionEventos = () => {
       hora: ev.hora ? dayjs(ev.hora, 'HH:mm') : null,
       categoria: ev.categoria,
       precio: typeof ev.precio === 'string' ? Number(ev.precio) : ev.precio,
+      cantidadBoletos: ev.cantidadBoletos,
       destacado: !!ev.destacado,
       estado: ev.estado || 'activo',
     });
@@ -165,6 +166,7 @@ const GestionEventos = () => {
       ubicacion: ubicacionFinal,
       categoria: vals.categoria || '',
       precio: typeof vals.precio === 'number' ? vals.precio : Number(vals.precio || 0),
+      cantidadBoletos: typeof vals.cantidadBoletos === 'number' ? vals.cantidadBoletos : Number(vals.cantidadBoletos || 0),
       fotos: fotos,
       imagen: fotos[0] || '',
       destacado: !!vals.destacado,
@@ -175,6 +177,19 @@ const GestionEventos = () => {
   const onSubmit = async () => {
     try {
       const vals = await form.validateFields();
+      
+      // Validar que haya al menos una imagen
+      if (imagenesEvento.length === 0) {
+        message.error('Por favor agrega al menos una imagen del evento');
+        return;
+      }
+
+      // Validar que se haya seleccionado una ubicación
+      if (!posicionMapa) {
+        message.error('Por favor selecciona la ubicación del evento en el mapa');
+        return;
+      }
+
       const payload = normalizar(vals);
       setSubmitLoading(true);
       if (editando?.id) {
@@ -257,6 +272,21 @@ const GestionEventos = () => {
     },
     { title: 'Categoría', dataIndex: 'categoria', key: 'categoria', render: (c) => c || '-', responsive: ['md'] },
     { title: 'Precio', dataIndex: 'precio', key: 'precio', render: (p) => formatearPrecio(p), responsive: ['lg'] },
+    {
+      title: 'Boletos',
+      dataIndex: 'cantidadBoletos',
+      key: 'cantidadBoletos',
+      width: 120,
+      render: (cantidad) => (
+        <span style={{ 
+          fontWeight: '600',
+          color: cantidad < 20 ? '#ff4d4f' : cantidad ? '#52c41a' : '#999'
+        }}>
+          {cantidad ? `🎫 ${cantidad}` : '-'}
+        </span>
+      ),
+      responsive: ['lg']
+    },
     {
       title: 'Estado', dataIndex: 'estado', key: 'estado',
       render: (e) => (e === 'activo' || e === 'activa' ? <Tag color="green">Activo</Tag> : <Tag>Inactivo</Tag>)
@@ -424,17 +454,81 @@ const GestionEventos = () => {
         styles={{ body: { maxHeight: '70vh', overflowY: 'auto' } }}
       >
         <Form form={form} layout="vertical" initialValues={{ estado: 'activo', destacado: false, precio: 0 }}>
-          <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'El nombre es obligatorio' }]}>
-            <Input placeholder="Nombre del evento" />
+          <Form.Item 
+            name="nombre" 
+            label="Nombre" 
+            rules={[
+              { required: true, message: 'El nombre es obligatorio' },
+              { min: 3, message: 'El nombre debe tener al menos 3 caracteres' },
+              { max: 100, message: 'El nombre no puede exceder 100 caracteres' },
+              { whitespace: true, message: 'El nombre no puede estar vacío' }
+            ]}
+          >
+            <Input placeholder="Nombre del evento" maxLength={100} showCount />
           </Form.Item>
-          <Form.Item name="descripcion" label="Descripción"><TextArea rows={3} placeholder="Descripción del evento" /></Form.Item>
+          <Form.Item 
+            name="descripcion" 
+            label="Descripción"
+            rules={[
+              { required: true, message: 'La descripción es obligatoria' },
+              { min: 10, message: 'La descripción debe tener al menos 10 caracteres' },
+              { max: 1000, message: 'La descripción no puede exceder 1000 caracteres' }
+            ]}
+          >
+            <TextArea rows={3} placeholder="Descripción del evento" maxLength={1000} showCount />
+          </Form.Item>
+
+          <Form.Item
+            name="cantidadBoletos"
+            label="Cantidad de Boletos Disponibles"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  const num = parseInt(value);
+                  if (isNaN(num) || num < 0) {
+                    return Promise.reject('La cantidad debe ser un número mayor o igual a 0');
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
+          >
+            <InputNumber
+              placeholder="Ej. 150"
+              prefix="🎫"
+              style={{ width: '100%' }}
+              min={0}
+            />
+          </Form.Item>
 
           <Space style={{ width: '100%' }} direction={isMobile ? 'vertical' : 'horizontal'} size="middle">
-            <Form.Item name="fecha" label="Fecha" style={{ flex: 1, minWidth: 180 }}
-              rules={[{ required: true, message: 'La fecha es obligatoria' }]}>
-              <DatePicker style={{ width: '100%' }} />
+            <Form.Item 
+              name="fecha" 
+              label="Fecha" 
+              style={{ flex: 1, minWidth: 180 }}
+              rules={[
+                { required: true, message: 'La fecha es obligatoria' },
+                {
+                  validator: (_, value) => {
+                    if (!value) return Promise.resolve();
+                    const hoy = dayjs().startOf('day');
+                    if (value.isBefore(hoy)) {
+                      return Promise.reject('La fecha no puede ser anterior a hoy');
+                    }
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <DatePicker style={{ width: '100%' }} disabledDate={(current) => current && current < dayjs().startOf('day')} />
             </Form.Item>
-            <Form.Item name="hora" label="Hora" style={{ flex: 1, minWidth: 160 }}>
+            <Form.Item 
+              name="hora" 
+              label="Hora" 
+              style={{ flex: 1, minWidth: 160 }}
+              rules={[{ required: true, message: 'La hora es obligatoria' }]}
+            >
               <TimePicker format="HH:mm" style={{ width: '100%' }} />
             </Form.Item>
           </Space>
@@ -442,11 +536,11 @@ const GestionEventos = () => {
           <Form.Item label={
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <EnvironmentOutlined style={{ color: '#2D5016' }} />
-              Ubicación en el Mapa
+              Ubicación en el Mapa <span style={{ color: '#ff4d4f' }}>*</span>
             </span>
           }>
             <div style={{ marginBottom: 12, fontSize: 13, color: '#666' }}>
-              Haz clic en el mapa para seleccionar la ubicación del evento
+              Haz clic en el mapa para seleccionar la ubicación del evento (obligatorio)
             </div>
             {posicionMapa && (
               <div style={{
@@ -481,22 +575,45 @@ const GestionEventos = () => {
           </Form.Item>
 
           <Space style={{ width: '100%' }} direction={isMobile ? 'vertical' : 'horizontal'} size="middle">
-            <Form.Item name="categoria" label="Categoría" style={{ flex: 1, minWidth: 200 }}>
+            <Form.Item 
+              name="categoria" 
+              label="Categoría" 
+              style={{ flex: 1, minWidth: 200 }}
+              rules={[{ required: true, message: 'Selecciona una categoría' }]}
+            >
               <Select placeholder="Selecciona una categoría" allowClear>
                 {categoriasOpts.map((c) => <Option key={c.value} value={c.value}>{c.label}</Option>)}
               </Select>
             </Form.Item>
-            <Form.Item name="precio" label="Precio (MXN)" style={{ flex: 1, minWidth: 150 }}>
-              <InputNumber style={{ width: '100%' }} min={0} step={10} />
+            <Form.Item 
+              name="precio" 
+              label="Precio (MXN)" 
+              style={{ flex: 1, minWidth: 150 }}
+              rules={[
+                { required: true, message: 'El precio es obligatorio' },
+                {
+                  validator: (_, value) => {
+                    if (value === undefined || value === null) return Promise.resolve();
+                    if (value < 0) return Promise.reject('El precio no puede ser negativo');
+                    if (value > 50000) return Promise.reject('El precio no puede exceder $50,000 MXN');
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <InputNumber style={{ width: '100%' }} min={0} max={50000} step={10} placeholder="0 para eventos gratuitos" />
             </Form.Item>
           </Space>
 
           <Form.Item label={
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <CameraOutlined style={{ color: '#2D5016' }} />
-              Imágenes del Evento
+              Imágenes del Evento <span style={{ color: '#ff4d4f' }}>*</span>
             </span>
           }>
+            <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>
+              Agrega al menos una imagen del evento (máximo 5MB por imagen)
+            </div>
             <Upload
               listType="picture-card"
               fileList={imagenesEvento}

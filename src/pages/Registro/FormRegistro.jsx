@@ -142,7 +142,11 @@ function FormRegistro() {
               name="email"
               rules={[
                 { required: true, message: 'Por favor ingresa tu correo!' },
-                { type: 'email', message: 'Por favor ingresa un correo válido!' }
+                { type: 'email', message: 'Por favor ingresa un correo válido!' },
+                {
+                  pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: 'Formato de correo inválido!'
+                }
               ]}
             >
               <Input
@@ -161,12 +165,30 @@ function FormRegistro() {
               name="firstName"
               rules={[
                 { required: true, message: 'Por favor ingresa tu nombre!' },
-                { min: 2, message: 'El nombre debe tener al menos 2 caracteres!' }
+                { min: 2, message: 'El nombre debe tener al menos 2 caracteres!' },
+                { max: 50, message: 'El nombre no puede exceder 50 caracteres!' },
+                {
+                  pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+                  message: 'El nombre solo puede contener letras!'
+                },
+                {
+                  validator: (_, value) => {
+                    if (value && value.trim().length === 0) {
+                      return Promise.reject('El nombre no puede estar vacío!');
+                    }
+                    return Promise.resolve();
+                  }
+                }
               ]}
             >
               <Input
                 prefix={<UserOutlined style={{ color: '#7f8c8d' }} />}
                 placeholder="Nombre"
+                onKeyPress={(e) => {
+                  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
                 style={{
                   borderRadius: '8px',
                   padding: '12px',
@@ -179,12 +201,30 @@ function FormRegistro() {
               name="lastName"
               rules={[
                 { required: true, message: 'Por favor ingresa tus apellidos!' },
-                { min: 2, message: 'Los apellidos deben tener al menos 2 caracteres!' }
+                { min: 2, message: 'Los apellidos deben tener al menos 2 caracteres!' },
+                { max: 50, message: 'Los apellidos no pueden exceder 50 caracteres!' },
+                {
+                  pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+                  message: 'Los apellidos solo pueden contener letras!'
+                },
+                {
+                  validator: (_, value) => {
+                    if (value && value.trim().length === 0) {
+                      return Promise.reject('Los apellidos no pueden estar vacíos!');
+                    }
+                    return Promise.resolve();
+                  }
+                }
               ]}
             >
               <Input
                 prefix={<UserOutlined style={{ color: '#7f8c8d' }} />}
                 placeholder="Apellido(s)"
+                onKeyPress={(e) => {
+                  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
                 style={{
                   borderRadius: '8px',
                   padding: '12px',
@@ -197,8 +237,14 @@ function FormRegistro() {
               name="password"
               rules={[
                 { required: true, message: 'Por favor ingresa tu contraseña!' },
-                { min: 6, message: 'La contraseña debe tener al menos 6 caracteres!' }
+                { min: 8, message: 'La contraseña debe tener al menos 8 caracteres!' },
+                { max: 50, message: 'La contraseña no puede exceder 50 caracteres!' },
+                {
+                  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/,
+                  message: 'La contraseña debe contener mayúsculas, minúsculas, números y caracteres especiales (@$!%*?&#)!'
+                }
               ]}
+              hasFeedback
             >
               <Input.Password
                 prefix={<LockOutlined style={{ color: '#7f8c8d' }} />}
@@ -212,16 +258,59 @@ function FormRegistro() {
             </Form.Item>
 
             <Form.Item
+              name="confirmPassword"
+              dependencies={['password']}
+              hasFeedback
+              rules={[
+                { required: true, message: 'Por favor confirma tu contraseña!' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('password') === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error('Las contraseñas no coinciden!'));
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined style={{ color: '#7f8c8d' }} />}
+                placeholder="Confirmar contraseña"
+                style={{
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '16px'
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
               name="phone"
               rules={[
                 { required: true, message: 'Por favor ingresa tu teléfono!' },
-                { pattern: /^[0-9]{10}$/, message: 'El teléfono debe tener 10 dígitos!' }
+                {
+                  pattern: /^[0-9]{10}$/,
+                  message: 'El teléfono debe tener exactamente 10 dígitos!'
+                },
+                {
+                  validator: (_, value) => {
+                    if (value && !/^[0-9]*$/.test(value)) {
+                      return Promise.reject('El teléfono solo puede contener números!');
+                    }
+                    return Promise.resolve();
+                  }
+                }
               ]}
             >
               <Input
                 prefix={<PhoneOutlined style={{ color: '#7f8c8d' }} />}
                 placeholder="Teléfono (10 dígitos)"
                 maxLength={10}
+                onKeyPress={(e) => {
+                  if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
                 style={{
                   borderRadius: '8px',
                   padding: '12px',
