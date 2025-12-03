@@ -72,6 +72,16 @@ const ServicioCard = ({ servicio, esFavorito, onToggleFavorito }) => {
                             onToggleFavorito(servicio.id);
                         }}
                     />
+                    {/* Tag de disponibilidad */}
+                    {servicio.cantidadBoletos === 0 ? (
+                        <Tag color="red" className="destacado-tag">
+                            AGOTADO
+                        </Tag>
+                    ) : (servicio.cantidadBoletos > 0 && servicio.cantidadBoletos <= 10) ? (
+                        <Tag color="red" className="destacado-tag">
+                            ¡Últimos lugares!
+                        </Tag>
+                    ) : null}
                 </div>
             }
         >

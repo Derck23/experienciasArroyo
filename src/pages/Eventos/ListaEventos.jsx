@@ -146,7 +146,12 @@ const ListaEventos = () => {
                                     <h3 style="color: #2e7d32; font-size: 16px; font-weight: 700; margin-bottom: 8px;">
                                         ${evento.nombre}
                                     </h3>
-                                    ${evento.destacado ? '<span style="background: #ff4d4f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; margin-bottom: 8px;">¡Últimos lugares!</span>' : ''}
+                                    ${evento.cantidadBoletos === 0
+                                        ? '<span style="background: #ff4d4f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; margin-bottom: 8px;">AGOTADO</span>'
+                                        : (evento.cantidadBoletos > 0 && evento.cantidadBoletos <= 10)
+                                            ? '<span style="background: #ff4d4f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; margin-bottom: 8px;">¡Últimos lugares!</span>'
+                                            : ''
+                                    }
                                     ${evento.descripcion ? `<p style="color: #666; margin-bottom: 8px; line-height: 1.4; font-size: 13px;">${evento.descripcion.substring(0, 100)}...</p>` : ''}
                                     <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
                                         <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
@@ -895,11 +900,15 @@ const ListaEventos = () => {
                                                 className="favorito-btn"
                                                 onClick={(e) => toggleFavorito(evento.id, e)}
                                             />
-                                            {evento.destacado && (
+                                            {evento.cantidadBoletos === 0 ? (
+                                                <Tag color="red" className="destacado-tag">
+                                                    AGOTADO
+                                                </Tag>
+                                            ) : (evento.cantidadBoletos > 0 && evento.cantidadBoletos <= 10) ? (
                                                 <Tag color="red" className="destacado-tag">
                                                     ¡Últimos lugares!
                                                 </Tag>
-                                            )}
+                                            ) : null}
                                         </div>
                                     }
                                 >
@@ -991,10 +1000,12 @@ const ListaEventos = () => {
                             {eventoSeleccionado.nombre}
                         </h2>
 
-                        {/* Destacado */}
-                        {eventoSeleccionado.destacado && (
+                        {/* Etiqueta de disponibilidad */}
+                        {eventoSeleccionado.cantidadBoletos === 0 ? (
+                            <Tag color="red" style={{ marginBottom: '16px' }}>AGOTADO</Tag>
+                        ) : (eventoSeleccionado.cantidadBoletos > 0 && eventoSeleccionado.cantidadBoletos <= 10) ? (
                             <Tag color="red" style={{ marginBottom: '16px' }}>¡Últimos lugares!</Tag>
-                        )}
+                        ) : null}
 
                         {/* Descripción */}
                         {eventoSeleccionado.descripcion && (

@@ -421,6 +421,16 @@ const ListaAtacciones = () => {
                                                 className="favorito-btn"
                                                 onClick={() => toggleFavorito(atraccion.id)}
                                             />
+                                            {/* Tag de disponibilidad */}
+                                            {atraccion.cantidadBoletos === 0 ? (
+                                                <Tag color="red" className="destacado-tag">
+                                                    AGOTADO
+                                                </Tag>
+                                            ) : (atraccion.cantidadBoletos > 0 && atraccion.cantidadBoletos <= 10) ? (
+                                                <Tag color="red" className="destacado-tag">
+                                                    ¡Últimos lugares!
+                                                </Tag>
+                                            ) : null}
                                         </div>
                                     }
                                 >
